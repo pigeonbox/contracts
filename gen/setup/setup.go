@@ -967,11 +967,21 @@ func (p *InitializeReq) String() string {
 
 // SitePreConfig 首启向导的站点策略段（写入 SystemConfig 对应段并热应用）。
 // 只收当前可热应用的键：站点名/描述走 BaseConfig，此处为上传与游客策略。
+// 2026-10-12 扩容政策段（对标上游首启向导全量）：过期策略/文件白名单/注册开关，
+// 全部可选——不传 = 保持 yaml/内置默认，旧客户端零破坏。
 type SitePreConfig struct {
 	// 单文件上限（MB，>0 生效）
 	UploadSizeMb int32 `thrift:"upload_size_mb,1,required" form:"upload_size_mb,required" json:"upload_size_mb,required"`
 	// 允许游客上传
 	OpenUpload bool `thrift:"open_upload,2,required" form:"open_upload,required" json:"open_upload,required"`
+	// 允许的过期样式（minute/hour/day/week/month/year/forever 子集；空=全部）
+	AllowedExpireStyles []string `thrift:"allowed_expire_styles,3,optional,list<string>" form:"allowed_expire_styles" json:"allowed_expire_styles,omitempty"`
+	// 最长保存天数上限（0=不限）
+	MaxSaveDays *int32 `thrift:"max_save_days,4,optional" form:"max_save_days" json:"max_save_days,omitempty"`
+	// 扩展名白名单（如 .jpg/.png/.pdf；空=黑名单模式）
+	AllowedExtensions []string `thrift:"allowed_extensions,5,optional,list<string>" form:"allowed_extensions" json:"allowed_extensions,omitempty"`
+	// 开放用户注册
+	AllowRegistration *bool `thrift:"allow_registration,6,optional" form:"allow_registration" json:"allow_registration,omitempty"`
 }
 
 func NewSitePreConfig() *SitePreConfig {
@@ -989,9 +999,65 @@ func (p *SitePreConfig) GetOpenUpload() (v bool) {
 	return p.OpenUpload
 }
 
+var SitePreConfig_AllowedExpireStyles_DEFAULT []string
+
+func (p *SitePreConfig) GetAllowedExpireStyles() (v []string) {
+	if !p.IsSetAllowedExpireStyles() {
+		return SitePreConfig_AllowedExpireStyles_DEFAULT
+	}
+	return p.AllowedExpireStyles
+}
+
+var SitePreConfig_MaxSaveDays_DEFAULT int32
+
+func (p *SitePreConfig) GetMaxSaveDays() (v int32) {
+	if !p.IsSetMaxSaveDays() {
+		return SitePreConfig_MaxSaveDays_DEFAULT
+	}
+	return *p.MaxSaveDays
+}
+
+var SitePreConfig_AllowedExtensions_DEFAULT []string
+
+func (p *SitePreConfig) GetAllowedExtensions() (v []string) {
+	if !p.IsSetAllowedExtensions() {
+		return SitePreConfig_AllowedExtensions_DEFAULT
+	}
+	return p.AllowedExtensions
+}
+
+var SitePreConfig_AllowRegistration_DEFAULT bool
+
+func (p *SitePreConfig) GetAllowRegistration() (v bool) {
+	if !p.IsSetAllowRegistration() {
+		return SitePreConfig_AllowRegistration_DEFAULT
+	}
+	return *p.AllowRegistration
+}
+
 var fieldIDToName_SitePreConfig = map[int16]string{
 	1: "upload_size_mb",
 	2: "open_upload",
+	3: "allowed_expire_styles",
+	4: "max_save_days",
+	5: "allowed_extensions",
+	6: "allow_registration",
+}
+
+func (p *SitePreConfig) IsSetAllowedExpireStyles() bool {
+	return p.AllowedExpireStyles != nil
+}
+
+func (p *SitePreConfig) IsSetMaxSaveDays() bool {
+	return p.MaxSaveDays != nil
+}
+
+func (p *SitePreConfig) IsSetAllowedExtensions() bool {
+	return p.AllowedExtensions != nil
+}
+
+func (p *SitePreConfig) IsSetAllowRegistration() bool {
+	return p.AllowRegistration != nil
 }
 
 func (p *SitePreConfig) Read(iprot thrift.TProtocol) (err error) {
@@ -1030,6 +1096,38 @@ func (p *SitePreConfig) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetOpenUpload = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1095,6 +1193,74 @@ func (p *SitePreConfig) ReadField2(iprot thrift.TProtocol) error {
 	p.OpenUpload = _field
 	return nil
 }
+func (p *SitePreConfig) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.AllowedExpireStyles = _field
+	return nil
+}
+func (p *SitePreConfig) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.MaxSaveDays = _field
+	return nil
+}
+func (p *SitePreConfig) ReadField5(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.AllowedExtensions = _field
+	return nil
+}
+func (p *SitePreConfig) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.AllowRegistration = _field
+	return nil
+}
 
 func (p *SitePreConfig) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1108,6 +1274,22 @@ func (p *SitePreConfig) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -1160,6 +1342,98 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *SitePreConfig) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAllowedExpireStyles() {
+		if err = oprot.WriteFieldBegin("allowed_expire_styles", thrift.LIST, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.AllowedExpireStyles)); err != nil {
+			return err
+		}
+		for _, v := range p.AllowedExpireStyles {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *SitePreConfig) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMaxSaveDays() {
+		if err = oprot.WriteFieldBegin("max_save_days", thrift.I32, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.MaxSaveDays); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *SitePreConfig) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAllowedExtensions() {
+		if err = oprot.WriteFieldBegin("allowed_extensions", thrift.LIST, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.AllowedExtensions)); err != nil {
+			return err
+		}
+		for _, v := range p.AllowedExtensions {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+
+func (p *SitePreConfig) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAllowRegistration() {
+		if err = oprot.WriteFieldBegin("allow_registration", thrift.BOOL, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.AllowRegistration); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
 func (p *SitePreConfig) String() string {

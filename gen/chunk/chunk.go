@@ -15,6 +15,17 @@ type ChunkUploadInitReq struct {
 	FileHash    string `thrift:"file_hash,3,required" form:"file_hash,required" json:"file_hash,required"`
 	ChunkSize   int32  `thrift:"chunk_size,4,required" form:"chunk_size,required" json:"chunk_size,required"`
 	TotalChunks int32  `thrift:"total_chunks,5,required" form:"total_chunks,required" json:"total_chunks,required"`
+	// ---- 秒传建分享元数据（2026-10-12，与 CompleteReq 同形；可选）----
+	// 携带 expire_style 即视为启用秒传快速通道：命中同用户同 hash+size 历史文件时
+	// 按本次元数据建新分享（引用既有对象，免传分片）；不携带则不做快速通道
+	// （正常分片上传，Complete 再按其元数据建分享）。两条路径均过 CreateShare
+	// 去重钩子（存储级去重恒生效）。
+	ExpireValue *int32  `thrift:"expire_value,6,optional" form:"expire_value" json:"expire_value,omitempty"`
+	ExpireStyle *string `thrift:"expire_style,7,optional" form:"expire_style" json:"expire_style,omitempty"`
+	RequireAuth *bool   `thrift:"require_auth,8,optional" form:"require_auth" json:"require_auth,omitempty"`
+	Password    *string `thrift:"password,9,optional" form:"password" json:"password,omitempty"`
+	// 自定义取件码：仅登录用户可指定（与 Complete 同把关）
+	CustomCode *string `thrift:"custom_code,10,optional" form:"custom_code" json:"custom_code,omitempty"`
 }
 
 func NewChunkUploadInitReq() *ChunkUploadInitReq {
@@ -44,12 +55,82 @@ func (p *ChunkUploadInitReq) GetTotalChunks() (v int32) {
 	return p.TotalChunks
 }
 
+var ChunkUploadInitReq_ExpireValue_DEFAULT int32
+
+func (p *ChunkUploadInitReq) GetExpireValue() (v int32) {
+	if !p.IsSetExpireValue() {
+		return ChunkUploadInitReq_ExpireValue_DEFAULT
+	}
+	return *p.ExpireValue
+}
+
+var ChunkUploadInitReq_ExpireStyle_DEFAULT string
+
+func (p *ChunkUploadInitReq) GetExpireStyle() (v string) {
+	if !p.IsSetExpireStyle() {
+		return ChunkUploadInitReq_ExpireStyle_DEFAULT
+	}
+	return *p.ExpireStyle
+}
+
+var ChunkUploadInitReq_RequireAuth_DEFAULT bool
+
+func (p *ChunkUploadInitReq) GetRequireAuth() (v bool) {
+	if !p.IsSetRequireAuth() {
+		return ChunkUploadInitReq_RequireAuth_DEFAULT
+	}
+	return *p.RequireAuth
+}
+
+var ChunkUploadInitReq_Password_DEFAULT string
+
+func (p *ChunkUploadInitReq) GetPassword() (v string) {
+	if !p.IsSetPassword() {
+		return ChunkUploadInitReq_Password_DEFAULT
+	}
+	return *p.Password
+}
+
+var ChunkUploadInitReq_CustomCode_DEFAULT string
+
+func (p *ChunkUploadInitReq) GetCustomCode() (v string) {
+	if !p.IsSetCustomCode() {
+		return ChunkUploadInitReq_CustomCode_DEFAULT
+	}
+	return *p.CustomCode
+}
+
 var fieldIDToName_ChunkUploadInitReq = map[int16]string{
-	1: "file_name",
-	2: "file_size",
-	3: "file_hash",
-	4: "chunk_size",
-	5: "total_chunks",
+	1:  "file_name",
+	2:  "file_size",
+	3:  "file_hash",
+	4:  "chunk_size",
+	5:  "total_chunks",
+	6:  "expire_value",
+	7:  "expire_style",
+	8:  "require_auth",
+	9:  "password",
+	10: "custom_code",
+}
+
+func (p *ChunkUploadInitReq) IsSetExpireValue() bool {
+	return p.ExpireValue != nil
+}
+
+func (p *ChunkUploadInitReq) IsSetExpireStyle() bool {
+	return p.ExpireStyle != nil
+}
+
+func (p *ChunkUploadInitReq) IsSetRequireAuth() bool {
+	return p.RequireAuth != nil
+}
+
+func (p *ChunkUploadInitReq) IsSetPassword() bool {
+	return p.Password != nil
+}
+
+func (p *ChunkUploadInitReq) IsSetCustomCode() bool {
+	return p.CustomCode != nil
 }
 
 func (p *ChunkUploadInitReq) Read(iprot thrift.TProtocol) (err error) {
@@ -118,6 +199,46 @@ func (p *ChunkUploadInitReq) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetTotalChunks = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -231,6 +352,61 @@ func (p *ChunkUploadInitReq) ReadField5(iprot thrift.TProtocol) error {
 	p.TotalChunks = _field
 	return nil
 }
+func (p *ChunkUploadInitReq) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ExpireValue = _field
+	return nil
+}
+func (p *ChunkUploadInitReq) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ExpireStyle = _field
+	return nil
+}
+func (p *ChunkUploadInitReq) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.RequireAuth = _field
+	return nil
+}
+func (p *ChunkUploadInitReq) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Password = _field
+	return nil
+}
+func (p *ChunkUploadInitReq) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.CustomCode = _field
+	return nil
+}
 
 func (p *ChunkUploadInitReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -256,6 +432,26 @@ func (p *ChunkUploadInitReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -361,6 +557,101 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
+func (p *ChunkUploadInitReq) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetExpireValue() {
+		if err = oprot.WriteFieldBegin("expire_value", thrift.I32, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.ExpireValue); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitReq) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetExpireStyle() {
+		if err = oprot.WriteFieldBegin("expire_style", thrift.STRING, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ExpireStyle); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitReq) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRequireAuth() {
+		if err = oprot.WriteFieldBegin("require_auth", thrift.BOOL, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.RequireAuth); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitReq) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPassword() {
+		if err = oprot.WriteFieldBegin("password", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Password); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitReq) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCustomCode() {
+		if err = oprot.WriteFieldBegin("custom_code", thrift.STRING, 10); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.CustomCode); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+
 func (p *ChunkUploadInitReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -377,6 +668,8 @@ type ChunkUploadInitData struct {
 	IsQuickUpload bool `thrift:"is_quick_upload,4,required" form:"is_quick_upload,required" json:"is_quick_upload,required"`
 	// If quick upload, return share code directly
 	ShareCode string `thrift:"share_code,5,required" form:"share_code,required" json:"share_code,required"`
+	// 秒传命中时的完整分享链接（2026-10-12 建新分享语义；未命中为空）
+	ShareURL *string `thrift:"share_url,6,optional" form:"share_url" json:"share_url,omitempty"`
 }
 
 func NewChunkUploadInitData() *ChunkUploadInitData {
@@ -406,12 +699,26 @@ func (p *ChunkUploadInitData) GetShareCode() (v string) {
 	return p.ShareCode
 }
 
+var ChunkUploadInitData_ShareURL_DEFAULT string
+
+func (p *ChunkUploadInitData) GetShareURL() (v string) {
+	if !p.IsSetShareURL() {
+		return ChunkUploadInitData_ShareURL_DEFAULT
+	}
+	return *p.ShareURL
+}
+
 var fieldIDToName_ChunkUploadInitData = map[int16]string{
 	1: "upload_id",
 	2: "chunk_size",
 	3: "total_chunks",
 	4: "is_quick_upload",
 	5: "share_code",
+	6: "share_url",
+}
+
+func (p *ChunkUploadInitData) IsSetShareURL() bool {
+	return p.ShareURL != nil
 }
 
 func (p *ChunkUploadInitData) Read(iprot thrift.TProtocol) (err error) {
@@ -480,6 +787,14 @@ func (p *ChunkUploadInitData) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetShareCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -593,6 +908,17 @@ func (p *ChunkUploadInitData) ReadField5(iprot thrift.TProtocol) error {
 	p.ShareCode = _field
 	return nil
 }
+func (p *ChunkUploadInitData) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ShareURL = _field
+	return nil
+}
 
 func (p *ChunkUploadInitData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -618,6 +944,10 @@ func (p *ChunkUploadInitData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -721,6 +1051,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitData) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetShareURL() {
+		if err = oprot.WriteFieldBegin("share_url", thrift.STRING, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ShareURL); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
 func (p *ChunkUploadInitData) String() string {

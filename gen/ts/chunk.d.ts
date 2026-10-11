@@ -8,6 +8,19 @@ export interface ChunkUploadInitReq {
   file_hash: string;
   chunk_size: number;
   total_chunks: number;
+  /**
+ * ---- 秒传建分享元数据（2026-10-12，与 CompleteReq 同形；可选）----
+ * 携带 expire_style 即视为启用秒传快速通道：命中同用户同 hash+size 历史文件时
+ * 按本次元数据建新分享（引用既有对象，免传分片）；不携带则不做快速通道
+ * （正常分片上传，Complete 再按其元数据建分享）。两条路径均过 CreateShare
+ * 去重钩子（存储级去重恒生效）。
+ */
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  /** 自定义取件码：仅登录用户可指定（与 Complete 同把关） */
+  custom_code?: string;
 }
 
 export interface ChunkUploadInitData {
@@ -18,6 +31,8 @@ export interface ChunkUploadInitData {
   is_quick_upload: boolean;
   /** If quick upload, return share code directly */
   share_code: string;
+  /** 秒传命中时的完整分享链接（2026-10-12 建新分享语义；未命中为空） */
+  share_url?: string;
 }
 
 export interface ChunkUploadInitResp {

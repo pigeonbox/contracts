@@ -1912,6 +1912,9 @@
           "share_code": {
             "type": "string"
           },
+          "share_url": {
+            "type": "string"
+          },
           "total_chunks": {
             "type": "string"
           },
@@ -1933,6 +1936,15 @@
           "chunk_size": {
             "type": "integer"
           },
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
           "file_hash": {
             "type": "string"
           },
@@ -1942,6 +1954,12 @@
           "file_size": {
             "format": "int64",
             "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
           },
           "total_chunks": {
             "type": "integer"
@@ -3972,6 +3990,24 @@
       },
       "setup.SitePreConfig": {
         "properties": {
+          "allow_registration": {
+            "type": "boolean"
+          },
+          "allowed_expire_styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "allowed_extensions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "max_save_days": {
+            "type": "integer"
+          },
           "open_upload": {
             "type": "boolean"
           },
@@ -4051,6 +4087,9 @@
         "properties": {
           "code": {
             "type": "string"
+          },
+          "deduped": {
+            "type": "boolean"
           },
           "pickup_code": {
             "type": "string"
@@ -8957,6 +8996,15 @@
                   "chunk_size": {
                     "type": "integer"
                   },
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
                   "file_hash": {
                     "type": "string"
                   },
@@ -8966,6 +9014,12 @@
                   "file_size": {
                     "format": "int64",
                     "type": "integer"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
                   },
                   "total_chunks": {
                     "type": "integer"

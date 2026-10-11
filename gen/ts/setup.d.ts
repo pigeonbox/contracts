@@ -32,12 +32,22 @@ export interface InitializeReq {
 /**
  * SitePreConfig 首启向导的站点策略段（写入 SystemConfig 对应段并热应用）。
  * 只收当前可热应用的键：站点名/描述走 BaseConfig，此处为上传与游客策略。
+ * 2026-10-12 扩容政策段（对标上游首启向导全量）：过期策略/文件白名单/注册开关，
+ * 全部可选——不传 = 保持 yaml/内置默认，旧客户端零破坏。
  */
 export interface SitePreConfig {
   /** 单文件上限（MB，>0 生效） */
   upload_size_mb: number;
   /** 允许游客上传 */
   open_upload: boolean;
+  /** 允许的过期样式（minute/hour/day/week/month/year/forever 子集；空=全部） */
+  allowed_expire_styles?: string[];
+  /** 最长保存天数上限（0=不限） */
+  max_save_days?: number;
+  /** 扩展名白名单（如 .jpg/.png/.pdf；空=黑名单模式） */
+  allowed_extensions?: string[];
+  /** 开放用户注册 */
+  allow_registration?: boolean;
 }
 
 export interface InitializeResp {

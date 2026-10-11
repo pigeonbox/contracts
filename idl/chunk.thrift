@@ -14,6 +14,17 @@ struct ChunkUploadInitReq {
     3: required string file_hash    (api.body = "file_hash"),
     4: required i32    chunk_size   (api.body = "chunk_size"),
     5: required i32    total_chunks (api.body = "total_chunks"),
+    // ---- 秒传建分享元数据（2026-10-12，与 CompleteReq 同形；可选）----
+    // 携带 expire_style 即视为启用秒传快速通道：命中同用户同 hash+size 历史文件时
+    // 按本次元数据建新分享（引用既有对象，免传分片）；不携带则不做快速通道
+    // （正常分片上传，Complete 再按其元数据建分享）。两条路径均过 CreateShare
+    // 去重钩子（存储级去重恒生效）。
+    6: optional i32    expire_value  (api.body = "expire_value"),
+    7: optional string expire_style  (api.body = "expire_style"),
+    8: optional bool   require_auth  (api.body = "require_auth"),
+    9: optional string password      (api.body = "password"),
+    // 自定义取件码：仅登录用户可指定（与 Complete 同把关）
+    10: optional string custom_code  (api.body = "custom_code"),
 }
 
 struct ChunkUploadInitData {
@@ -22,6 +33,8 @@ struct ChunkUploadInitData {
     3: required string total_chunks     (api.body = "total_chunks"),
     4: required bool   is_quick_upload  (api.body = "is_quick_upload"),     // Quick upload flag
     5: required string share_code       (api.body = "share_code"),          // If quick upload, return share code directly
+    // 秒传命中时的完整分享链接（2026-10-12 建新分享语义；未命中为空）
+    6: optional string share_url        (api.body = "share_url"),
 }
 
 struct ChunkUploadInitResp {

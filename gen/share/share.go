@@ -497,6 +497,9 @@ type ShareData struct {
 	// 6 位取件码（2026-10-07 起文件分享铸造：pickup_code → code 的 KV 映射，
 	// 匿名通道 retrieve/search/download 均可解析；文本分享与永久分享不铸造，为空）
 	PickupCode *string `thrift:"pickup_code,3,optional" form:"pickup_code" json:"pickup_code,omitempty"`
+	// 秒传去重命中（2026-10-12，D1=A 同用户内）：本次未写入新存储对象，
+	// 分享引用调用者自己历史同 hash+size 文件的既有对象
+	Deduped *bool `thrift:"deduped,4,optional" form:"deduped" json:"deduped,omitempty"`
 }
 
 func NewShareData() *ShareData {
@@ -523,14 +526,28 @@ func (p *ShareData) GetPickupCode() (v string) {
 	return *p.PickupCode
 }
 
+var ShareData_Deduped_DEFAULT bool
+
+func (p *ShareData) GetDeduped() (v bool) {
+	if !p.IsSetDeduped() {
+		return ShareData_Deduped_DEFAULT
+	}
+	return *p.Deduped
+}
+
 var fieldIDToName_ShareData = map[int16]string{
 	1: "code",
 	2: "url",
 	3: "pickup_code",
+	4: "deduped",
 }
 
 func (p *ShareData) IsSetPickupCode() bool {
 	return p.PickupCode != nil
+}
+
+func (p *ShareData) IsSetDeduped() bool {
+	return p.Deduped != nil
 }
 
 func (p *ShareData) Read(iprot thrift.TProtocol) (err error) {
@@ -575,6 +592,14 @@ func (p *ShareData) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -653,6 +678,17 @@ func (p *ShareData) ReadField3(iprot thrift.TProtocol) error {
 	p.PickupCode = _field
 	return nil
 }
+func (p *ShareData) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Deduped = _field
+	return nil
+}
 
 func (p *ShareData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -670,6 +706,10 @@ func (p *ShareData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -741,6 +781,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *ShareData) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDeduped() {
+		if err = oprot.WriteFieldBegin("deduped", thrift.BOOL, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.Deduped); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *ShareData) String() string {
