@@ -475,6 +475,102 @@ struct AdminBatchSetFilesStatusResp {
     3: optional AdminAffectedData data    (api.body = "data"),
 }
 
+// ---- 本地文件管理（对标上游 data/local 管理；root=服务端白名单索引，杜绝穿越） ----
+struct LocalFileEntry {
+    1: required string name    (api.body = "name"),
+    2: required string path    (api.body = "path"),      // 相对 root 的路径，正斜杠
+    3: required i64    size    (api.body = "size"),
+    4: required string mod_time (api.body = "mod_time"),  // RFC3339
+    5: required bool   is_dir  (api.body = "is_dir"),
+}
+struct AdminListLocalFilesReq {
+    1: optional i32    root (api.query = "root"),
+    2: optional string dir  (api.query = "dir"),
+}
+struct AdminListLocalFilesData {
+    1: required list<string>         roots   (api.body = "roots"),    // 白名单根目录（前端切换用）
+    2: required list<LocalFileEntry> entries (api.body = "entries"),
+}
+struct AdminListLocalFilesResp {
+    1: required i32                     code    (api.body = "code"),
+    2: required string                  message (api.body = "message"),
+    3: required AdminListLocalFilesData data    (api.body = "data"),
+}
+struct AdminDeleteLocalFileReq {
+    1: optional i32    root (api.query = "root"),
+    2: required string path (api.query = "path"),
+}
+// data 恒 null（SuccessWithMessage nil）：契约不再携带 data 键（增量无害）
+struct AdminDeleteLocalFileResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+struct AdminImportLocalFileReq {
+    1: required i32    root         (api.body = "root"),
+    2: required string path         (api.body = "path"),
+    3: optional i32    expire_value (api.body = "expire_value"),
+    4: optional string expire_style (api.body = "expire_style"),
+    5: optional bool   require_auth (api.body = "require_auth"),
+    6: optional string password     (api.body = "password"),
+    7: optional string custom_code  (api.body = "custom_code"),
+}
+struct AdminImportLocalFileData {
+    1: required string code      (api.body = "code"),       // 分享码（导入即分享）
+    2: required string share_url (api.body = "share_url"),
+}
+struct AdminImportLocalFileResp {
+    1: required i32                     code    (api.body = "code"),
+    2: required string                  message (api.body = "message"),
+    3: optional AdminImportLocalFileData data   (api.body = "data"),
+}
+
+// ---- 设置测试端点（测「当前生效值」，非草稿） ----
+struct AdminTestSMTPReq {
+    1: required string to (api.body = "to"),
+}
+struct AdminTestSMTPResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+struct AdminTestOIDCReq {
+}
+struct AdminTestOIDCResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
+// ---- 管理操作审计日志（gorm.Model 内嵌键已契约化为小写 snake_case，增量无害） ----
+struct AdminActivityItem {
+    1: required i64    id         (api.body = "id"),
+    2: required string action     (api.body = "action"),
+    3: required string target     (api.body = "target"),
+    4: required bool   success    (api.body = "success"),
+    5: required string message    (api.body = "message"),
+    6: optional i64    actor_id   (api.body = "actor_id"),
+    7: required string actor_name (api.body = "actor_name"),
+    8: required string ip         (api.body = "ip"),
+    9: required i64    latency_ms (api.body = "latency_ms"),
+    10: required string created_at (api.body = "created_at"),
+}
+struct AdminActivitiesReq {
+    1: optional i32    page      (api.query = "page"),
+    2: optional i32    page_size (api.query = "page_size"),   // 上限 200
+    3: optional string action    (api.query = "action"),
+    4: optional string actor     (api.query = "actor"),
+    5: optional string success   (api.query = "success"),     // true/false；缺省=全部
+}
+struct AdminActivitiesData {
+    1: required list<AdminActivityItem> items     (api.body = "list"),
+    2: required i64                     total     (api.body = "total"),
+    3: required i32                     page      (api.body = "page"),
+    4: required i32                     page_size (api.body = "page_size"),
+}
+struct AdminActivitiesResp {
+    1: required i32                 code    (api.body = "code"),
+    2: required string              message (api.body = "message"),
+    3: required AdminActivitiesData data    (api.body = "data"),
+}
+
 // ==================== 服务定义 ====================
 
 service AdminService {
@@ -549,4 +645,19 @@ service AdminService {
     AdminSetFileStatusResp AdminSetFileStatus(1: AdminSetFileStatusReq req) (api.put = "/admin/files/:id/status")
     // AdminBatchSetFilesStatus 批量设置分享管控状态
     AdminBatchSetFilesStatusResp AdminBatchSetFilesStatus(1: AdminBatchSetFilesStatusReq req) (api.post = "/admin/files/batch-status")
+
+    // AdminListLocalFiles 本地文件管理：白名单根目录+条目列表
+    AdminListLocalFilesResp AdminListLocalFiles(1: AdminListLocalFilesReq req) (api.get = "/admin/local-files")
+    // AdminDeleteLocalFile 删除白名单目录内文件
+    AdminDeleteLocalFileResp AdminDeleteLocalFile(1: AdminDeleteLocalFileReq req) (api.delete = "/admin/local-files")
+    // AdminImportLocalFile 把白名单目录内文件导入为分享（配额/审核同链路）
+    AdminImportLocalFileResp AdminImportLocalFile(1: AdminImportLocalFileReq req) (api.post = "/admin/local-files/import")
+
+    // AdminTestSMTP 用当前生效 SMTP 配置发送测试邮件
+    AdminTestSMTPResp AdminTestSMTP(1: AdminTestSMTPReq req) (api.post = "/admin/notify/smtp/test")
+    // AdminTestOIDC 验证当前生效 OIDC issuer discovery 可达
+    AdminTestOIDCResp AdminTestOIDC(1: AdminTestOIDCReq req) (api.post = "/admin/oidc/test")
+
+    // AdminActivities 管理操作审计日志分页
+    AdminActivitiesResp AdminActivities(1: AdminActivitiesReq req) (api.get = "/admin/activities")
 }

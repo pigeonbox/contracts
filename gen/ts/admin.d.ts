@@ -525,3 +525,118 @@ export interface AdminBatchSetFilesStatusResp {
   message: string;
   data?: AdminAffectedData;
 }
+
+/** ---- 本地文件管理（对标上游 data/local 管理；root=服务端白名单索引，杜绝穿越） ---- */
+export interface LocalFileEntry {
+  name: string;
+  /** 相对 root 的路径，正斜杠 */
+  path: string;
+  size: number;
+  /** RFC3339 */
+  mod_time: string;
+  is_dir: boolean;
+}
+
+export interface AdminListLocalFilesReq {
+  root?: number;
+  dir?: string;
+}
+
+export interface AdminListLocalFilesData {
+  /** 白名单根目录（前端切换用） */
+  roots: string[];
+  entries: LocalFileEntry[];
+}
+
+export interface AdminListLocalFilesResp {
+  code: number;
+  message: string;
+  data: AdminListLocalFilesData;
+}
+
+export interface AdminDeleteLocalFileReq {
+  root?: number;
+  path: string;
+}
+
+/** data 恒 null（SuccessWithMessage nil）：契约不再携带 data 键（增量无害） */
+export interface AdminDeleteLocalFileResp {
+  code: number;
+  message: string;
+}
+
+export interface AdminImportLocalFileReq {
+  root: number;
+  path: string;
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  custom_code?: string;
+}
+
+export interface AdminImportLocalFileData {
+  /** 分享码（导入即分享） */
+  code: string;
+  share_url: string;
+}
+
+export interface AdminImportLocalFileResp {
+  code: number;
+  message: string;
+  data?: AdminImportLocalFileData;
+}
+
+/** ---- 设置测试端点（测「当前生效值」，非草稿） ---- */
+export interface AdminTestSMTPReq {
+  to: string;
+}
+
+export interface AdminTestSMTPResp {
+  code: number;
+  message: string;
+}
+
+export interface AdminTestOIDCReq {}
+
+export interface AdminTestOIDCResp {
+  code: number;
+  message: string;
+}
+
+/** ---- 管理操作审计日志（gorm.Model 内嵌键已契约化为小写 snake_case，增量无害） ---- */
+export interface AdminActivityItem {
+  id: number;
+  action: string;
+  target: string;
+  success: boolean;
+  message: string;
+  actor_id?: number;
+  actor_name: string;
+  ip: string;
+  latency_ms: number;
+  created_at: string;
+}
+
+export interface AdminActivitiesReq {
+  page?: number;
+  /** 上限 200 */
+  page_size?: number;
+  action?: string;
+  actor?: string;
+  /** true/false；缺省=全部 */
+  success?: string;
+}
+
+export interface AdminActivitiesData {
+  list: AdminActivityItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AdminActivitiesResp {
+  code: number;
+  message: string;
+  data: AdminActivitiesData;
+}

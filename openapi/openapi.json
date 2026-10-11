@@ -1,6 +1,121 @@
 {
   "components": {
     "schemas": {
+      "admin.AdminActivitiesData": {
+        "properties": {
+          "list": {
+            "items": {
+              "$ref": "#/components/schemas/admin.AdminActivityItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "list",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "type": "object"
+      },
+      "admin.AdminActivitiesReq": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "success": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "admin.AdminActivitiesResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/admin.AdminActivitiesData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "admin.AdminActivityItem": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor_id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "actor_name": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latency_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "target",
+          "success",
+          "message",
+          "actor_name",
+          "ip",
+          "latency_ms",
+          "created_at"
+        ],
+        "type": "object"
+      },
       "admin.AdminAffectedData": {
         "properties": {
           "affected": {
@@ -172,6 +287,35 @@
         "type": "object"
       },
       "admin.AdminDeleteFileResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "admin.AdminDeleteLocalFileReq": {
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "root": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "admin.AdminDeleteLocalFileResp": {
         "properties": {
           "code": {
             "type": "integer"
@@ -458,6 +602,69 @@
         ],
         "type": "object"
       },
+      "admin.AdminImportLocalFileData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "share_url"
+        ],
+        "type": "object"
+      },
+      "admin.AdminImportLocalFileReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          },
+          "root": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "root",
+          "path"
+        ],
+        "type": "object"
+      },
+      "admin.AdminImportLocalFileResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/admin.AdminImportLocalFileData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "admin.AdminListFilesFilteredReq": {
         "properties": {
           "created_after": {
@@ -558,6 +765,57 @@
           },
           "data": {
             "$ref": "#/components/schemas/admin.AdminFileList"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "admin.AdminListLocalFilesData": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/admin.LocalFileEntry"
+            },
+            "type": "array"
+          },
+          "roots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "roots",
+          "entries"
+        ],
+        "type": "object"
+      },
+      "admin.AdminListLocalFilesReq": {
+        "properties": {
+          "dir": {
+            "type": "string"
+          },
+          "root": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "admin.AdminListLocalFilesResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/admin.AdminListLocalFilesData"
           },
           "message": {
             "type": "string"
@@ -944,6 +1202,51 @@
           },
           "data": {
             "$ref": "#/components/schemas/admin.AdminStatsTrendData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "admin.AdminTestOIDCReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "admin.AdminTestOIDCResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "admin.AdminTestSMTPReq": {
+        "properties": {
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      "admin.AdminTestSMTPResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
           },
           "message": {
             "type": "string"
@@ -1366,6 +1669,34 @@
           "view_count",
           "download_count",
           "created_at"
+        ],
+        "type": "object"
+      },
+      "admin.LocalFileEntry": {
+        "properties": {
+          "is_dir": {
+            "type": "boolean"
+          },
+          "mod_time": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "size",
+          "mod_time",
+          "is_dir"
         ],
         "type": "object"
       },
@@ -5456,6 +5787,65 @@
   },
   "openapi": "3.0.3",
   "paths": {
+    "/admin/activities": {
+      "get": {
+        "description": "AdminActivities 管理操作审计日志分页",
+        "operationId": "AdminActivities",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminActivitiesResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/activities",
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
     "/admin/config": {
       "get": {
         "description": "AdminGetConfig 获取系统配置",
@@ -6158,6 +6548,140 @@
         ]
       }
     },
+    "/admin/local-files": {
+      "delete": {
+        "description": "AdminDeleteLocalFile 删除白名单目录内文件",
+        "operationId": "AdminDeleteLocalFile",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "root",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminDeleteLocalFileResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "DELETE /admin/local-files",
+        "tags": [
+          "AdminService"
+        ]
+      },
+      "get": {
+        "description": "AdminListLocalFiles 本地文件管理：白名单根目录+条目列表",
+        "operationId": "AdminListLocalFiles",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "root",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dir",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminListLocalFilesResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/local-files",
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
+    "/admin/local-files/import": {
+      "post": {
+        "description": "AdminImportLocalFile 把白名单目录内文件导入为分享（配额/审核同链路）",
+        "operationId": "AdminImportLocalFile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  },
+                  "root": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "root",
+                  "path"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminImportLocalFileResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/local-files/import",
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
     "/admin/login": {
       "post": {
         "description": "AdminLogin 管理员登录",
@@ -6652,6 +7176,68 @@
         "summary": "PUT /admin/notifies/:id",
         "tags": [
           "NotifyService"
+        ]
+      }
+    },
+    "/admin/notify/smtp/test": {
+      "post": {
+        "description": "AdminTestSMTP 用当前生效 SMTP 配置发送测试邮件",
+        "operationId": "AdminTestSMTP",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "to": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminTestSMTPResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/notify/smtp/test",
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
+    "/admin/oidc/test": {
+      "post": {
+        "description": "AdminTestOIDC 验证当前生效 OIDC issuer discovery 可达",
+        "operationId": "AdminTestOIDC",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminTestOIDCResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/oidc/test",
+        "tags": [
+          "AdminService"
         ]
       }
     },
