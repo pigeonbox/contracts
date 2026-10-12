@@ -22,6 +22,8 @@ export interface InitReq {
  * expire_value/require_auth 等字段被忽略)
  */
   pickup_code?: string;
+  /** 文件备注(可空,随分享展示给取件人;2026-10-12 #489) */
+  note?: string;
 }
 
 export interface InitData {

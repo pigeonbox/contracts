@@ -21,6 +21,8 @@ export interface ChunkUploadInitReq {
   password?: string;
   /** 自定义取件码：仅登录用户可指定（与 Complete 同把关） */
   custom_code?: string;
+  /** 文件备注(可空,随分享展示给取件人;2026-10-12 #489) */
+  note?: string;
 }
 
 export interface ChunkUploadInitData {
@@ -90,6 +92,8 @@ export interface ChunkUploadCompleteReq {
   password?: string;
   /** 自定义取件码(P3):仅登录用户可指定(此前 handler form 直读+二次解析 body) */
   custom_code?: string;
+  /** 文件备注(可空,随分享展示给取件人;2026-10-12 #489) */
+  note?: string;
 }
 
 export interface ChunkUploadCompleteData {

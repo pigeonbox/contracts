@@ -25,6 +25,8 @@ struct ChunkUploadInitReq {
     9: optional string password      (api.body = "password"),
     // 自定义取件码：仅登录用户可指定（与 Complete 同把关）
     10: optional string custom_code  (api.body = "custom_code"),
+    // 文件备注(可空,随分享展示给取件人;2026-10-12 #489)
+    11: optional string note         (api.body = "note"),
 }
 
 struct ChunkUploadInitData {
@@ -94,6 +96,8 @@ struct ChunkUploadCompleteReq {
     5: optional string password      (api.body = "password"),
     // 自定义取件码(P3):仅登录用户可指定(此前 handler form 直读+二次解析 body)
     6: optional string custom_code   (api.body = "custom_code"),
+    // 文件备注(可空,随分享展示给取件人;2026-10-12 #489)
+    7: optional string note          (api.body = "note"),
 }
 
 struct ChunkUploadCompleteData {

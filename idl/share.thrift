@@ -47,6 +47,8 @@ struct ShareFileReq {
     3: required bool   require_auth (api.form = "require_auth"),
     // 密码保护:require_auth 时必填
     4: optional string password     (api.form = "password"),
+    // 文件备注(可空):随分享展示给取件人,文件+文本一并投递(2026-10-12 #489)
+    5: optional string note         (api.form = "note"),
 }
 
 struct ShareFileResp {
@@ -76,6 +78,7 @@ struct ShareDetail {
     10: optional bool   encrypted    (api.body = "encrypted"),    // E2E 密文,前端以链接 #fragment 密钥解密
     11: optional bool   is_multi     (api.body = "is_multi"),     // 多文件分享(前端显示"打包下载")
     12: optional list<ShareFileItem> files (api.body = "files"),  // 文件清单(含单文件,前端统一渲染)
+    13: optional string note         (api.body = "note"),         // 文件备注(可空,取件页展示)
 }
 
 // 多文件清单项
@@ -142,6 +145,7 @@ struct UserShareItemData {
     22: required bool   is_text_share (api.body = "is_text_share"),
     23: required string  status        (api.body = "status"),         // normal/blocked/pending_review
     24: required i32    file_count    (api.body = "file_count"),     // P0 多文件：子文件数
+    25: optional string note          (api.body = "note"),           // 文件备注（可空）
 }
 
 struct UserSharesListData {

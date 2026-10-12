@@ -45,6 +45,8 @@ export interface ShareFileReq {
   require_auth: boolean;
   /** 密码保护:require_auth 时必填 */
   password?: string;
+  /** 文件备注(可空):随分享展示给取件人,文件+文本一并投递(2026-10-12 #489) */
+  note?: string;
 }
 
 export interface ShareFileResp {
@@ -78,6 +80,8 @@ export interface ShareDetail {
   is_multi?: boolean;
   /** 文件清单(含单文件,前端统一渲染) */
   files?: ShareFileItem[];
+  /** 文件备注(可空,取件页展示) */
+  note?: string;
 }
 
 /** 多文件清单项 */
@@ -152,6 +156,8 @@ export interface UserShareItemData {
   status: string;
   /** P0 多文件：子文件数 */
   file_count: number;
+  /** 文件备注（可空） */
+  note?: string;
 }
 
 export interface UserSharesListData {

@@ -26,6 +26,8 @@ struct InitReq {
     // 只建占位、无回填端点"的死码链路。有效期/密码以占位记录为准(init 时的
     // expire_value/require_auth 等字段被忽略)
     10: optional string pickup_code (api.body = "pickup_code"),
+    // 文件备注(可空,随分享展示给取件人;2026-10-12 #489)
+    11: optional string note        (api.body = "note"),
 }
 
 struct InitData {

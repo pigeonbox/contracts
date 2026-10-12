@@ -1849,6 +1849,9 @@
           "expire_value": {
             "type": "integer"
           },
+          "note": {
+            "type": "string"
+          },
           "password": {
             "type": "string"
           },
@@ -1954,6 +1957,9 @@
           "file_size": {
             "format": "int64",
             "type": "integer"
+          },
+          "note": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -3255,6 +3261,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "note": {
+            "type": "string"
+          },
           "password": {
             "type": "string"
           },
@@ -4136,6 +4145,9 @@
           "is_multi": {
             "type": "boolean"
           },
+          "note": {
+            "type": "string"
+          },
           "text": {
             "type": "string"
           },
@@ -4185,6 +4197,9 @@
           },
           "expire_value": {
             "type": "integer"
+          },
+          "note": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -4350,6 +4365,9 @@
           },
           "is_text_share": {
             "type": "boolean"
+          },
+          "note": {
+            "type": "string"
           },
           "pickup_code": {
             "type": "string"
@@ -8461,6 +8479,9 @@
                     "format": "int64",
                     "type": "integer"
                   },
+                  "note": {
+                    "type": "string"
+                  },
                   "password": {
                     "type": "string"
                   },
@@ -8948,6 +8969,9 @@
                   "expire_value": {
                     "type": "integer"
                   },
+                  "note": {
+                    "type": "string"
+                  },
                   "password": {
                     "type": "string"
                   },
@@ -9014,6 +9038,9 @@
                   "file_size": {
                     "format": "int64",
                     "type": "integer"
+                  },
+                  "note": {
+                    "type": "string"
                   },
                   "password": {
                     "type": "string"
@@ -9487,6 +9514,9 @@
                   },
                   "expire_value": {
                     "type": "integer"
+                  },
+                  "note": {
+                    "type": "string"
                   },
                   "password": {
                     "type": "string"

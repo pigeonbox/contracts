@@ -26,6 +26,8 @@ type ChunkUploadInitReq struct {
 	Password    *string `thrift:"password,9,optional" form:"password" json:"password,omitempty"`
 	// 自定义取件码：仅登录用户可指定（与 Complete 同把关）
 	CustomCode *string `thrift:"custom_code,10,optional" form:"custom_code" json:"custom_code,omitempty"`
+	// 文件备注(可空,随分享展示给取件人;2026-10-12 #489)
+	Note *string `thrift:"note,11,optional" form:"note" json:"note,omitempty"`
 }
 
 func NewChunkUploadInitReq() *ChunkUploadInitReq {
@@ -100,6 +102,15 @@ func (p *ChunkUploadInitReq) GetCustomCode() (v string) {
 	return *p.CustomCode
 }
 
+var ChunkUploadInitReq_Note_DEFAULT string
+
+func (p *ChunkUploadInitReq) GetNote() (v string) {
+	if !p.IsSetNote() {
+		return ChunkUploadInitReq_Note_DEFAULT
+	}
+	return *p.Note
+}
+
 var fieldIDToName_ChunkUploadInitReq = map[int16]string{
 	1:  "file_name",
 	2:  "file_size",
@@ -111,6 +122,7 @@ var fieldIDToName_ChunkUploadInitReq = map[int16]string{
 	8:  "require_auth",
 	9:  "password",
 	10: "custom_code",
+	11: "note",
 }
 
 func (p *ChunkUploadInitReq) IsSetExpireValue() bool {
@@ -131,6 +143,10 @@ func (p *ChunkUploadInitReq) IsSetPassword() bool {
 
 func (p *ChunkUploadInitReq) IsSetCustomCode() bool {
 	return p.CustomCode != nil
+}
+
+func (p *ChunkUploadInitReq) IsSetNote() bool {
+	return p.Note != nil
 }
 
 func (p *ChunkUploadInitReq) Read(iprot thrift.TProtocol) (err error) {
@@ -237,6 +253,14 @@ func (p *ChunkUploadInitReq) Read(iprot thrift.TProtocol) (err error) {
 		case 10:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -407,6 +431,17 @@ func (p *ChunkUploadInitReq) ReadField10(iprot thrift.TProtocol) error {
 	p.CustomCode = _field
 	return nil
 }
+func (p *ChunkUploadInitReq) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Note = _field
+	return nil
+}
 
 func (p *ChunkUploadInitReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -452,6 +487,10 @@ func (p *ChunkUploadInitReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -650,6 +689,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+
+func (p *ChunkUploadInitReq) writeField11(oprot thrift.TProtocol) (err error) {
+	if p.IsSetNote() {
+		if err = oprot.WriteFieldBegin("note", thrift.STRING, 11); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Note); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
 func (p *ChunkUploadInitReq) String() string {
@@ -2857,6 +2915,8 @@ type ChunkUploadCompleteReq struct {
 	Password *string `thrift:"password,5,optional" form:"password" json:"password,omitempty"`
 	// 自定义取件码(P3):仅登录用户可指定(此前 handler form 直读+二次解析 body)
 	CustomCode *string `thrift:"custom_code,6,optional" form:"custom_code" json:"custom_code,omitempty"`
+	// 文件备注(可空,随分享展示给取件人;2026-10-12 #489)
+	Note *string `thrift:"note,7,optional" form:"note" json:"note,omitempty"`
 }
 
 func NewChunkUploadCompleteReq() *ChunkUploadCompleteReq {
@@ -2900,6 +2960,15 @@ func (p *ChunkUploadCompleteReq) GetCustomCode() (v string) {
 	return *p.CustomCode
 }
 
+var ChunkUploadCompleteReq_Note_DEFAULT string
+
+func (p *ChunkUploadCompleteReq) GetNote() (v string) {
+	if !p.IsSetNote() {
+		return ChunkUploadCompleteReq_Note_DEFAULT
+	}
+	return *p.Note
+}
+
 var fieldIDToName_ChunkUploadCompleteReq = map[int16]string{
 	1: "upload_id",
 	2: "expire_value",
@@ -2907,6 +2976,7 @@ var fieldIDToName_ChunkUploadCompleteReq = map[int16]string{
 	4: "require_auth",
 	5: "password",
 	6: "custom_code",
+	7: "note",
 }
 
 func (p *ChunkUploadCompleteReq) IsSetPassword() bool {
@@ -2915,6 +2985,10 @@ func (p *ChunkUploadCompleteReq) IsSetPassword() bool {
 
 func (p *ChunkUploadCompleteReq) IsSetCustomCode() bool {
 	return p.CustomCode != nil
+}
+
+func (p *ChunkUploadCompleteReq) IsSetNote() bool {
+	return p.Note != nil
 }
 
 func (p *ChunkUploadCompleteReq) Read(iprot thrift.TProtocol) (err error) {
@@ -2987,6 +3061,14 @@ func (p *ChunkUploadCompleteReq) Read(iprot thrift.TProtocol) (err error) {
 		case 6:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3108,6 +3190,17 @@ func (p *ChunkUploadCompleteReq) ReadField6(iprot thrift.TProtocol) error {
 	p.CustomCode = _field
 	return nil
 }
+func (p *ChunkUploadCompleteReq) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Note = _field
+	return nil
+}
 
 func (p *ChunkUploadCompleteReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3137,6 +3230,10 @@ func (p *ChunkUploadCompleteReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 	}
@@ -3261,6 +3358,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+
+func (p *ChunkUploadCompleteReq) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetNote() {
+		if err = oprot.WriteFieldBegin("note", thrift.STRING, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Note); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 
 func (p *ChunkUploadCompleteReq) String() string {
