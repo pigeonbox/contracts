@@ -3085,6 +3085,267 @@
         ],
         "type": "object"
       },
+      "p2p.AdminP2pCancelReq": {
+        "properties": {
+          "task_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pCancelResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pPublishData": {
+        "properties": {
+          "share_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pPublishReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          },
+          "task_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pPublishResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pPublishData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pRecvReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pRecvResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTaskData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pSendReq": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pSendResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTaskData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pStatusData": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "binary_path": {
+            "type": "string"
+          },
+          "deploy_allowed": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "inbox_quota": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "inbox_used": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "recv_dir": {
+            "type": "string"
+          },
+          "registry_url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pStatusReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "p2p.AdminP2pStatusResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pStatusData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pTaskData": {
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/p2p.P2pTask"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pTasksData": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/p2p.P2pTask"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pTasksReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "p2p.AdminP2pTasksResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTasksData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.P2pTask": {
+        "properties": {
+          "bytes_done": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "finished_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "presign.AbortReq": {
         "properties": {
           "token": {
@@ -7295,6 +7556,211 @@
         "summary": "POST /admin/oidc/test",
         "tags": [
           "AdminService"
+        ]
+      }
+    },
+    "/admin/p2p/cancel": {
+      "post": {
+        "operationId": "AdminP2pCancel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "task_id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pCancelResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/cancel",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/publish": {
+      "post": {
+        "operationId": "AdminP2pPublish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  },
+                  "task_id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pPublishResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/publish",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/recv": {
+      "post": {
+        "operationId": "AdminP2pRecv",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pRecvResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/recv",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/send": {
+      "post": {
+        "operationId": "AdminP2pSend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "paths": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pSendResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/send",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/status": {
+      "get": {
+        "operationId": "AdminP2pStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pStatusResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/p2p/status",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/tasks": {
+      "get": {
+        "operationId": "AdminP2pTasks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pTasksResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/p2p/tasks",
+        "tags": [
+          "AdminP2PService"
         ]
       }
     },

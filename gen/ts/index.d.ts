@@ -8,6 +8,7 @@ export type * as common from './common';
 export type * as health from './health';
 export type * as maintenance from './maintenance';
 export type * as notify from './notify';
+export type * as p2p from './p2p';
 export type * as presign from './presign';
 export type * as preview from './preview';
 export type * as qrcode from './qrcode';
