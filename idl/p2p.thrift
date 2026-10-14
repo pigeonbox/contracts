@@ -49,6 +49,8 @@ struct AdminP2pTasksResp {
 // ---- 发起发送 ----
 struct AdminP2pSendReq {
     1: list<string> paths (api.body = "paths") // 服务器本地路径,须命中 send_roots 白名单
+    2: optional string invite_to   (api.body = "invite_to")   // 发送后向该名录对端投递密封邀请(node_id;2026-10-14 在线名录)
+    3: optional string invite_note (api.body = "invite_note") // 邀请附言
 }
 struct AdminP2pTaskData {
     1: P2pTask task (api.body = "task")
@@ -148,6 +150,25 @@ struct AdminP2pInvitePushResp {
     2: required string message (api.body = "message")
 }
 
+// ---- 在线名录(2026-10-14 邀请信箱配套):p2pd 名录透传,零敏感 ----
+// 仅 discoverable opt-in 节点;无口令/房间信息。对端选择器(发送卡下拉)消费。
+struct P2pDirectoryPeer {
+    1: string node_id      (api.body = "node_id")
+    2: string name         (api.body = "name")
+    3: string url          (api.body = "url")           // 对外基址(NAT 后可为空)
+    4: string box_pub      (api.body = "box_pub")       // X25519 密封公钥 hex
+    5: i64    online_since (api.body = "online_since")  // 租约起始 unix 秒
+}
+struct AdminP2pDirectoryReq {}
+struct AdminP2pDirectoryData {
+    1: list<P2pDirectoryPeer> peers (api.body = "peers")
+}
+struct AdminP2pDirectoryResp {
+    1: required i32 code    (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pDirectoryData data (api.body = "data")
+}
+
 // 公开收件端点(限流桶=download;实例间递送口令)
 service P2PPublicService {
     PostP2PInviteResp PostP2PInvite(1: PostP2PInviteReq req) (api.post = "/api/v1/p2p/invite")
@@ -163,4 +184,5 @@ service AdminP2PService {
     AdminP2pInvitesResp AdminP2pInvites(1: AdminP2pInvitesReq req)      (api.get  = "/admin/p2p/invites")
     AdminP2pInviteAcceptResp AdminP2pInviteAccept(1: AdminP2pInviteAcceptReq req) (api.post = "/admin/p2p/invites/accept")
     AdminP2pInvitePushResp AdminP2pInvitePush(1: AdminP2pInvitePushReq req)   (api.post = "/admin/p2p/invite-push")
+    AdminP2pDirectoryResp AdminP2pDirectory(1: AdminP2pDirectoryReq req)      (api.get  = "/admin/p2p/directory")
 }

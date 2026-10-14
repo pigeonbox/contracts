@@ -3108,6 +3108,39 @@
         ],
         "type": "object"
       },
+      "p2p.AdminP2pDirectoryData": {
+        "properties": {
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/p2p.P2pDirectoryPeer"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pDirectoryReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "p2p.AdminP2pDirectoryResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pDirectoryData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "p2p.AdminP2pInviteAcceptReq": {
         "properties": {
           "invite_id": {
@@ -3280,6 +3313,12 @@
       },
       "p2p.AdminP2pSendReq": {
         "properties": {
+          "invite_note": {
+            "type": "string"
+          },
+          "invite_to": {
+            "type": "string"
+          },
           "paths": {
             "items": {
               "type": "string"
@@ -3420,6 +3459,27 @@
             "type": "string"
           },
           "received_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.P2pDirectoryPeer": {
+        "properties": {
+          "box_pub": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "online_since": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "url": {
             "type": "string"
           }
         },
@@ -7742,6 +7802,27 @@
         ]
       }
     },
+    "/admin/p2p/directory": {
+      "get": {
+        "operationId": "AdminP2pDirectory",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pDirectoryResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/p2p/directory",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
     "/admin/p2p/invite-push": {
       "post": {
         "operationId": "AdminP2pInvitePush",
@@ -7940,6 +8021,12 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "invite_note": {
+                    "type": "string"
+                  },
+                  "invite_to": {
+                    "type": "string"
+                  },
                   "paths": {
                     "items": {
                       "type": "string"

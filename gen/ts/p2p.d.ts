@@ -61,6 +61,10 @@ export interface AdminP2pTasksResp {
 export interface AdminP2pSendReq {
   /** 服务器本地路径,须命中 send_roots 白名单 */
   paths: string[];
+  /** 发送后向该名录对端投递密封邀请(node_id;2026-10-14 在线名录) */
+  invite_to?: string;
+  /** 邀请附言 */
+  invite_note?: string;
 }
 
 export interface AdminP2pTaskData {
@@ -174,4 +178,31 @@ export interface AdminP2pInvitePushReq {
 export interface AdminP2pInvitePushResp {
   code: number;
   message: string;
+}
+
+/**
+ * ---- 在线名录(2026-10-14 邀请信箱配套):p2pd 名录透传,零敏感 ----
+ * 仅 discoverable opt-in 节点;无口令/房间信息。对端选择器(发送卡下拉)消费。
+ */
+export interface P2pDirectoryPeer {
+  node_id: string;
+  name: string;
+  /** 对外基址(NAT 后可为空) */
+  url: string;
+  /** X25519 密封公钥 hex */
+  box_pub: string;
+  /** 租约起始 unix 秒 */
+  online_since: number;
+}
+
+export interface AdminP2pDirectoryReq {}
+
+export interface AdminP2pDirectoryData {
+  peers: P2pDirectoryPeer[];
+}
+
+export interface AdminP2pDirectoryResp {
+  code: number;
+  message: string;
+  data: AdminP2pDirectoryData;
 }
