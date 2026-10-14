@@ -2092,7 +2092,7 @@ type CompleteData struct {
 	FileName    string `thrift:"file_name,3,required" form:"file_name,required" json:"file_name,required"`
 	FileSize    int64  `thrift:"file_size,4,required" form:"file_size,required" json:"file_size,required"`
 	DownloadURL string `thrift:"download_url,5,required" form:"download_url,required" json:"download_url,required"`
-	// 6 位取件码（2026-10-07 起文件分享铸造，语义同 /share/file/ 的 ShareData.pickup_code）
+	// 6 位取件码（语义同 ShareData.pickup_code：文本/文件/永久分享同权铸造）
 	PickupCode *string `thrift:"pickup_code,6,optional" form:"pickup_code" json:"pickup_code,omitempty"`
 }
 

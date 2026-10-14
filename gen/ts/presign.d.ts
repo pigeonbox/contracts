@@ -68,7 +68,7 @@ export interface CompleteData {
   file_name: string;
   file_size: number;
   download_url: string;
-  /** 6 位取件码（2026-10-07 起文件分享铸造，语义同 /share/file/ 的 ShareData.pickup_code） */
+  /** 6 位取件码（语义同 ShareData.pickup_code：文本/文件/永久分享同权铸造） */
   pickup_code?: string;
 }
 

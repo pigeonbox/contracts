@@ -494,8 +494,8 @@ func (p *ShareTextReq) String() string {
 type ShareData struct {
 	Code string `thrift:"code,1,required" form:"code,required" json:"code,required"`
 	URL  string `thrift:"url,2,required" form:"url,required" json:"url,required"`
-	// 6 位取件码（2026-10-07 起文件分享铸造：pickup_code → code 的 KV 映射，
-	// 匿名通道 retrieve/search/download 均可解析；文本分享与永久分享不铸造，为空）
+	// 6 位取件码（2026-10-08 起文本/文件/永久分享同权铸造：pickup_code → code 映射，
+	// 真相源落 DB file_codes.pickup_code，有 TTL 时另写 KV 加速；E2E 密文分享跳过为空）
 	PickupCode *string `thrift:"pickup_code,3,optional" form:"pickup_code" json:"pickup_code,omitempty"`
 	// 秒传去重命中（2026-10-12，D1=A 同用户内）：本次未写入新存储对象，
 	// 分享引用调用者自己历史同 hash+size 文件的既有对象
