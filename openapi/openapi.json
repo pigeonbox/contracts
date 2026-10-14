@@ -3108,6 +3108,97 @@
         ],
         "type": "object"
       },
+      "p2p.AdminP2pInviteAcceptReq": {
+        "properties": {
+          "invite_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pInviteAcceptResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTaskData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pInvitePushReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "target_url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pInvitePushResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pInvitesData": {
+        "properties": {
+          "invites": {
+            "items": {
+              "$ref": "#/components/schemas/p2p.InviteInfo"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pInvitesReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "p2p.AdminP2pInvitesResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pInvitesData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "p2p.AdminP2pPublishData": {
         "properties": {
           "share_codes": {
@@ -3310,6 +3401,30 @@
         ],
         "type": "object"
       },
+      "p2p.InviteInfo": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "expires_in": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "received_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "p2p.P2pTask": {
         "properties": {
           "bytes_done": {
@@ -3344,6 +3459,35 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "p2p.PostP2PInviteReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.PostP2PInviteResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
         "type": "object"
       },
       "presign.AbortReq": {
@@ -7595,6 +7739,108 @@
         ]
       }
     },
+    "/admin/p2p/invite-push": {
+      "post": {
+        "operationId": "AdminP2pInvitePush",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "from_name": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "target_url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pInvitePushResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/invite-push",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/invites": {
+      "get": {
+        "operationId": "AdminP2pInvites",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pInvitesResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/p2p/invites",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/invites/accept": {
+      "post": {
+        "operationId": "AdminP2pInviteAccept",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "invite_id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pInviteAcceptResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/invites/accept",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
     "/admin/p2p/publish": {
       "post": {
         "operationId": "AdminP2pPublish",
@@ -8798,6 +9044,48 @@
         "summary": "GET /api/v1/notifies/unread-count",
         "tags": [
           "NotifyService"
+        ]
+      }
+    },
+    "/api/v1/p2p/invite": {
+      "post": {
+        "operationId": "PostP2PInvite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "from_name": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.PostP2PInviteResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/p2p/invite",
+        "tags": [
+          "P2PPublicService"
         ]
       }
     },

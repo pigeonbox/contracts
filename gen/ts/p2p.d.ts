@@ -114,3 +114,62 @@ export interface AdminP2pPublishResp {
   message: string;
   data: AdminP2pPublishData;
 }
+
+/**
+ * ---- P3 实例间推送邀请(免口令交接;spec §14) ----
+ * 邀请=口令 bearer(与手工交接同信任级);公开收件端点无鉴权(口令即权限),
+ * 归 download 限流桶;收件箱 TTL 10 分钟(=p2pc 配对窗口)。
+ */
+export interface InviteInfo {
+  id: string;
+  code: string;
+  from_name: string;
+  note: string;
+  received_at: string;
+  expires_in: number;
+}
+
+export interface PostP2PInviteReq {
+  code: string;
+  from_name: string;
+  note: string;
+}
+
+export interface PostP2PInviteResp {
+  code: number;
+  message: string;
+}
+
+export interface AdminP2pInvitesReq {}
+
+export interface AdminP2pInvitesData {
+  invites: InviteInfo[];
+}
+
+export interface AdminP2pInvitesResp {
+  code: number;
+  message: string;
+  data: AdminP2pInvitesData;
+}
+
+export interface AdminP2pInviteAcceptReq {
+  invite_id: string;
+}
+
+export interface AdminP2pInviteAcceptResp {
+  code: number;
+  message: string;
+  data: AdminP2pTaskData;
+}
+
+export interface AdminP2pInvitePushReq {
+  code: string;
+  target_url: string;
+  from_name: string;
+  note: string;
+}
+
+export interface AdminP2pInvitePushResp {
+  code: number;
+  message: string;
+}

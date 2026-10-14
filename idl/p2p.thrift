@@ -95,6 +95,63 @@ struct AdminP2pPublishResp {
     3: AdminP2pPublishData data (api.body = "data")
 }
 
+// ---- P3 实例间推送邀请(免口令交接;spec §14) ----
+// 邀请=口令 bearer(与手工交接同信任级);公开收件端点无鉴权(口令即权限),
+// 归 download 限流桶;收件箱 TTL 10 分钟(=p2pc 配对窗口)。
+struct InviteInfo {
+    1: string id          (api.body = "id")
+    2: string code        (api.body = "code")
+    3: string from_name   (api.body = "from_name")
+    4: string note        (api.body = "note")
+    5: string received_at (api.body = "received_at")
+    6: i64    expires_in  (api.body = "expires_in")
+}
+
+struct PostP2PInviteReq {
+    1: string code      (api.body = "code")
+    2: string from_name (api.body = "from_name")
+    3: string note      (api.body = "note")
+}
+struct PostP2PInviteResp {
+    1: required i32 code    (api.body = "code")
+    2: required string message (api.body = "message")
+}
+
+struct AdminP2pInvitesReq {}
+struct AdminP2pInvitesData {
+    1: list<InviteInfo> invites (api.body = "invites")
+}
+struct AdminP2pInvitesResp {
+    1: required i32 code    (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pInvitesData data (api.body = "data")
+}
+
+struct AdminP2pInviteAcceptReq {
+    1: string invite_id (api.body = "invite_id")
+}
+struct AdminP2pInviteAcceptResp {
+    1: required i32 code    (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pTaskData data (api.body = "data")
+}
+
+struct AdminP2pInvitePushReq {
+    1: string code       (api.body = "code")
+    2: string target_url (api.body = "target_url")
+    3: string from_name  (api.body = "from_name")
+    4: string note       (api.body = "note")
+}
+struct AdminP2pInvitePushResp {
+    1: required i32 code    (api.body = "code")
+    2: required string message (api.body = "message")
+}
+
+// 公开收件端点(限流桶=download;实例间递送口令)
+service P2PPublicService {
+    PostP2PInviteResp PostP2PInvite(1: PostP2PInviteReq req) (api.post = "/api/v1/p2p/invite")
+}
+
 service AdminP2PService {
     AdminP2pStatusResp  AdminP2pStatus (1: AdminP2pStatusReq req)   (api.get  = "/admin/p2p/status")
     AdminP2pTasksResp   AdminP2pTasks  (1: AdminP2pTasksReq req)    (api.get  = "/admin/p2p/tasks")
@@ -102,4 +159,7 @@ service AdminP2PService {
     AdminP2pRecvResp    AdminP2pRecv   (1: AdminP2pRecvReq req)     (api.post = "/admin/p2p/recv")
     AdminP2pCancelResp  AdminP2pCancel (1: AdminP2pCancelReq req)   (api.post = "/admin/p2p/cancel")
     AdminP2pPublishResp AdminP2pPublish(1: AdminP2pPublishReq req)  (api.post = "/admin/p2p/publish")
+    AdminP2pInvitesResp AdminP2pInvites(1: AdminP2pInvitesReq req)      (api.get  = "/admin/p2p/invites")
+    AdminP2pInviteAcceptResp AdminP2pInviteAccept(1: AdminP2pInviteAcceptReq req) (api.post = "/admin/p2p/invites/accept")
+    AdminP2pInvitePushResp AdminP2pInvitePush(1: AdminP2pInvitePushReq req)   (api.post = "/admin/p2p/invite-push")
 }
