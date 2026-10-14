@@ -3427,6 +3427,9 @@
       },
       "p2p.P2pTask": {
         "properties": {
+          "attempts": {
+            "type": "integer"
+          },
           "bytes_done": {
             "format": "int64",
             "type": "integer"

@@ -6,7 +6,7 @@ export interface P2pTask {
   id: string;
   /** send | recv */
   kind: string;
-  /** waiting|running|done|failed|canceled|expired */
+  /** waiting|running|retrying|done|failed|canceled|expired */
   state: string;
   /** send 任务配对口令（recv 为输入码） */
   code: string;
@@ -16,6 +16,8 @@ export interface P2pTask {
   error: string;
   created_at: string;
   finished_at: string;
+  /** 自动续传环已重试次数(0=首发) */
+  attempts: number;
 }
 
 /** ---- 状态 ---- */

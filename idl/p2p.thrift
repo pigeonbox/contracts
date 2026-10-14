@@ -7,13 +7,14 @@ namespace go p2p
 struct P2pTask {
     1: string id           (api.body = "id")
     2: string kind         (api.body = "kind")      // send | recv
-    3: string state        (api.body = "state")     // waiting|running|done|failed|canceled|expired
+    3: string state        (api.body = "state")     // waiting|running|retrying|done|failed|canceled|expired
     4: string code         (api.body = "code")      // send 任务配对口令（recv 为输入码）
     5: list<string> paths  (api.body = "paths")     // send=发送源路径 recv=收件相对路径
     6: i64    bytes_done   (api.body = "bytes_done")
     7: string error        (api.body = "error")
     8: string created_at   (api.body = "created_at")
     9: string finished_at  (api.body = "finished_at")
+    10: i32 attempts       (api.body = "attempts")  // 自动续传环已重试次数(0=首发)
 }
 
 // ---- 状态 ----

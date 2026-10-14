@@ -13,7 +13,7 @@ type P2pTask struct {
 	ID string `thrift:"id,1" form:"id" json:"id"`
 	// send | recv
 	Kind string `thrift:"kind,2" form:"kind" json:"kind"`
-	// waiting|running|done|failed|canceled|expired
+	// waiting|running|retrying|done|failed|canceled|expired
 	State string `thrift:"state,3" form:"state" json:"state"`
 	// send 任务配对口令（recv 为输入码）
 	Code string `thrift:"code,4" form:"code" json:"code"`
@@ -23,6 +23,8 @@ type P2pTask struct {
 	Error      string   `thrift:"error,7" form:"error" json:"error"`
 	CreatedAt  string   `thrift:"created_at,8" form:"created_at" json:"created_at"`
 	FinishedAt string   `thrift:"finished_at,9" form:"finished_at" json:"finished_at"`
+	// 自动续传环已重试次数(0=首发)
+	Attempts int32 `thrift:"attempts,10" form:"attempts" json:"attempts"`
 }
 
 func NewP2pTask() *P2pTask {
@@ -68,16 +70,21 @@ func (p *P2pTask) GetFinishedAt() (v string) {
 	return p.FinishedAt
 }
 
+func (p *P2pTask) GetAttempts() (v int32) {
+	return p.Attempts
+}
+
 var fieldIDToName_P2pTask = map[int16]string{
-	1: "id",
-	2: "kind",
-	3: "state",
-	4: "code",
-	5: "paths",
-	6: "bytes_done",
-	7: "error",
-	8: "created_at",
-	9: "finished_at",
+	1:  "id",
+	2:  "kind",
+	3:  "state",
+	4:  "code",
+	5:  "paths",
+	6:  "bytes_done",
+	7:  "error",
+	8:  "created_at",
+	9:  "finished_at",
+	10: "attempts",
 }
 
 func (p *P2pTask) Read(iprot thrift.TProtocol) (err error) {
@@ -166,6 +173,14 @@ func (p *P2pTask) Read(iprot thrift.TProtocol) (err error) {
 		case 9:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -311,6 +326,17 @@ func (p *P2pTask) ReadField9(iprot thrift.TProtocol) error {
 	p.FinishedAt = _field
 	return nil
 }
+func (p *P2pTask) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Attempts = _field
+	return nil
+}
 
 func (p *P2pTask) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -352,6 +378,10 @@ func (p *P2pTask) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField9(oprot); err != nil {
 			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -531,6 +561,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *P2pTask) writeField10(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("attempts", thrift.I32, 10); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Attempts); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 
 func (p *P2pTask) String() string {
