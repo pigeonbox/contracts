@@ -47,6 +47,19 @@ struct AdminP2pTasksResp {
     3: AdminP2pTasksData data (api.body = "data")
 }
 
+// ---- 任务日志（2026-10-16 深度易用化:失败诊断免登服务器;p2pc 行级环 256 行）----
+struct AdminP2pTaskLogReq {
+    1: required string task_id (api.path = "task_id")
+}
+struct AdminP2pTaskLogData {
+    1: list<string> lines (api.body = "lines") // 时间正序;环满为最近 256 行
+}
+struct AdminP2pTaskLogResp {
+    1: required i32 code (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pTaskLogData data (api.body = "data")
+}
+
 // ---- 发起发送 ----
 struct AdminP2pSendReq {
     1: list<string> paths (api.body = "paths") // 服务器本地路径,须命中 send_roots 白名单
@@ -194,6 +207,7 @@ service P2PPublicService {
 service AdminP2PService {
     AdminP2pStatusResp  AdminP2pStatus (1: AdminP2pStatusReq req)   (api.get  = "/admin/p2p/status")
     AdminP2pTasksResp   AdminP2pTasks  (1: AdminP2pTasksReq req)    (api.get  = "/admin/p2p/tasks")
+    AdminP2pTaskLogResp AdminP2pTaskLog(1: AdminP2pTaskLogReq req)   (api.get  = "/admin/p2p/tasks/:task_id/log")
     AdminP2pSendResp    AdminP2pSend   (1: AdminP2pSendReq req)     (api.post = "/admin/p2p/send")
     AdminP2pUploadSendResp AdminP2pUploadSend(1: AdminP2pUploadSendReq req) (api.post = "/admin/p2p/send/upload")
     AdminP2pRecvResp    AdminP2pRecv   (1: AdminP2pRecvReq req)     (api.post = "/admin/p2p/recv")

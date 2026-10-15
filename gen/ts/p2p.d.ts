@@ -59,6 +59,22 @@ export interface AdminP2pTasksResp {
   data: AdminP2pTasksData;
 }
 
+/** ---- 任务日志（2026-10-16 深度易用化:失败诊断免登服务器;p2pc 行级环 256 行）---- */
+export interface AdminP2pTaskLogReq {
+  task_id: string;
+}
+
+export interface AdminP2pTaskLogData {
+  /** 时间正序;环满为最近 256 行 */
+  lines: string[];
+}
+
+export interface AdminP2pTaskLogResp {
+  code: number;
+  message: string;
+  data: AdminP2pTaskLogData;
+}
+
 /** ---- 发起发送 ---- */
 export interface AdminP2pSendReq {
   /** 服务器本地路径,须命中 send_roots 白名单 */

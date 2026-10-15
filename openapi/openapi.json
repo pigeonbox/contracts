@@ -3407,6 +3407,46 @@
         },
         "type": "object"
       },
+      "p2p.AdminP2pTaskLogData": {
+        "properties": {
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pTaskLogReq": {
+        "properties": {
+          "task_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pTaskLogResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTaskLogData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "p2p.AdminP2pTasksData": {
         "properties": {
           "tasks": {
@@ -8165,6 +8205,37 @@
           }
         },
         "summary": "GET /admin/p2p/tasks",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/tasks/{task_id}/log": {
+      "get": {
+        "operationId": "AdminP2pTaskLog",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pTaskLogResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /admin/p2p/tasks/:task_id/log",
         "tags": [
           "AdminP2PService"
         ]
