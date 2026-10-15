@@ -3440,6 +3440,35 @@
         ],
         "type": "object"
       },
+      "p2p.AdminP2pUploadSendReq": {
+        "properties": {
+          "invite_note": {
+            "type": "string"
+          },
+          "invite_to": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pUploadSendResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pTaskData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "p2p.InviteInfo": {
         "properties": {
           "code": {
@@ -3491,6 +3520,10 @@
             "type": "integer"
           },
           "bytes_done": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "bytes_total": {
             "format": "int64",
             "type": "integer"
           },
@@ -8053,6 +8086,43 @@
           }
         },
         "summary": "POST /admin/p2p/send",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/send/upload": {
+      "post": {
+        "operationId": "AdminP2pUploadSend",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "invite_to",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "invite_note",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pUploadSendResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/send/upload",
         "tags": [
           "AdminP2PService"
         ]

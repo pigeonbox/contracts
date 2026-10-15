@@ -25,6 +25,8 @@ type P2pTask struct {
 	FinishedAt string   `thrift:"finished_at,9" form:"finished_at" json:"finished_at"`
 	// 自动续传环已重试次数(0=首发)
 	Attempts int32 `thrift:"attempts,10" form:"attempts" json:"attempts"`
+	// 传输总字节(0=未知;p2pc 进度行回填,前端画进度条)
+	BytesTotal int64 `thrift:"bytes_total,11" form:"bytes_total" json:"bytes_total"`
 }
 
 func NewP2pTask() *P2pTask {
@@ -74,6 +76,10 @@ func (p *P2pTask) GetAttempts() (v int32) {
 	return p.Attempts
 }
 
+func (p *P2pTask) GetBytesTotal() (v int64) {
+	return p.BytesTotal
+}
+
 var fieldIDToName_P2pTask = map[int16]string{
 	1:  "id",
 	2:  "kind",
@@ -85,6 +91,7 @@ var fieldIDToName_P2pTask = map[int16]string{
 	8:  "created_at",
 	9:  "finished_at",
 	10: "attempts",
+	11: "bytes_total",
 }
 
 func (p *P2pTask) Read(iprot thrift.TProtocol) (err error) {
@@ -181,6 +188,14 @@ func (p *P2pTask) Read(iprot thrift.TProtocol) (err error) {
 		case 10:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -337,6 +352,17 @@ func (p *P2pTask) ReadField10(iprot thrift.TProtocol) error {
 	p.Attempts = _field
 	return nil
 }
+func (p *P2pTask) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.BytesTotal = _field
+	return nil
+}
 
 func (p *P2pTask) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -382,6 +408,10 @@ func (p *P2pTask) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
 			goto WriteFieldError
 		}
 	}
@@ -578,6 +608,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+
+func (p *P2pTask) writeField11(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("bytes_total", thrift.I64, 11); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.BytesTotal); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
 func (p *P2pTask) String() string {
@@ -2562,6 +2609,475 @@ func (p *AdminP2pSendResp) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("AdminP2pSendResp(%+v)", *p)
+
+}
+
+// ---- 浏览器文件直发（2026-10-15:p2pcweb 体验融入管理台）----
+// 管理员从浏览器选文件,经 multipart 上传落服务器临时区后立即编排 p2pc send。
+// 上传临时区自带发送授权(文件是本端点刚写入的,等效白名单,不查 send_roots,
+// 防 admin 令牌失窃借此读服务器既有文件);任务终态自动清理临时文件。
+// 文件经 multipart/form-data 上传(字段名 files,兼容 file;1-20 项),
+// 总量受 p2p.direct.max_task_bytes 单任务配额闸。
+type AdminP2pUploadSendReq struct {
+	// 同 /admin/p2p/send:发送后密封投递邀请
+	InviteTo *string `thrift:"invite_to,1,optional" json:"invite_to,omitempty" query:"invite_to"`
+	// 邀请附言
+	InviteNote *string `thrift:"invite_note,2,optional" json:"invite_note,omitempty" query:"invite_note"`
+}
+
+func NewAdminP2pUploadSendReq() *AdminP2pUploadSendReq {
+	return &AdminP2pUploadSendReq{}
+}
+
+func (p *AdminP2pUploadSendReq) InitDefault() {
+}
+
+var AdminP2pUploadSendReq_InviteTo_DEFAULT string
+
+func (p *AdminP2pUploadSendReq) GetInviteTo() (v string) {
+	if !p.IsSetInviteTo() {
+		return AdminP2pUploadSendReq_InviteTo_DEFAULT
+	}
+	return *p.InviteTo
+}
+
+var AdminP2pUploadSendReq_InviteNote_DEFAULT string
+
+func (p *AdminP2pUploadSendReq) GetInviteNote() (v string) {
+	if !p.IsSetInviteNote() {
+		return AdminP2pUploadSendReq_InviteNote_DEFAULT
+	}
+	return *p.InviteNote
+}
+
+var fieldIDToName_AdminP2pUploadSendReq = map[int16]string{
+	1: "invite_to",
+	2: "invite_note",
+}
+
+func (p *AdminP2pUploadSendReq) IsSetInviteTo() bool {
+	return p.InviteTo != nil
+}
+
+func (p *AdminP2pUploadSendReq) IsSetInviteNote() bool {
+	return p.InviteNote != nil
+}
+
+func (p *AdminP2pUploadSendReq) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AdminP2pUploadSendReq[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendReq) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.InviteTo = _field
+	return nil
+}
+func (p *AdminP2pUploadSendReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.InviteNote = _field
+	return nil
+}
+
+func (p *AdminP2pUploadSendReq) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AdminP2pUploadSendReq"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendReq) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetInviteTo() {
+		if err = oprot.WriteFieldBegin("invite_to", thrift.STRING, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.InviteTo); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetInviteNote() {
+		if err = oprot.WriteFieldBegin("invite_note", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.InviteNote); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AdminP2pUploadSendReq(%+v)", *p)
+
+}
+
+type AdminP2pUploadSendResp struct {
+	Code    int32             `thrift:"code,1,required" form:"code,required" json:"code,required"`
+	Message string            `thrift:"message,2,required" form:"message,required" json:"message,required"`
+	Data    *AdminP2pTaskData `thrift:"data,3" form:"data" json:"data"`
+}
+
+func NewAdminP2pUploadSendResp() *AdminP2pUploadSendResp {
+	return &AdminP2pUploadSendResp{}
+}
+
+func (p *AdminP2pUploadSendResp) InitDefault() {
+}
+
+func (p *AdminP2pUploadSendResp) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *AdminP2pUploadSendResp) GetMessage() (v string) {
+	return p.Message
+}
+
+var AdminP2pUploadSendResp_Data_DEFAULT *AdminP2pTaskData
+
+func (p *AdminP2pUploadSendResp) GetData() (v *AdminP2pTaskData) {
+	if !p.IsSetData() {
+		return AdminP2pUploadSendResp_Data_DEFAULT
+	}
+	return p.Data
+}
+
+var fieldIDToName_AdminP2pUploadSendResp = map[int16]string{
+	1: "code",
+	2: "message",
+	3: "data",
+}
+
+func (p *AdminP2pUploadSendResp) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *AdminP2pUploadSendResp) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetCode bool = false
+	var issetMessage bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMessage = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetCode {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMessage {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AdminP2pUploadSendResp[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_AdminP2pUploadSendResp[fieldId]))
+}
+
+func (p *AdminP2pUploadSendResp) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *AdminP2pUploadSendResp) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Message = _field
+	return nil
+}
+func (p *AdminP2pUploadSendResp) ReadField3(iprot thrift.TProtocol) error {
+	_field := NewAdminP2pTaskData()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Data = _field
+	return nil
+}
+
+func (p *AdminP2pUploadSendResp) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AdminP2pUploadSendResp"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendResp) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I32, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendResp) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Message); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendResp) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("data", thrift.STRUCT, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Data.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *AdminP2pUploadSendResp) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AdminP2pUploadSendResp(%+v)", *p)
 
 }
 
@@ -7135,6 +7651,8 @@ type AdminP2PService interface {
 
 	AdminP2pSend(ctx context.Context, req *AdminP2pSendReq) (r *AdminP2pSendResp, err error)
 
+	AdminP2pUploadSend(ctx context.Context, req *AdminP2pUploadSendReq) (r *AdminP2pUploadSendResp, err error)
+
 	AdminP2pRecv(ctx context.Context, req *AdminP2pRecvReq) (r *AdminP2pRecvResp, err error)
 
 	AdminP2pCancel(ctx context.Context, req *AdminP2pCancelReq) (r *AdminP2pCancelResp, err error)
@@ -7199,6 +7717,15 @@ func (p *AdminP2PServiceClient) AdminP2pSend(ctx context.Context, req *AdminP2pS
 	_args.Req = req
 	var _result AdminP2PServiceAdminP2pSendResult
 	if err = p.Client_().Call(ctx, "AdminP2pSend", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *AdminP2PServiceClient) AdminP2pUploadSend(ctx context.Context, req *AdminP2pUploadSendReq) (r *AdminP2pUploadSendResp, err error) {
+	var _args AdminP2PServiceAdminP2pUploadSendArgs
+	_args.Req = req
+	var _result AdminP2PServiceAdminP2pUploadSendResult
+	if err = p.Client_().Call(ctx, "AdminP2pUploadSend", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -7673,6 +8200,7 @@ func NewAdminP2PServiceProcessor(handler AdminP2PService) *AdminP2PServiceProces
 	self.AddToProcessorMap("AdminP2pStatus", &adminP2PServiceProcessorAdminP2pStatus{handler: handler})
 	self.AddToProcessorMap("AdminP2pTasks", &adminP2PServiceProcessorAdminP2pTasks{handler: handler})
 	self.AddToProcessorMap("AdminP2pSend", &adminP2PServiceProcessorAdminP2pSend{handler: handler})
+	self.AddToProcessorMap("AdminP2pUploadSend", &adminP2PServiceProcessorAdminP2pUploadSend{handler: handler})
 	self.AddToProcessorMap("AdminP2pRecv", &adminP2PServiceProcessorAdminP2pRecv{handler: handler})
 	self.AddToProcessorMap("AdminP2pCancel", &adminP2PServiceProcessorAdminP2pCancel{handler: handler})
 	self.AddToProcessorMap("AdminP2pPublish", &adminP2PServiceProcessorAdminP2pPublish{handler: handler})
@@ -7827,6 +8355,54 @@ func (p *adminP2PServiceProcessorAdminP2pSend) Process(ctx context.Context, seqI
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("AdminP2pSend", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type adminP2PServiceProcessorAdminP2pUploadSend struct {
+	handler AdminP2PService
+}
+
+func (p *adminP2PServiceProcessorAdminP2pUploadSend) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := AdminP2PServiceAdminP2pUploadSendArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("AdminP2pUploadSend", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := AdminP2PServiceAdminP2pUploadSendResult{}
+	var retval *AdminP2pUploadSendResp
+	if retval, err2 = p.handler.AdminP2pUploadSend(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing AdminP2pUploadSend: "+err2.Error())
+		oprot.WriteMessageBegin("AdminP2pUploadSend", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("AdminP2pUploadSend", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -9059,6 +9635,300 @@ func (p *AdminP2PServiceAdminP2pSendResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("AdminP2PServiceAdminP2pSendResult(%+v)", *p)
+
+}
+
+type AdminP2PServiceAdminP2pUploadSendArgs struct {
+	Req *AdminP2pUploadSendReq `thrift:"req,1"`
+}
+
+func NewAdminP2PServiceAdminP2pUploadSendArgs() *AdminP2PServiceAdminP2pUploadSendArgs {
+	return &AdminP2PServiceAdminP2pUploadSendArgs{}
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) InitDefault() {
+}
+
+var AdminP2PServiceAdminP2pUploadSendArgs_Req_DEFAULT *AdminP2pUploadSendReq
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) GetReq() (v *AdminP2pUploadSendReq) {
+	if !p.IsSetReq() {
+		return AdminP2PServiceAdminP2pUploadSendArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_AdminP2PServiceAdminP2pUploadSendArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AdminP2PServiceAdminP2pUploadSendArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewAdminP2pUploadSendReq()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AdminP2pUploadSend_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AdminP2PServiceAdminP2pUploadSendArgs(%+v)", *p)
+
+}
+
+type AdminP2PServiceAdminP2pUploadSendResult struct {
+	Success *AdminP2pUploadSendResp `thrift:"success,0,optional"`
+}
+
+func NewAdminP2PServiceAdminP2pUploadSendResult() *AdminP2PServiceAdminP2pUploadSendResult {
+	return &AdminP2PServiceAdminP2pUploadSendResult{}
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) InitDefault() {
+}
+
+var AdminP2PServiceAdminP2pUploadSendResult_Success_DEFAULT *AdminP2pUploadSendResp
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) GetSuccess() (v *AdminP2pUploadSendResp) {
+	if !p.IsSetSuccess() {
+		return AdminP2PServiceAdminP2pUploadSendResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_AdminP2PServiceAdminP2pUploadSendResult = map[int16]string{
+	0: "success",
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_AdminP2PServiceAdminP2pUploadSendResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewAdminP2pUploadSendResp()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("AdminP2pUploadSend_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *AdminP2PServiceAdminP2pUploadSendResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AdminP2PServiceAdminP2pUploadSendResult(%+v)", *p)
 
 }
 

@@ -15,6 +15,7 @@ struct P2pTask {
     8: string created_at   (api.body = "created_at")
     9: string finished_at  (api.body = "finished_at")
     10: i32 attempts       (api.body = "attempts")  // 自动续传环已重试次数(0=首发)
+    11: i64   bytes_total  (api.body = "bytes_total") // 传输总字节(0=未知;p2pc 进度行回填,前端画进度条)
 }
 
 // ---- 状态 ----
@@ -56,6 +57,22 @@ struct AdminP2pTaskData {
     1: P2pTask task (api.body = "task")
 }
 struct AdminP2pSendResp {
+    1: required i32 code (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pTaskData data (api.body = "data")
+}
+
+// ---- 浏览器文件直发（2026-10-15:p2pcweb 体验融入管理台）----
+// 管理员从浏览器选文件,经 multipart 上传落服务器临时区后立即编排 p2pc send。
+// 上传临时区自带发送授权(文件是本端点刚写入的,等效白名单,不查 send_roots,
+// 防 admin 令牌失窃借此读服务器既有文件);任务终态自动清理临时文件。
+// 文件经 multipart/form-data 上传(字段名 files,兼容 file;1-20 项),
+// 总量受 p2p.direct.max_task_bytes 单任务配额闸。
+struct AdminP2pUploadSendReq {
+    1: optional string invite_to   (api.query = "invite_to")   // 同 /admin/p2p/send:发送后密封投递邀请
+    2: optional string invite_note (api.query = "invite_note") // 邀请附言
+}
+struct AdminP2pUploadSendResp {
     1: required i32 code (api.body = "code")
     2: required string message (api.body = "message")
     3: AdminP2pTaskData data (api.body = "data")
@@ -178,6 +195,7 @@ service AdminP2PService {
     AdminP2pStatusResp  AdminP2pStatus (1: AdminP2pStatusReq req)   (api.get  = "/admin/p2p/status")
     AdminP2pTasksResp   AdminP2pTasks  (1: AdminP2pTasksReq req)    (api.get  = "/admin/p2p/tasks")
     AdminP2pSendResp    AdminP2pSend   (1: AdminP2pSendReq req)     (api.post = "/admin/p2p/send")
+    AdminP2pUploadSendResp AdminP2pUploadSend(1: AdminP2pUploadSendReq req) (api.post = "/admin/p2p/send/upload")
     AdminP2pRecvResp    AdminP2pRecv   (1: AdminP2pRecvReq req)     (api.post = "/admin/p2p/recv")
     AdminP2pCancelResp  AdminP2pCancel (1: AdminP2pCancelReq req)   (api.post = "/admin/p2p/cancel")
     AdminP2pPublishResp AdminP2pPublish(1: AdminP2pPublishReq req)  (api.post = "/admin/p2p/publish")

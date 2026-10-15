@@ -18,6 +18,8 @@ export interface P2pTask {
   finished_at: string;
   /** 自动续传环已重试次数(0=首发) */
   attempts: number;
+  /** 传输总字节(0=未知;p2pc 进度行回填,前端画进度条) */
+  bytes_total: number;
 }
 
 /** ---- 状态 ---- */
@@ -72,6 +74,27 @@ export interface AdminP2pTaskData {
 }
 
 export interface AdminP2pSendResp {
+  code: number;
+  message: string;
+  data: AdminP2pTaskData;
+}
+
+/**
+ * ---- 浏览器文件直发（2026-10-15:p2pcweb 体验融入管理台）----
+ * 管理员从浏览器选文件,经 multipart 上传落服务器临时区后立即编排 p2pc send。
+ * 上传临时区自带发送授权(文件是本端点刚写入的,等效白名单,不查 send_roots,
+ * 防 admin 令牌失窃借此读服务器既有文件);任务终态自动清理临时文件。
+ * 文件经 multipart/form-data 上传(字段名 files,兼容 file;1-20 项),
+ * 总量受 p2p.direct.max_task_bytes 单任务配额闸。
+ */
+export interface AdminP2pUploadSendReq {
+  /** 同 /admin/p2p/send:发送后密封投递邀请 */
+  invite_to?: string;
+  /** 邀请附言 */
+  invite_note?: string;
+}
+
+export interface AdminP2pUploadSendResp {
   code: number;
   message: string;
   data: AdminP2pTaskData;
