@@ -32,6 +32,7 @@ const (
 	CodeIPBlocked        = 10013 // 预留：来源 IP 已被封禁
 	CodeAnonymousQuota   = 10014 // 匿名上传日配额已用尽
 	CodePresignDisabled  = 10015 // 匿名直传未开放（presign.anonymous_enabled=false，客户端应回退普通上传通道）
+	CodeConflict         = 10016 // 资源冲突（重复创建/状态互斥；承接 legacy 1005）
 )
 
 // 2xxxx 分享/取件
@@ -120,6 +121,8 @@ var messages = map[int]string{
 	CodeUploadDisabled:   "upload is disabled",
 	CodeIPBlocked:        "ip blocked",
 	CodeAnonymousQuota:   "anonymous upload daily quota exceeded",
+	CodePresignDisabled:  "anonymous direct upload is disabled",
+	CodeConflict:         "resource conflict",
 
 	// 2xxxx
 	CodeShareNotFound:       "share not found",
