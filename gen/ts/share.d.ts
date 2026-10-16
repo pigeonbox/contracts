@@ -58,6 +58,10 @@ export interface ShareFileResp {
 /** ==================== 获取分享 ==================== */
 export interface GetShareReq {
   code: string;
+  /**
+ * 取件密码经请求头传递（2026-10-16 拍板「一步到位」）：query 形态有访问日志/
+ * 浏览器历史/Referer 泄漏面，与 /share/download 停收 ?password= 同批收敛
+ */
   password?: string;
 }
 

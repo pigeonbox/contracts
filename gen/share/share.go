@@ -1704,8 +1704,10 @@ func (p *ShareFileResp) String() string {
 
 // ==================== 获取分享 ====================
 type GetShareReq struct {
-	Code     string  `thrift:"code,1,required" json:"code,required" path:"code,required"`
-	Password *string `thrift:"password,2,optional" json:"password,omitempty" query:"password"`
+	Code string `thrift:"code,1,required" json:"code,required" path:"code,required"`
+	// 取件密码经请求头传递（2026-10-16 拍板「一步到位」）：query 形态有访问日志/
+	// 浏览器历史/Referer 泄漏面，与 /share/download 停收 ?password= 同批收敛
+	Password *string `thrift:"password,2,optional" header:"X-Share-Password" json:"password,omitempty"`
 }
 
 func NewGetShareReq() *GetShareReq {
