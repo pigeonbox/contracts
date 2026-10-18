@@ -8,7 +8,7 @@ struct P2pTask {
     1: string id           (api.body = "id")
     2: string kind         (api.body = "kind")      // send | recv
     3: string state        (api.body = "state")     // waiting|running|retrying|done|failed|canceled|expired
-    4: string code         (api.body = "code")      // send 任务配对口令（recv 为输入码）
+    4: string code         (api.body = "code")      // send 任务配对口令/配对码（recv 为输入码;配对模式下 4 位码,重铸即更新）
     5: list<string> paths  (api.body = "paths")     // send=发送源路径 recv=收件相对路径
     6: i64    bytes_done   (api.body = "bytes_done")
     7: string error        (api.body = "error")
@@ -16,6 +16,9 @@ struct P2pTask {
     9: string finished_at  (api.body = "finished_at")
     10: i32 attempts       (api.body = "attempts")  // 自动续传环已重试次数(0=首发)
     11: i64   bytes_total  (api.body = "bytes_total") // 传输总字节(0=未知;p2pc 进度行回填,前端画进度条)
+    12: bool  pair_pending (api.body = "pair_pending") // 配对码:有待裁决敲门请求(2026-10-18)
+    13: string pair_from    (api.body = "pair_from")    // 配对码:敲门方 node_id
+    14: string pair_name    (api.body = "pair_name")    // 配对码:敲门方显示名(接受门展示)
 }
 
 // ---- 状态 ----
@@ -65,6 +68,7 @@ struct AdminP2pSendReq {
     1: list<string> paths (api.body = "paths") // 服务器本地路径,须命中 send_roots 白名单
     2: optional string invite_to   (api.body = "invite_to")   // 发送后向该名录对端投递密封邀请(node_id;2026-10-14 在线名录)
     3: optional string invite_note (api.body = "invite_note") // 邀请附言
+    4: optional bool pair          (api.body = "pair")        // 配对码模式(2026-10-18):亮 4 位定时码,敲码请求经 approve 裁决
 }
 struct AdminP2pTaskData {
     1: P2pTask task (api.body = "task")
@@ -108,6 +112,22 @@ struct AdminP2pCancelReq {
 struct AdminP2pCancelResp {
     1: required i32 code (api.body = "code")
     2: required string message (api.body = "message")
+}
+
+// ---- 配对码裁决（2026-10-18）----
+// 亮码任务的接受门:pair_request 待裁决时,管理员接受/拒绝敲门请求。
+// 转发到 p2px Approve → 子进程 stdin 单行协议;拒绝即烧码并自动重铸新码。
+struct AdminP2pPairApproveReq {
+    1: required string task_id (api.path = "task_id")
+    2: required bool   accept  (api.body = "accept")
+}
+struct AdminP2pPairApproveData {
+    1: P2pTask task (api.body = "task")
+}
+struct AdminP2pPairApproveResp {
+    1: required i32 code (api.body = "code")
+    2: required string message (api.body = "message")
+    3: AdminP2pPairApproveData data (api.body = "data")
 }
 
 // ---- 收件发布为分享（复用 share.ImportLocalFile 铸链,配额/审核同权） ----
@@ -212,6 +232,7 @@ service AdminP2PService {
     AdminP2pUploadSendResp AdminP2pUploadSend(1: AdminP2pUploadSendReq req) (api.post = "/admin/p2p/send/upload")
     AdminP2pRecvResp    AdminP2pRecv   (1: AdminP2pRecvReq req)     (api.post = "/admin/p2p/recv")
     AdminP2pCancelResp  AdminP2pCancel (1: AdminP2pCancelReq req)   (api.post = "/admin/p2p/cancel")
+    AdminP2pPairApproveResp AdminP2pPairApprove(1: AdminP2pPairApproveReq req) (api.post = "/admin/p2p/tasks/:task_id/approve")
     AdminP2pPublishResp AdminP2pPublish(1: AdminP2pPublishReq req)  (api.post = "/admin/p2p/publish")
     AdminP2pInvitesResp AdminP2pInvites(1: AdminP2pInvitesReq req)      (api.get  = "/admin/p2p/invites")
     AdminP2pInviteAcceptResp AdminP2pInviteAccept(1: AdminP2pInviteAcceptReq req) (api.post = "/admin/p2p/invites/accept")

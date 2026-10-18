@@ -8,7 +8,7 @@ export interface P2pTask {
   kind: string;
   /** waiting|running|retrying|done|failed|canceled|expired */
   state: string;
-  /** send 任务配对口令（recv 为输入码） */
+  /** send 任务配对口令/配对码（recv 为输入码;配对模式下 4 位码,重铸即更新） */
   code: string;
   /** send=发送源路径 recv=收件相对路径 */
   paths: string[];
@@ -20,6 +20,12 @@ export interface P2pTask {
   attempts: number;
   /** 传输总字节(0=未知;p2pc 进度行回填,前端画进度条) */
   bytes_total: number;
+  /** 配对码:有待裁决敲门请求(2026-10-18) */
+  pair_pending: boolean;
+  /** 配对码:敲门方 node_id */
+  pair_from: string;
+  /** 配对码:敲门方显示名(接受门展示) */
+  pair_name: string;
 }
 
 /** ---- 状态 ---- */
@@ -83,6 +89,8 @@ export interface AdminP2pSendReq {
   invite_to?: string;
   /** 邀请附言 */
   invite_note?: string;
+  /** 配对码模式(2026-10-18):亮 4 位定时码,敲码请求经 approve 裁决 */
+  pair?: boolean;
 }
 
 export interface AdminP2pTaskData {
@@ -136,6 +144,26 @@ export interface AdminP2pCancelReq {
 export interface AdminP2pCancelResp {
   code: number;
   message: string;
+}
+
+/**
+ * ---- 配对码裁决（2026-10-18）----
+ * 亮码任务的接受门:pair_request 待裁决时,管理员接受/拒绝敲门请求。
+ * 转发到 p2px Approve → 子进程 stdin 单行协议;拒绝即烧码并自动重铸新码。
+ */
+export interface AdminP2pPairApproveReq {
+  task_id: string;
+  accept: boolean;
+}
+
+export interface AdminP2pPairApproveData {
+  task: P2pTask;
+}
+
+export interface AdminP2pPairApproveResp {
+  code: number;
+  message: string;
+  data: AdminP2pPairApproveData;
 }
 
 /** ---- 收件发布为分享（复用 share.ImportLocalFile 铸链,配额/审核同权） ---- */

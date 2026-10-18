@@ -3232,6 +3232,47 @@
         ],
         "type": "object"
       },
+      "p2p.AdminP2pPairApproveData": {
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/p2p.P2pTask"
+          }
+        },
+        "type": "object"
+      },
+      "p2p.AdminP2pPairApproveReq": {
+        "properties": {
+          "accept": {
+            "type": "boolean"
+          },
+          "task_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "accept"
+        ],
+        "type": "object"
+      },
+      "p2p.AdminP2pPairApproveResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.AdminP2pPairApproveData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "p2p.AdminP2pPublishData": {
         "properties": {
           "share_codes": {
@@ -3318,6 +3359,9 @@
           },
           "invite_to": {
             "type": "string"
+          },
+          "pair": {
+            "type": "boolean"
           },
           "paths": {
             "items": {
@@ -3584,6 +3628,15 @@
           },
           "kind": {
             "type": "string"
+          },
+          "pair_from": {
+            "type": "string"
+          },
+          "pair_name": {
+            "type": "string"
+          },
+          "pair_pending": {
+            "type": "boolean"
           },
           "paths": {
             "items": {
@@ -8100,6 +8153,9 @@
                   "invite_to": {
                     "type": "string"
                   },
+                  "pair": {
+                    "type": "boolean"
+                  },
                   "paths": {
                     "items": {
                       "type": "string"
@@ -8205,6 +8261,55 @@
           }
         },
         "summary": "GET /admin/p2p/tasks",
+        "tags": [
+          "AdminP2PService"
+        ]
+      }
+    },
+    "/admin/p2p/tasks/{task_id}/approve": {
+      "post": {
+        "operationId": "AdminP2pPairApprove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "accept": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "accept"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.AdminP2pPairApproveResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/p2p/tasks/:task_id/approve",
         "tags": [
           "AdminP2PService"
         ]
