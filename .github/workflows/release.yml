@@ -13,8 +13,8 @@ jobs:
     # 依赖(匿名 https,Docker/CI 构建免 git 免 registry,版本钉定与 tag 对齐)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "22"
       - name: 版本对齐(package.json.version ← tag)
@@ -22,6 +22,6 @@ jobs:
       - name: Pack TS 类型包
         run: npm pack --pack-destination .
       - name: Upload to release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           files: pigeonbox-contracts-*.tgz
