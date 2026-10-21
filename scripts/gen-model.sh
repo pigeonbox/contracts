@@ -50,7 +50,11 @@ done
 
 if [ "${CHECK:-0}" = "1" ]; then
   echo "==> 校验生成产物与 $GEN_DIR/ 是否一致..."
-  if diff -r --exclude=ts "$WORK/model" "$GEN_DIR" >/tmp/fcb-contracts-gen.diff 2>&1; then
+  # --exclude=.DS_Store：macOS 本地 gen/ 里常有未跟踪的 .DS_Store（被全局
+  # gitignore 忽略，CI 的 Linux 上不会生成）——目录级 diff 会把它报成
+  # "Only in gen"，让**所有 macOS 贡献者**看到这个校验恒红且提示无效
+  # （"请运行 gen-model.sh 更新后提交"并不能消掉它）。
+  if diff -r --exclude=ts --exclude=.DS_Store "$WORK/model" "$GEN_DIR" >/tmp/fcb-contracts-gen.diff 2>&1; then
     echo "✓ 一致,gen/ 与 idl/ 定义同步"
   else
     echo "✗ gen/ 与 idl/ 不同步,差异已写入 /tmp/fcb-contracts-gen.diff:" >&2

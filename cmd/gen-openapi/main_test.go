@@ -27,14 +27,14 @@ func TestBuildSpecOnRealIDL(t *testing.T) {
 
 	t.Run("路径与方法", func(t *testing.T) {
 		for path, expect := range map[string]map[string]bool{
-			"/admin/login":   {"post": true},
-			"/user/login":    {"post": true},
-			"/share/text/":   {"post": true},
-			"/share/file/":   {"post": true},
-			"/share/select/": {"get": true},
-			"/qrcode/generate": {"post": true},
-			"/qrcode/{id}":     {"get": true},
-			"/preview/{code}":  {"get": true},
+			"/admin/login":        {"post": true},
+			"/user/login":         {"post": true},
+			"/share/text/":        {"post": true},
+			"/share/file/":        {"post": true},
+			"/share/select/":      {"get": true},
+			"/qrcode/generate":    {"post": true},
+			"/qrcode/{id}":        {"get": true},
+			"/preview/{code}":     {"get": true},
 			"/chunk/upload/init/": {"post": true},
 		} {
 			ops, ok := paths[path].(map[string]any)
