@@ -4628,9 +4628,6 @@
         "properties": {
           "code": {
             "type": "string"
-          },
-          "password": {
-            "type": "string"
           }
         },
         "required": [
@@ -5127,9 +5124,6 @@
       "share_anonymous.DownloadReq": {
         "properties": {
           "code": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           }
         },
@@ -9111,13 +9105,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "in": "query",
-            "name": "password",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -10316,8 +10303,8 @@
             }
           },
           {
-            "in": "query",
-            "name": "password",
+            "in": "header",
+            "name": "X-Share-Password",
             "schema": {
               "type": "string"
             }
@@ -10563,13 +10550,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "in": "query",
-            "name": "password",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -10656,23 +10636,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Password",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "password": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {

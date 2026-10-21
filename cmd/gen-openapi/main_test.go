@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -61,21 +62,42 @@ func TestBuildSpecOnRealIDL(t *testing.T) {
 		}
 	})
 
-	t.Run("path/query 参数", func(t *testing.T) {
+	t.Run("path/query/header 参数", func(t *testing.T) {
 		op := paths["/preview/{code}"].(map[string]any)["get"].(map[string]any)
 		params := op["parameters"].([]any)
-		var inPath, inQuery bool
+		var inPath, inHeader bool
 		for _, p := range params {
 			pm := p.(map[string]any)
 			if pm["name"] == "code" && pm["in"] == "path" {
 				inPath = true
 			}
-			if pm["name"] == "password" && pm["in"] == "query" {
-				inQuery = true
+			if pm["name"] == "X-Share-Password" && pm["in"] == "header" {
+				inHeader = true
 			}
 		}
-		if !inPath || !inQuery {
-			t.Errorf("preview 参数解析不完整: path=%v query=%v", inPath, inQuery)
+		if !inPath || !inHeader {
+			t.Errorf("preview 参数解析不完整: path=%v header=%v", inPath, inHeader)
+		}
+	})
+
+	// 回归守卫：取件密码只走 X-Share-Password 头（2026-10-16 拍板，core v0.24.0
+	// 落地）。规范里再出现 password query = 教集成方发已废通道——该通道服务端
+	// 已不收（实测 401），且 URL 形态有访问日志/Referer 泄漏面。
+	t.Run("密码不进 query 参数", func(t *testing.T) {
+		for p, v := range paths {
+			for m, op := range v.(map[string]any) {
+				om, ok := op.(map[string]any)
+				if !ok {
+					continue
+				}
+				params, _ := om["parameters"].([]any)
+				for _, pr := range params {
+					pm := pr.(map[string]any)
+					if pm["in"] == "query" && strings.Contains(strings.ToLower(pm["name"].(string)), "password") {
+						t.Errorf("%s %s 的 password 仍在 query 参数里: %v", p, m, pm)
+					}
+				}
+			}
 		}
 	})
 

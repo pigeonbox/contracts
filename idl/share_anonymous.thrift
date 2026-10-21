@@ -62,8 +62,9 @@ struct RetrieveResp {
 // ==================== 下载 ====================
 
 struct DownloadReq {
-    1: required string code     (api.path = "code"),
-    2: optional string password (api.query = "password"),
+    1: required string code (api.path = "code"),
+    // 不再有 password 字段（同批随 core v0.24.0 收敛）：密码保护分享一律走
+    // 取件流程校验后签发时间窗令牌，下载端点只认 code + token。
 }
 
 // DownloadResp 流式响应（用于 JSON 错误响应）

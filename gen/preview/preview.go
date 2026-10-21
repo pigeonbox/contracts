@@ -10,8 +10,10 @@ import (
 
 // ==================== 获取预览 ====================
 type GetPreviewReq struct {
-	Code     string  `thrift:"code,1,required" json:"code,required" path:"code,required"`
-	Password *string `thrift:"password,2,optional" json:"password,omitempty" query:"password"`
+	Code string `thrift:"code,1,required" json:"code,required" path:"code,required"`
+	// 取件密码经请求头传递（同批随 core v0.24.0 收敛，与 GetShareReq 同口径）：
+	// query 形态有访问日志/浏览器历史/Referer 泄漏面
+	Password *string `thrift:"password,2,optional" header:"X-Share-Password" json:"password,omitempty"`
 }
 
 func NewGetPreviewReq() *GetPreviewReq {

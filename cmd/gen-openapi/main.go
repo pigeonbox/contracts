@@ -6,7 +6,7 @@
 //
 // 支持的注解（与 hz 语义一致）：
 //   - 方法级: api.get / api.post / api.put / api.delete = "路径"（:param 风格）
-//   - 字段级: api.path / api.query → parameters；api.body → JSON 请求体；
+//   - 字段级: api.path / api.query / api.header → parameters；api.body → JSON 请求体；
 //     api.form → multipart 请求体
 //
 // 用法:
@@ -461,6 +461,17 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 				}
 				if name := fieldAnnValue(f, "api.query"); name != "" {
 					pp := map[string]any{"name": name, "in": "query", "schema": typeSchema(scope, f.Type)}
+					if f.Requiredness == parser.FieldType_Required {
+						pp["required"] = true
+					}
+					params = append(params, pp)
+					continue
+				}
+				// api.header → 请求头参数。不落到下面的 JSON body 分支：
+				// 否则规范会告诉集成方「把密码放 JSON body」，而服务端读的是头
+				// （取件密码走 X-Share-Password，见 idl/share.thrift GetShareReq）。
+				if name := fieldAnnValue(f, "api.header"); name != "" {
+					pp := map[string]any{"name": name, "in": "header", "schema": typeSchema(scope, f.Type)}
 					if f.Requiredness == parser.FieldType_Required {
 						pp["required"] = true
 					}

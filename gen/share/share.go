@@ -3262,8 +3262,7 @@ func (p *GetShareResp) String() string {
 
 // ==================== 下载分享 ====================
 type DownloadFileReq struct {
-	Code     string  `thrift:"code,1,required" json:"code,required" query:"code,required"`
-	Password *string `thrift:"password,2,optional" json:"password,omitempty" query:"password"`
+	Code string `thrift:"code,1,required" json:"code,required" query:"code,required"`
 }
 
 func NewDownloadFileReq() *DownloadFileReq {
@@ -3277,22 +3276,8 @@ func (p *DownloadFileReq) GetCode() (v string) {
 	return p.Code
 }
 
-var DownloadFileReq_Password_DEFAULT string
-
-func (p *DownloadFileReq) GetPassword() (v string) {
-	if !p.IsSetPassword() {
-		return DownloadFileReq_Password_DEFAULT
-	}
-	return *p.Password
-}
-
 var fieldIDToName_DownloadFileReq = map[int16]string{
 	1: "code",
-	2: "password",
-}
-
-func (p *DownloadFileReq) IsSetPassword() bool {
-	return p.Password != nil
 }
 
 func (p *DownloadFileReq) Read(iprot thrift.TProtocol) (err error) {
@@ -3321,14 +3306,6 @@ func (p *DownloadFileReq) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetCode = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -3378,17 +3355,6 @@ func (p *DownloadFileReq) ReadField1(iprot thrift.TProtocol) error {
 	p.Code = _field
 	return nil
 }
-func (p *DownloadFileReq) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.Password = _field
-	return nil
-}
 
 func (p *DownloadFileReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3398,10 +3364,6 @@ func (p *DownloadFileReq) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -3437,25 +3399,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *DownloadFileReq) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPassword() {
-		if err = oprot.WriteFieldBegin("password", thrift.STRING, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.Password); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
 func (p *DownloadFileReq) String() string {

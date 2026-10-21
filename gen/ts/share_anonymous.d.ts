@@ -67,7 +67,6 @@ export interface RetrieveResp {
 /** ==================== 下载 ==================== */
 export interface DownloadReq {
   code: string;
-  password?: string;
 }
 
 /** DownloadResp 流式响应（用于 JSON 错误响应） */

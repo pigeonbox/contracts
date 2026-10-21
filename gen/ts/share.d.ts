@@ -104,7 +104,6 @@ export interface GetShareResp {
 /** ==================== 下载分享 ==================== */
 export interface DownloadFileReq {
   code: string;
-  password?: string;
 }
 
 export interface DownloadFileResp {

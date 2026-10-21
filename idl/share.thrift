@@ -99,8 +99,13 @@ struct GetShareResp {
 // ==================== 下载分享 ====================
 
 struct DownloadFileReq {
-    1: required string code     (api.query = "code"),
-    2: optional string password (api.query = "password"),
+    1: required string code (api.query = "code"),
+    // 不再有 password 字段（2026-10-16 拍板「一步到位」，随 core v0.24.0 落地）：
+    // 密码保护分享一律走取件流程（retrieve/getShare 以 POST body 或
+    // X-Share-Password 头校验密码后签发时间窗令牌）换凭证下载，下载端点只认
+    // code + token。IDL 此前仍宣称 ?password= query 通道，与实现背离——生成物
+    // （openapi/TS 类型）会把它当契约传播给第三方集成方，诱导其继续发送已废
+    // 通道。故此处删除该字段（2 号位留空不复用）。
 }
 
 struct DownloadFileResp {

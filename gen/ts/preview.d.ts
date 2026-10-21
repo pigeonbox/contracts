@@ -4,6 +4,10 @@
 /** ==================== 获取预览 ==================== */
 export interface GetPreviewReq {
   code: string;
+  /**
+ * 取件密码经请求头传递（同批随 core v0.24.0 收敛，与 GetShareReq 同口径）：
+ * query 形态有访问日志/浏览器历史/Referer 泄漏面
+ */
   password?: string;
 }
 
