@@ -16,7 +16,7 @@ struct CreateReq {
     2: optional i32    max_files    (api.body = "max_files"),     // 0 = 不限
     3: optional i64    max_bytes    (api.body = "max_bytes"),     // 0 = 不限
     4: optional i32    expire_value (api.body = "expire_value"),
-    5: optional string expire_style (api.body = "expire_style"),  // minute/hour/day/week/month/year/forever
+    5: optional string expire_style (api.body = "expire_style"),  // minute/hour/day/week/month/year/forever（投递通道只支持按时间过期，不支持 count）
 }
 
 struct FileRequestData {

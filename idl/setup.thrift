@@ -42,7 +42,7 @@ struct InitializeReq {
 struct SitePreConfig {
     1: required i32  upload_size_mb (api.body = "upload_size_mb"),  // 单文件上限（MB，>0 生效）
     2: required bool open_upload    (api.body = "open_upload"),     // 允许游客上传
-    3: optional list<string> allowed_expire_styles (api.body = "allowed_expire_styles"), // 允许的过期样式（minute/hour/day/week/month/year/forever 子集；空=全部）
+    3: optional list<string> allowed_expire_styles (api.body = "allowed_expire_styles"), // 允许的过期样式（minute/hour/day/week/month/year/forever/count 子集；空=全部）
     4: optional i32  max_save_days  (api.body = "max_save_days"),   // 最长保存天数上限（0=不限）
     5: optional list<string> allowed_extensions    (api.body = "allowed_extensions"),    // 扩展名白名单（如 .jpg/.png/.pdf；空=黑名单模式）
     6: optional bool allow_registration (api.body = "allow_registration"), // 开放用户注册

@@ -11,7 +11,7 @@ namespace go share
 struct ShareTextReq {
     1: required string text          (api.body = "text"),
     2: required i32    expire_value  (api.body = "expire_value"),
-    3: required string expire_style  (api.body = "expire_style"),  // minute, hour, day, week, month, year, forever
+    3: required string expire_style  (api.body = "expire_style"),  // minute, hour, day, week, month, year, forever, count(count=按取件次数)
     4: required bool   require_auth  (api.body = "require_auth"),
     // 密码保护:require_auth 时必填(前端 multipart form 发送;此前 handler DefaultPostForm 直读)
     5: optional string password      (api.body = "password"),
