@@ -12,7 +12,7 @@ import (
 type ShareTextReq struct {
 	Text        string `thrift:"text,1,required" form:"text,required" json:"text,required"`
 	ExpireValue int32  `thrift:"expire_value,2,required" form:"expire_value,required" json:"expire_value,required"`
-	// minute, hour, day, week, month, year, forever
+	// minute, hour, day, week, month, year, forever, count(count=按取件次数)
 	ExpireStyle string `thrift:"expire_style,3,required" form:"expire_style,required" json:"expire_style,required"`
 	RequireAuth bool   `thrift:"require_auth,4,required" form:"require_auth,required" json:"require_auth,required"`
 	// 密码保护:require_auth 时必填(前端 multipart form 发送;此前 handler DefaultPostForm 直读)

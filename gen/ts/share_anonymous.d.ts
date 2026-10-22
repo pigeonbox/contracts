@@ -52,8 +52,10 @@ export interface RetrieveData {
   expire_at: number;
   require_password: boolean;
   /**
- * 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /share/{share_code}
- * 详情页展示；文件分享恒空（走 download_url 下载，不回传分享码）。
+ * 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /#/share/{share_code}
+ * 详情页展示（hash 路由形态——页面路由段在 '#' 之后，路径形态是死链，
+ * 见 core/pkg/baseurl/shareurl.go）；文件分享恒空（走 download_url 下载，
+ * 不回传分享码）。
  */
   share_code?: string;
 }

@@ -40,7 +40,7 @@ export interface SitePreConfig {
   upload_size_mb: number;
   /** 允许游客上传 */
   open_upload: boolean;
-  /** 允许的过期样式（minute/hour/day/week/month/year/forever 子集；空=全部） */
+  /** 允许的过期样式（minute/hour/day/week/month/year/forever/count 子集；空=全部） */
   allowed_expire_styles?: string[];
   /** 最长保存天数上限（0=不限） */
   max_save_days?: number;

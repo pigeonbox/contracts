@@ -1282,8 +1282,10 @@ type RetrieveData struct {
 	// Unix 时间戳
 	ExpireAt        int64 `thrift:"expire_at,6,required" form:"expire_at,required" json:"expire_at,required"`
 	RequirePassword bool  `thrift:"require_password,7,required" form:"require_password,required" json:"require_password,required"`
-	// 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /share/{share_code}
-	// 详情页展示；文件分享恒空（走 download_url 下载，不回传分享码）。
+	// 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /#/share/{share_code}
+	// 详情页展示（hash 路由形态——页面路由段在 '#' 之后，路径形态是死链，
+	// 见 core/pkg/baseurl/shareurl.go）；文件分享恒空（走 download_url 下载，
+	// 不回传分享码）。
 	ShareCode *string `thrift:"share_code,8,optional" form:"share_code" json:"share_code,omitempty"`
 }
 

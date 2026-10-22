@@ -974,7 +974,7 @@ type SitePreConfig struct {
 	UploadSizeMb int32 `thrift:"upload_size_mb,1,required" form:"upload_size_mb,required" json:"upload_size_mb,required"`
 	// 允许游客上传
 	OpenUpload bool `thrift:"open_upload,2,required" form:"open_upload,required" json:"open_upload,required"`
-	// 允许的过期样式（minute/hour/day/week/month/year/forever 子集；空=全部）
+	// 允许的过期样式（minute/hour/day/week/month/year/forever/count 子集；空=全部）
 	AllowedExpireStyles []string `thrift:"allowed_expire_styles,3,optional,list<string>" form:"allowed_expire_styles" json:"allowed_expire_styles,omitempty"`
 	// 最长保存天数上限（0=不限）
 	MaxSaveDays *int32 `thrift:"max_save_days,4,optional" form:"max_save_days" json:"max_save_days,omitempty"`

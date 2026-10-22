@@ -9,7 +9,7 @@ export interface CreateReq {
   /** 0 = 不限 */
   max_bytes?: number;
   expire_value?: number;
-  /** minute/hour/day/week/month/year/forever */
+  /** minute/hour/day/week/month/year/forever（投递通道只支持按时间过期，不支持 count） */
   expire_style?: string;
 }
 

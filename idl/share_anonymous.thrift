@@ -48,8 +48,10 @@ struct RetrieveData {
     5: required i32    remaining_count (api.body = "remaining_count"),  // 剩余取件次数
     6: required i64    expire_at       (api.body = "expire_at"),         // Unix 时间戳
     7: required bool   require_password (api.body = "require_password"),
-    // 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /share/{share_code}
-    // 详情页展示；文件分享恒空（走 download_url 下载，不回传分享码）。
+    // 文本分享取件时返回：取件结果页无文本渲染形态，前端凭此跳 /#/share/{share_code}
+    // 详情页展示（hash 路由形态——页面路由段在 '#' 之后，路径形态是死链，
+    // 见 core/pkg/baseurl/shareurl.go）；文件分享恒空（走 download_url 下载，
+    // 不回传分享码）。
     8: optional string share_code     (api.body = "share_code"),
 }
 

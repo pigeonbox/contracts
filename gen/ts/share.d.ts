@@ -5,7 +5,7 @@
 export interface ShareTextReq {
   text: string;
   expire_value: number;
-  /** minute, hour, day, week, month, year, forever */
+  /** minute, hour, day, week, month, year, forever, count(count=按取件次数) */
   expire_style: string;
   require_auth: boolean;
   /** 密码保护:require_auth 时必填(前端 multipart form 发送;此前 handler DefaultPostForm 直读) */

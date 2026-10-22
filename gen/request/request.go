@@ -16,7 +16,7 @@ type CreateReq struct {
 	// 0 = 不限
 	MaxBytes    *int64 `thrift:"max_bytes,3,optional" form:"max_bytes" json:"max_bytes,omitempty"`
 	ExpireValue *int32 `thrift:"expire_value,4,optional" form:"expire_value" json:"expire_value,omitempty"`
-	// minute/hour/day/week/month/year/forever
+	// minute/hour/day/week/month/year/forever（投递通道只支持按时间过期，不支持 count）
 	ExpireStyle *string `thrift:"expire_style,5,optional" form:"expire_style" json:"expire_style,omitempty"`
 }
 
