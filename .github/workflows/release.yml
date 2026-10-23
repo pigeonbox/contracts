@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: "22"
       - name: 版本对齐(package.json.version ← tag)
-        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --no-workspaces-update
+        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --no-workspaces-update --allow-same-version
       - name: Pack TS 类型包
         run: npm pack --pack-destination .
       - name: Upload to release
