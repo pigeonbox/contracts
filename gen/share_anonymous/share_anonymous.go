@@ -448,13 +448,20 @@ type GenerateCodeData struct {
 	Code string `thrift:"code,1,required" form:"code,required" json:"code,required"`
 	// 存储 key
 	FileKey string `thrift:"file_key,2,required" form:"file_key,required" json:"file_key,required"`
-	// 取件码的**查询 API 路径**（相对路径）：GET /anonymous/search/{取件码}
-	// —— 轻量元数据查询，不扣次数、不校验密码。
-	// **不是页面链接**：取件码不是分享码，分享页路由 /share/:code 不认它
-	// （取件码只能口头/短信报码，没有页面 URL）；也**不是下载直链**——下载走
-	// POST /anonymous/retrieve，响应里的 download_url 才带下载令牌。
-	// （2026-10-23 实测：此前下发 "/share/select/?code={取件码}" 是坏链，
-	//   直接访问 404——/share/select 只认 8 位分享码。）
+	// **分享页链接**（hash 路由形态）：{base}/#/share/{取件码}。
+	// 与 /share/file/、/share/text/ 等其它端点的 url 字段同口径。
+	//
+	// 演进（三次才对齐，2026-10-23）：
+	//  ① 最初 "/share/select/?code={取件码}" ⇒ 实测 404（select 只认 8 位
+	//     分享码）⇒ 坏链；
+	//  ② 改 "/anonymous/search/{取件码}" ⇒ 能访问，但那是 API 路径（JSON
+	//     元数据，不是给人点的页面）；
+	//  ③ 分享域已认 6 位取件码 ⇒ 取件码**有了**页面链接 ⇒ 统一给页面链接
+	//     （此前"取件码没有页面 URL"的前提已失效）。
+	//
+	// 注意：铸造时文件可能还没上传（占位分享）⇒ 对方打开会看到
+	// 「分享未完成上传」（20001，与匿名通道同码同文案）；上传完成后同一链接
+	// 即展示文件。查元数据仍走 GET /anonymous/search/{取件码}。
 	URL            string `thrift:"url,3,required" form:"url,required" json:"url,required"`
 	ExpireSeconds  int32  `thrift:"expire_seconds,4,required" form:"expire_seconds,required" json:"expire_seconds,required"`
 	MaxPickupCount int32  `thrift:"max_pickup_count,5,required" form:"max_pickup_count,required" json:"max_pickup_count,required"`

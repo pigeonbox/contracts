@@ -16,7 +16,7 @@ PigeonBox 契约层:错误码 + Thrift 生成的 API 类型。纯类型、零业
 | `gen/` | 由 `idl/*.thrift` 生成的纯模型类型(Thrift v0.13 工具链) |
 | `gen/ts/` | 由 IDL 生成的 **TypeScript** 类型声明(`cmd/gen-ts`,供前端 npm 依赖) |
 | `openapi/` | 由 IDL 生成的 OpenAPI 3.0 规范(`cmd/gen-openapi`,core go:embed 服务于 `/openapi.json`) |
-| `idl/` | Thrift IDL 源(单一真相源,与 gen/ 同仓演进;现承载 17 个 service,含 `p2p.thrift` 的 P2PPublicService——联邦推送邀请公开收件,以及 AdminP2PService——设备直传管理面九端点) |
+| `idl/` | Thrift IDL 源(单一真相源,与 gen/ 同仓演进;现承载 17 个 service,含 `p2p.thrift` 的 P2PPublicService——联邦推送邀请公开收件,以及 AdminP2PService——**联邦面四端点**(设备直传九端点已随 PigeonBeam 拆分于 v0.18.0 拆除) |
 | `cmd/` | 自包含生成器:`gen-openapi` / `gen-ts`(纯 Go,零外部工具链) |
 
 ## 依赖规则(强制)
