@@ -22,7 +22,14 @@ struct GenerateCodeReq {
 struct GenerateCodeData {
     1: required string code     (api.body = "code"),         // 6 位取件码
     2: required string file_key (api.body = "file_key"),     // 存储 key
-    3: required string url      (api.body = "url"),          // 可选下载 URL
+    // 取件码的**查询 API 路径**（相对路径）：GET /anonymous/search/{取件码}
+    // —— 轻量元数据查询，不扣次数、不校验密码。
+    // **不是页面链接**：取件码不是分享码，分享页路由 /share/:code 不认它
+    // （取件码只能口头/短信报码，没有页面 URL）；也**不是下载直链**——下载走
+    // POST /anonymous/retrieve，响应里的 download_url 才带下载令牌。
+    // （2026-10-23 实测：此前下发 "/share/select/?code={取件码}" 是坏链，
+    //   直接访问 404——/share/select 只认 8 位分享码。）
+    3: required string url      (api.body = "url"),
     4: required i32    expire_seconds (api.body = "expire_seconds"),
     5: required i32    max_pickup_count (api.body = "max_pickup_count"),
 }

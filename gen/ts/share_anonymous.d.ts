@@ -23,7 +23,15 @@ export interface GenerateCodeData {
   code: string;
   /** 存储 key */
   file_key: string;
-  /** 可选下载 URL */
+  /**
+ * 取件码的**查询 API 路径**（相对路径）：GET /anonymous/search/{取件码}
+ * —— 轻量元数据查询，不扣次数、不校验密码。
+ * **不是页面链接**：取件码不是分享码，分享页路由 /share/:code 不认它
+ * （取件码只能口头/短信报码，没有页面 URL）；也**不是下载直链**——下载走
+ * POST /anonymous/retrieve，响应里的 download_url 才带下载令牌。
+ * （2026-10-23 实测：此前下发 "/share/select/?code={取件码}" 是坏链，
+ * 直接访问 404——/share/select 只认 8 位分享码。）
+ */
   url: string;
   expire_seconds: number;
   max_pickup_count: number;

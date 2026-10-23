@@ -1,6 +1,6 @@
 {
   "name": "@pigeonbox/contracts",
-  "version": "0.3.0",
+  "version": "0.18.1",
   "description": "PigeonBox API contract — TypeScript API types generated from thrift IDL (gen/ts). This repo is primarily a Go module; npm consumers get generated types only.",
   "license": "Apache-2.0",
   "repository": {
