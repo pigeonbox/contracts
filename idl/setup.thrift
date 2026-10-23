@@ -40,12 +40,18 @@ struct InitializeReq {
 // 2026-10-12 扩容政策段（对标上游首启向导全量）：过期策略/文件白名单/注册开关，
 // 全部可选——不传 = 保持 yaml/内置默认，旧客户端零破坏。
 struct SitePreConfig {
-    1: required i32  upload_size_mb (api.body = "upload_size_mb"),  // 单文件上限（MB，>0 生效）
+    1: required i32  upload_size_mb (api.body = "upload_size_mb"),  // 单次请求体上限（MB，>0 生效）——普通直传通道**单次请求**的体积；**不是单文件上限**（大文件走预签名直传/分片通道，不受它约束）
     2: required bool open_upload    (api.body = "open_upload"),     // 允许游客上传
     3: optional list<string> allowed_expire_styles (api.body = "allowed_expire_styles"), // 允许的过期样式（minute/hour/day/week/month/year/forever/count 子集；空=全部）
     4: optional i32  max_save_days  (api.body = "max_save_days"),   // 最长保存天数上限（0=不限）
     5: optional list<string> allowed_extensions    (api.body = "allowed_extensions"),    // 扩展名白名单（如 .jpg/.png/.pdf；空=黑名单模式）
     6: optional bool allow_registration (api.body = "allow_registration"), // 开放用户注册
+    // 单文件上限（MB，0/不传=不限）——写入 upload.max_file_size，
+    // 是直传/分片等「整文件」通道的**业务上限**（超限在服务端即拒，错误码 10010）。
+    // 2026-10-23 补入：此前首启向导唯一的体积项 upload_size_mb 是「单请求体上限」，
+    // 却被标注成「单文件上限」——语义混淆会让管理员以为自己限住了单文件大小，
+    // 实际大文件照传（2026-10-23 的 413 事故即源于此）。optional=旧客户端不传即保持默认。
+    7: optional i32  max_file_size_mb (api.body = "max_file_size_mb"),
 }
 
 struct InitializeResp {

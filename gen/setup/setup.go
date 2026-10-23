@@ -970,7 +970,7 @@ func (p *InitializeReq) String() string {
 // 2026-10-12 扩容政策段（对标上游首启向导全量）：过期策略/文件白名单/注册开关，
 // 全部可选——不传 = 保持 yaml/内置默认，旧客户端零破坏。
 type SitePreConfig struct {
-	// 单文件上限（MB，>0 生效）
+	// 单次请求体上限（MB，>0 生效）——普通直传通道**单次请求**的体积；**不是单文件上限**（大文件走预签名直传/分片通道，不受它约束）
 	UploadSizeMb int32 `thrift:"upload_size_mb,1,required" form:"upload_size_mb,required" json:"upload_size_mb,required"`
 	// 允许游客上传
 	OpenUpload bool `thrift:"open_upload,2,required" form:"open_upload,required" json:"open_upload,required"`
@@ -982,6 +982,12 @@ type SitePreConfig struct {
 	AllowedExtensions []string `thrift:"allowed_extensions,5,optional,list<string>" form:"allowed_extensions" json:"allowed_extensions,omitempty"`
 	// 开放用户注册
 	AllowRegistration *bool `thrift:"allow_registration,6,optional" form:"allow_registration" json:"allow_registration,omitempty"`
+	// 单文件上限（MB，0/不传=不限）——写入 upload.max_file_size，
+	// 是直传/分片等「整文件」通道的**业务上限**（超限在服务端即拒，错误码 10010）。
+	// 2026-10-23 补入：此前首启向导唯一的体积项 upload_size_mb 是「单请求体上限」，
+	// 却被标注成「单文件上限」——语义混淆会让管理员以为自己限住了单文件大小，
+	// 实际大文件照传（2026-10-23 的 413 事故即源于此）。optional=旧客户端不传即保持默认。
+	MaxFileSizeMb *int32 `thrift:"max_file_size_mb,7,optional" form:"max_file_size_mb" json:"max_file_size_mb,omitempty"`
 }
 
 func NewSitePreConfig() *SitePreConfig {
@@ -1035,6 +1041,15 @@ func (p *SitePreConfig) GetAllowRegistration() (v bool) {
 	return *p.AllowRegistration
 }
 
+var SitePreConfig_MaxFileSizeMb_DEFAULT int32
+
+func (p *SitePreConfig) GetMaxFileSizeMb() (v int32) {
+	if !p.IsSetMaxFileSizeMb() {
+		return SitePreConfig_MaxFileSizeMb_DEFAULT
+	}
+	return *p.MaxFileSizeMb
+}
+
 var fieldIDToName_SitePreConfig = map[int16]string{
 	1: "upload_size_mb",
 	2: "open_upload",
@@ -1042,6 +1057,7 @@ var fieldIDToName_SitePreConfig = map[int16]string{
 	4: "max_save_days",
 	5: "allowed_extensions",
 	6: "allow_registration",
+	7: "max_file_size_mb",
 }
 
 func (p *SitePreConfig) IsSetAllowedExpireStyles() bool {
@@ -1058,6 +1074,10 @@ func (p *SitePreConfig) IsSetAllowedExtensions() bool {
 
 func (p *SitePreConfig) IsSetAllowRegistration() bool {
 	return p.AllowRegistration != nil
+}
+
+func (p *SitePreConfig) IsSetMaxFileSizeMb() bool {
+	return p.MaxFileSizeMb != nil
 }
 
 func (p *SitePreConfig) Read(iprot thrift.TProtocol) (err error) {
@@ -1126,6 +1146,14 @@ func (p *SitePreConfig) Read(iprot thrift.TProtocol) (err error) {
 		case 6:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1261,6 +1289,17 @@ func (p *SitePreConfig) ReadField6(iprot thrift.TProtocol) error {
 	p.AllowRegistration = _field
 	return nil
 }
+func (p *SitePreConfig) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.MaxFileSizeMb = _field
+	return nil
+}
 
 func (p *SitePreConfig) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1290,6 +1329,10 @@ func (p *SitePreConfig) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 	}
@@ -1434,6 +1477,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+
+func (p *SitePreConfig) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMaxFileSizeMb() {
+		if err = oprot.WriteFieldBegin("max_file_size_mb", thrift.I32, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.MaxFileSizeMb); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 
 func (p *SitePreConfig) String() string {

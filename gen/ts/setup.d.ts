@@ -36,7 +36,7 @@ export interface InitializeReq {
  * 全部可选——不传 = 保持 yaml/内置默认，旧客户端零破坏。
  */
 export interface SitePreConfig {
-  /** 单文件上限（MB，>0 生效） */
+  /** 单次请求体上限（MB，>0 生效）——普通直传通道**单次请求**的体积；**不是单文件上限**（大文件走预签名直传/分片通道，不受它约束） */
   upload_size_mb: number;
   /** 允许游客上传 */
   open_upload: boolean;
@@ -48,6 +48,14 @@ export interface SitePreConfig {
   allowed_extensions?: string[];
   /** 开放用户注册 */
   allow_registration?: boolean;
+  /**
+ * 单文件上限（MB，0/不传=不限）——写入 upload.max_file_size，
+ * 是直传/分片等「整文件」通道的**业务上限**（超限在服务端即拒，错误码 10010）。
+ * 2026-10-23 补入：此前首启向导唯一的体积项 upload_size_mb 是「单请求体上限」，
+ * 却被标注成「单文件上限」——语义混淆会让管理员以为自己限住了单文件大小，
+ * 实际大文件照传（2026-10-23 的 413 事故即源于此）。optional=旧客户端不传即保持默认。
+ */
+  max_file_size_mb?: number;
 }
 
 export interface InitializeResp {
