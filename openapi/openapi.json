@@ -4220,6 +4220,9 @@
             },
             "type": "array"
           },
+          "max_file_size_mb": {
+            "type": "integer"
+          },
           "max_save_days": {
             "type": "integer"
           },
