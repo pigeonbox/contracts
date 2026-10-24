@@ -153,6 +153,17 @@ struct UserShareItemData {
     23: required string  status        (api.body = "status"),         // normal/blocked/pending_review
     24: required i32    file_count    (api.body = "file_count"),     // P0 多文件：子文件数
     25: optional string note          (api.body = "note"),           // 文件备注（可空）
+    // 逐条取件明细（2026-10-24 新增）：一次取件 = 一次内容交付 = 一个取件凭证，
+    // 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
+    // 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
+    26: optional list<PickupRecord> pickups (api.body = "pickups"),
+}
+
+// PickupRecord 一次取件的明细（owner 侧「取件历史」逐条展示）。
+struct PickupRecord {
+    1: required string picked_at (api.body = "picked_at"),  // RFC3339Nano
+    2: required string ip        (api.body = "ip"),         // 取件人 IP（可信代理解析后）
+    3: optional string channel   (api.body = "channel"),    // 交付面：select/retrieve/download
 }
 
 struct UserSharesListData {

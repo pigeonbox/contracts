@@ -3973,6 +3973,10 @@ type UserShareItemData struct {
 	FileCount int32 `thrift:"file_count,24,required" form:"file_count,required" json:"file_count,required"`
 	// 文件备注（可空）
 	Note *string `thrift:"note,25,optional" form:"note" json:"note,omitempty"`
+	// 逐条取件明细（2026-10-24 新增）：一次取件 = 一次内容交付 = 一个取件凭证，
+	// 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
+	// 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
+	Pickups []*PickupRecord `thrift:"pickups,26,optional,list<PickupRecord>" form:"pickups" json:"pickups,omitempty"`
 }
 
 func NewUserShareItemData() *UserShareItemData {
@@ -4107,6 +4111,15 @@ func (p *UserShareItemData) GetNote() (v string) {
 	return *p.Note
 }
 
+var UserShareItemData_Pickups_DEFAULT []*PickupRecord
+
+func (p *UserShareItemData) GetPickups() (v []*PickupRecord) {
+	if !p.IsSetPickups() {
+		return UserShareItemData_Pickups_DEFAULT
+	}
+	return p.Pickups
+}
+
 var fieldIDToName_UserShareItemData = map[int16]string{
 	1:  "id",
 	2:  "code",
@@ -4133,6 +4146,7 @@ var fieldIDToName_UserShareItemData = map[int16]string{
 	23: "status",
 	24: "file_count",
 	25: "note",
+	26: "pickups",
 }
 
 func (p *UserShareItemData) IsSetPickupCode() bool {
@@ -4153,6 +4167,10 @@ func (p *UserShareItemData) IsSetViewerAt() bool {
 
 func (p *UserShareItemData) IsSetNote() bool {
 	return p.Note != nil
+}
+
+func (p *UserShareItemData) IsSetPickups() bool {
+	return p.Pickups != nil
 }
 
 func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
@@ -4409,6 +4427,14 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 		case 25:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField25(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 26:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField26(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4819,6 +4845,29 @@ func (p *UserShareItemData) ReadField25(iprot thrift.TProtocol) error {
 	p.Note = _field
 	return nil
 }
+func (p *UserShareItemData) ReadField26(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*PickupRecord, 0, size)
+	values := make([]PickupRecord, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Pickups = _field
+	return nil
+}
 
 func (p *UserShareItemData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -4924,6 +4973,10 @@ func (p *UserShareItemData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField25(oprot); err != nil {
 			fieldId = 25
+			goto WriteFieldError
+		}
+		if err = p.writeField26(oprot); err != nil {
+			fieldId = 26
 			goto WriteFieldError
 		}
 	}
@@ -5379,11 +5432,300 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
 }
 
+func (p *UserShareItemData) writeField26(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPickups() {
+		if err = oprot.WriteFieldBegin("pickups", thrift.LIST, 26); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Pickups)); err != nil {
+			return err
+		}
+		for _, v := range p.Pickups {
+			if err := v.Write(oprot); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
+}
+
 func (p *UserShareItemData) String() string {
 	if p == nil {
 		return "<nil>"
 	}
 	return fmt.Sprintf("UserShareItemData(%+v)", *p)
+
+}
+
+// PickupRecord 一次取件的明细（owner 侧「取件历史」逐条展示）。
+type PickupRecord struct {
+	// RFC3339Nano
+	PickedAt string `thrift:"picked_at,1,required" form:"picked_at,required" json:"picked_at,required"`
+	// 取件人 IP（可信代理解析后）
+	IP string `thrift:"ip,2,required" form:"ip,required" json:"ip,required"`
+	// 交付面：select/retrieve/download
+	Channel *string `thrift:"channel,3,optional" form:"channel" json:"channel,omitempty"`
+}
+
+func NewPickupRecord() *PickupRecord {
+	return &PickupRecord{}
+}
+
+func (p *PickupRecord) InitDefault() {
+}
+
+func (p *PickupRecord) GetPickedAt() (v string) {
+	return p.PickedAt
+}
+
+func (p *PickupRecord) GetIP() (v string) {
+	return p.IP
+}
+
+var PickupRecord_Channel_DEFAULT string
+
+func (p *PickupRecord) GetChannel() (v string) {
+	if !p.IsSetChannel() {
+		return PickupRecord_Channel_DEFAULT
+	}
+	return *p.Channel
+}
+
+var fieldIDToName_PickupRecord = map[int16]string{
+	1: "picked_at",
+	2: "ip",
+	3: "channel",
+}
+
+func (p *PickupRecord) IsSetChannel() bool {
+	return p.Channel != nil
+}
+
+func (p *PickupRecord) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+	var issetPickedAt bool = false
+	var issetIP bool = false
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetPickedAt = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetIP = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	if !issetPickedAt {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetIP {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_PickupRecord[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_PickupRecord[fieldId]))
+}
+
+func (p *PickupRecord) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.PickedAt = _field
+	return nil
+}
+func (p *PickupRecord) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.IP = _field
+	return nil
+}
+func (p *PickupRecord) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Channel = _field
+	return nil
+}
+
+func (p *PickupRecord) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("PickupRecord"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *PickupRecord) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("picked_at", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.PickedAt); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *PickupRecord) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("ip", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.IP); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *PickupRecord) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetChannel() {
+		if err = oprot.WriteFieldBegin("channel", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Channel); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *PickupRecord) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("PickupRecord(%+v)", *p)
 
 }
 

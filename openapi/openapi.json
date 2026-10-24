@@ -4298,6 +4298,24 @@
         ],
         "type": "object"
       },
+      "share.PickupRecord": {
+        "properties": {
+          "channel": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "picked_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "picked_at",
+          "ip"
+        ],
+        "type": "object"
+      },
       "share.ShareData": {
         "properties": {
           "code": {
@@ -4577,6 +4595,12 @@
           },
           "pickup_code": {
             "type": "string"
+          },
+          "pickups": {
+            "items": {
+              "$ref": "#/components/schemas/share.PickupRecord"
+            },
+            "type": "array"
           },
           "prefix": {
             "type": "string"

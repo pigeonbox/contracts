@@ -161,6 +161,22 @@ export interface UserShareItemData {
   file_count: number;
   /** 文件备注（可空） */
   note?: string;
+  /**
+ * 逐条取件明细（2026-10-24 新增）：一次取件 = 一次内容交付 = 一个取件凭证，
+ * 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
+ * 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
+ */
+  pickups?: PickupRecord[];
+}
+
+/** PickupRecord 一次取件的明细（owner 侧「取件历史」逐条展示）。 */
+export interface PickupRecord {
+  /** RFC3339Nano */
+  picked_at: string;
+  /** 取件人 IP（可信代理解析后） */
+  ip: string;
+  /** 交付面：select/retrieve/download */
+  channel?: string;
 }
 
 export interface UserSharesListData {
