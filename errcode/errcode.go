@@ -67,6 +67,11 @@ const (
 	CodeFileTypeDenied  = 30011 // 文件类型不允许（黑名单/白名单/魔数）
 	CodeEndpointDenied  = 30012 // 存储端点地址不合法（scheme/SSRF）
 	CodeContentRejected = 30013 // 内容未通过审核（敏感词等）
+	// CodePresignCompleted 上传会话已完成（直传凭证已用过 ⇒ 拒绝重放）。
+	// 与 CodePresignFailed 区分：后者是「预签名生成失败」（服务端故障，500 语义），
+	// 本者是**冲突**（409 语义）——此前两者共用 30008 ⇒ 客户端既看不到正确
+	// HTTP 状态，消息也是「预签名生成失败」（对已完成场景是错的）。
+	CodePresignCompleted = 30014 // 上传会话已完成
 )
 
 // 4xxxx 用户/认证
@@ -140,19 +145,20 @@ var messages = map[int]string{
 	CodeSharePendingReview:  "share pending review",
 
 	// 3xxxx
-	CodeStorageInit:     "storage init failed",
-	CodeStorageQuota:    "storage quota exceeded",
-	CodeStorageUpload:   "upload failed",
-	CodeStorageDownload: "download failed",
-	CodeStorageDelete:   "delete failed",
-	CodeStorageScheme:   "storage scheme not supported",
-	CodeStorageIO:       "storage io error",
-	CodePresignFailed:   "presign failed",
-	CodePresignToken:    "presign token invalid",
-	CodePresignExpired:  "presign expired",
-	CodeFileTypeDenied:  "file type not allowed",
-	CodeEndpointDenied:  "storage endpoint not allowed",
-	CodeContentRejected: "content rejected by moderation",
+	CodeStorageInit:      "storage init failed",
+	CodeStorageQuota:     "storage quota exceeded",
+	CodeStorageUpload:    "upload failed",
+	CodeStorageDownload:  "download failed",
+	CodeStorageDelete:    "delete failed",
+	CodeStorageScheme:    "storage scheme not supported",
+	CodeStorageIO:        "storage io error",
+	CodePresignFailed:    "presign failed",
+	CodePresignToken:     "presign token invalid",
+	CodePresignExpired:   "presign expired",
+	CodeFileTypeDenied:   "file type not allowed",
+	CodeEndpointDenied:   "storage endpoint not allowed",
+	CodeContentRejected:  "content rejected by moderation",
+	CodePresignCompleted: "upload session already completed",
 
 	// 4xxxx
 	CodeUserNotFound:   "user not found",
