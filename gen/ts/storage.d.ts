@@ -101,18 +101,18 @@ export interface TestStorageConnectionResp {
   data: TestStorageData;
 }
 
-/** ==================== 更新存储配置 ==================== */
-export interface UpdateConfig {
-  storage_path: string;
-  webdav: WebDAVConfig;
-  s3: S3Config;
-  nfs: NFSConfig;
-}
-
-export interface UpdateStorageConfigReq {
-  type: string;
-  config: UpdateConfig;
-}
+/**
+ * ==================== 更新存储配置 ====================
+ * 更新存储配置的请求体。
+ * 形态：**只有**扁平一种——请求体即 conf.StorageConfig 同构 JSON
+ * （type/storage_path/quota/s3/webdav/ftp/sftp/azureblob/hdfs/onedrive/oss..obs），
+ * 服务端整体校验 → Probe → 热切换 → 持久化。
+ * 旧嵌套形态 {type, config:{storage_path/webdav/s3}} **已退役**（2026-10-25 删除旧版本
+ * 兼容）：它只能切 local/webdav/s3 三种、字段名与实际配置模型对不上（旧契约遗留）。
+ * 字段随厂商增长 ⇒ 沿用本仓「松散体」惯例（见 admin.thrift 的 AdminUpdateConfigReq）：
+ * 结构体只作**声明面**，body 的实际字段由 conf.StorageConfig 决定。
+ */
+export interface UpdateStorageConfigReq {}
 
 export interface UpdateStorageConfigResp {
   code: number;

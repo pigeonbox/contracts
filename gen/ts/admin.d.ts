@@ -7,10 +7,16 @@ export interface AdminLoginReq {
   password: string;
 }
 
+/**
+ * 登录成功后的数据。
+ * **不再回传 token**：浏览器端令牌已迁到 HttpOnly 会话 Cookie（前端不再持久化
+ * 令牌、不再往 Authorization 头塞 token）⇒ 响应体带 token 只是**旧前端兼容**
+ * （且它让令牌多一处泄漏面：响应体可能被日志/代理记录）⇒ 2026-10-25 随旧版本
+ * 兼容一并删除。命令行/桌面端走 API Key，不经本端点。
+ */
 export interface AdminLoginData {
-  token: string;
-  token_type: string;
-  expires_in: number;
+  token_type?: string;
+  expires_in?: number;
 }
 
 export interface AdminLoginResp {

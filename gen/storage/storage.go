@@ -4129,334 +4129,18 @@ func (p *TestStorageConnectionResp) String() string {
 }
 
 // ==================== 更新存储配置 ====================
-type UpdateConfig struct {
-	StoragePath string        `thrift:"storage_path,1,required" form:"storage_path,required" json:"storage_path,required"`
-	Webdav      *WebDAVConfig `thrift:"webdav,2,required" form:"webdav,required" json:"webdav,required"`
-	S3          *S3Config     `thrift:"s3,3,required" form:"s3,required" json:"s3,required"`
-	Nfs         *NFSConfig    `thrift:"nfs,4,required" form:"nfs,required" json:"nfs,required"`
-}
-
-func NewUpdateConfig() *UpdateConfig {
-	return &UpdateConfig{}
-}
-
-func (p *UpdateConfig) InitDefault() {
-}
-
-func (p *UpdateConfig) GetStoragePath() (v string) {
-	return p.StoragePath
-}
-
-var UpdateConfig_Webdav_DEFAULT *WebDAVConfig
-
-func (p *UpdateConfig) GetWebdav() (v *WebDAVConfig) {
-	if !p.IsSetWebdav() {
-		return UpdateConfig_Webdav_DEFAULT
-	}
-	return p.Webdav
-}
-
-var UpdateConfig_S3_DEFAULT *S3Config
-
-func (p *UpdateConfig) GetS3() (v *S3Config) {
-	if !p.IsSetS3() {
-		return UpdateConfig_S3_DEFAULT
-	}
-	return p.S3
-}
-
-var UpdateConfig_Nfs_DEFAULT *NFSConfig
-
-func (p *UpdateConfig) GetNfs() (v *NFSConfig) {
-	if !p.IsSetNfs() {
-		return UpdateConfig_Nfs_DEFAULT
-	}
-	return p.Nfs
-}
-
-var fieldIDToName_UpdateConfig = map[int16]string{
-	1: "storage_path",
-	2: "webdav",
-	3: "s3",
-	4: "nfs",
-}
-
-func (p *UpdateConfig) IsSetWebdav() bool {
-	return p.Webdav != nil
-}
-
-func (p *UpdateConfig) IsSetS3() bool {
-	return p.S3 != nil
-}
-
-func (p *UpdateConfig) IsSetNfs() bool {
-	return p.Nfs != nil
-}
-
-func (p *UpdateConfig) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-	var issetStoragePath bool = false
-	var issetWebdav bool = false
-	var issetS3 bool = false
-	var issetNfs bool = false
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetStoragePath = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetWebdav = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 3:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField3(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetS3 = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 4:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetNfs = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	if !issetStoragePath {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetWebdav {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetS3 {
-		fieldId = 3
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetNfs {
-		fieldId = 4
-		goto RequiredFieldNotSetError
-	}
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdateConfig[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdateConfig[fieldId]))
-}
-
-func (p *UpdateConfig) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.StoragePath = _field
-	return nil
-}
-func (p *UpdateConfig) ReadField2(iprot thrift.TProtocol) error {
-	_field := NewWebDAVConfig()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Webdav = _field
-	return nil
-}
-func (p *UpdateConfig) ReadField3(iprot thrift.TProtocol) error {
-	_field := NewS3Config()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.S3 = _field
-	return nil
-}
-func (p *UpdateConfig) ReadField4(iprot thrift.TProtocol) error {
-	_field := NewNFSConfig()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Nfs = _field
-	return nil
-}
-
-func (p *UpdateConfig) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("UpdateConfig"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-		if err = p.writeField3(oprot); err != nil {
-			fieldId = 3
-			goto WriteFieldError
-		}
-		if err = p.writeField4(oprot); err != nil {
-			fieldId = 4
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *UpdateConfig) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("storage_path", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.StoragePath); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *UpdateConfig) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("webdav", thrift.STRUCT, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Webdav.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
-func (p *UpdateConfig) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("s3", thrift.STRUCT, 3); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.S3.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
-}
-
-func (p *UpdateConfig) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("nfs", thrift.STRUCT, 4); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Nfs.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *UpdateConfig) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("UpdateConfig(%+v)", *p)
-
-}
-
+// 更新存储配置的请求体。
+//
+// 形态：**只有**扁平一种——请求体即 conf.StorageConfig 同构 JSON
+// （type/storage_path/quota/s3/webdav/ftp/sftp/azureblob/hdfs/onedrive/oss..obs），
+// 服务端整体校验 → Probe → 热切换 → 持久化。
+//
+// 旧嵌套形态 {type, config:{storage_path/webdav/s3}} **已退役**（2026-10-25 删除旧版本
+// 兼容）：它只能切 local/webdav/s3 三种、字段名与实际配置模型对不上（旧契约遗留）。
+//
+// 字段随厂商增长 ⇒ 沿用本仓「松散体」惯例（见 admin.thrift 的 AdminUpdateConfigReq）：
+// 结构体只作**声明面**，body 的实际字段由 conf.StorageConfig 决定。
 type UpdateStorageConfigReq struct {
-	Type   string        `thrift:"type,1,required" form:"type,required" json:"type,required"`
-	Config *UpdateConfig `thrift:"config,2,required" form:"config,required" json:"config,required"`
 }
 
 func NewUpdateStorageConfigReq() *UpdateStorageConfigReq {
@@ -4466,34 +4150,12 @@ func NewUpdateStorageConfigReq() *UpdateStorageConfigReq {
 func (p *UpdateStorageConfigReq) InitDefault() {
 }
 
-func (p *UpdateStorageConfigReq) GetType() (v string) {
-	return p.Type
-}
-
-var UpdateStorageConfigReq_Config_DEFAULT *UpdateConfig
-
-func (p *UpdateStorageConfigReq) GetConfig() (v *UpdateConfig) {
-	if !p.IsSetConfig() {
-		return UpdateStorageConfigReq_Config_DEFAULT
-	}
-	return p.Config
-}
-
-var fieldIDToName_UpdateStorageConfigReq = map[int16]string{
-	1: "type",
-	2: "config",
-}
-
-func (p *UpdateStorageConfigReq) IsSetConfig() bool {
-	return p.Config != nil
-}
+var fieldIDToName_UpdateStorageConfigReq = map[int16]string{}
 
 func (p *UpdateStorageConfigReq) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetType bool = false
-	var issetConfig bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -4507,30 +4169,8 @@ func (p *UpdateStorageConfigReq) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetType = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetConfig = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
+		if err = iprot.Skip(fieldTypeId); err != nil {
+			goto SkipFieldTypeError
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -4540,67 +4180,25 @@ func (p *UpdateStorageConfigReq) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
-	if !issetType {
-		fieldId = 1
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetConfig {
-		fieldId = 2
-		goto RequiredFieldNotSetError
-	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdateStorageConfigReq[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+SkipFieldTypeError:
+	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdateStorageConfigReq[fieldId]))
-}
-
-func (p *UpdateStorageConfigReq) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Type = _field
-	return nil
-}
-func (p *UpdateStorageConfigReq) ReadField2(iprot thrift.TProtocol) error {
-	_field := NewUpdateConfig()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Config = _field
-	return nil
 }
 
 func (p *UpdateStorageConfigReq) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
 	if err = oprot.WriteStructBegin("UpdateStorageConfigReq"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -4611,46 +4209,10 @@ func (p *UpdateStorageConfigReq) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *UpdateStorageConfigReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("type", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Type); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *UpdateStorageConfigReq) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("config", thrift.STRUCT, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Config.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
 func (p *UpdateStorageConfigReq) String() string {

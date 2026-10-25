@@ -912,18 +912,10 @@
             "format": "int64",
             "type": "integer"
           },
-          "token": {
-            "type": "string"
-          },
           "token_type": {
             "type": "string"
           }
         },
-        "required": [
-          "token",
-          "token_type",
-          "expires_in"
-        ],
         "type": "object"
       },
       "admin.AdminLoginReq": {
@@ -5433,42 +5425,8 @@
         ],
         "type": "object"
       },
-      "storage.UpdateConfig": {
-        "properties": {
-          "nfs": {
-            "$ref": "#/components/schemas/storage.NFSConfig"
-          },
-          "s3": {
-            "$ref": "#/components/schemas/storage.S3Config"
-          },
-          "storage_path": {
-            "type": "string"
-          },
-          "webdav": {
-            "$ref": "#/components/schemas/storage.WebDAVConfig"
-          }
-        },
-        "required": [
-          "storage_path",
-          "webdav",
-          "s3",
-          "nfs"
-        ],
-        "type": "object"
-      },
       "storage.UpdateStorageConfigReq": {
-        "properties": {
-          "config": {
-            "$ref": "#/components/schemas/storage.UpdateConfig"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "config"
-        ],
+        "properties": {},
         "type": "object"
       },
       "storage.UpdateStorageConfigResp": {
@@ -7904,28 +7862,6 @@
       "put": {
         "description": "UpdateStorageConfig 更新存储配置",
         "operationId": "UpdateStorageConfig",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "config": {
-                    "$ref": "#/components/schemas/storage.UpdateConfig"
-                  },
-                  "type": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "type",
-                  "config"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {

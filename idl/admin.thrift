@@ -13,10 +13,15 @@ struct AdminLoginReq {
     2: required string password (api.body = "password"),
 }
 
+// 登录成功后的数据。
+//
+// **不再回传 token**：浏览器端令牌已迁到 HttpOnly 会话 Cookie（前端不再持久化
+// 令牌、不再往 Authorization 头塞 token）⇒ 响应体带 token 只是**旧前端兼容**
+// （且它让令牌多一处泄漏面：响应体可能被日志/代理记录）⇒ 2026-10-25 随旧版本
+// 兼容一并删除。命令行/桌面端走 API Key，不经本端点。
 struct AdminLoginData {
-    1: required string token      (api.body = "token"),
-    2: required string token_type (api.body = "token_type"),
-    3: required i64    expires_in (api.body = "expires_in"),
+    1: optional string token_type (api.body = "token_type"),
+    2: optional i64    expires_in (api.body = "expires_in"),
 }
 
 struct AdminLoginResp {
