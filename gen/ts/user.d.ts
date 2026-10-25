@@ -101,11 +101,13 @@ export interface UserFilesReq {
   page_size: number;
 }
 
+/**
+ * prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+ * 全库恒空且无写入方；文件名统一走 file_name。
+ */
 export interface UserFileItem {
   id: number;
   code: string;
-  prefix: string;
-  suffix: string;
   file_name: string;
   file_path: string;
   size: number;

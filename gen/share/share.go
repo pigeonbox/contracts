@@ -3939,44 +3939,44 @@ func (p *UserSharesListReq) String() string {
 
 }
 
+// prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+// 全库恒空且无写入方；文件名统一走 file_name。
 type UserShareItemData struct {
 	ID   int64  `thrift:"id,1,required" form:"id,required" json:"id,required"`
 	Code string `thrift:"code,2,required" form:"code,required" json:"code,required"`
 	// 6 位取件码（落库持久化；空 = 未铸造：E2E/历史数据）
 	PickupCode *string `thrift:"pickup_code,3,optional" form:"pickup_code" json:"pickup_code,omitempty"`
-	Prefix     string  `thrift:"prefix,4,required" form:"prefix,required" json:"prefix,required"`
-	Suffix     string  `thrift:"suffix,5,required" form:"suffix,required" json:"suffix,required"`
-	FileName   string  `thrift:"file_name,6,required" form:"file_name,required" json:"file_name,required"`
-	FilePath   string  `thrift:"file_path,7,required" form:"file_path,required" json:"file_path,required"`
-	Size       int64   `thrift:"size,8,required" form:"size,required" json:"size,required"`
-	Text       string  `thrift:"text,9,required" form:"text,required" json:"text,required"`
+	FileName   string  `thrift:"file_name,4,required" form:"file_name,required" json:"file_name,required"`
+	FilePath   string  `thrift:"file_path,5,required" form:"file_path,required" json:"file_path,required"`
+	Size       int64   `thrift:"size,6,required" form:"size,required" json:"size,required"`
+	Text       string  `thrift:"text,7,required" form:"text,required" json:"text,required"`
 	// RFC3339Nano
-	ExpiredAt *string `thrift:"expired_at,10,optional" form:"expired_at" json:"expired_at,omitempty"`
+	ExpiredAt *string `thrift:"expired_at,8,optional" form:"expired_at" json:"expired_at,omitempty"`
 	// -1=无限, 0=耗尽, >0=剩余
-	ExpiredCount int32  `thrift:"expired_count,11,required" form:"expired_count,required" json:"expired_count,required"`
-	UsedCount    int32  `thrift:"used_count,12,required" form:"used_count,required" json:"used_count,required"`
-	RequireAuth  bool   `thrift:"require_auth,13,required" form:"require_auth,required" json:"require_auth,required"`
-	UploadType   string `thrift:"upload_type,14,required" form:"upload_type,required" json:"upload_type,required"`
+	ExpiredCount int32  `thrift:"expired_count,9,required" form:"expired_count,required" json:"expired_count,required"`
+	UsedCount    int32  `thrift:"used_count,10,required" form:"used_count,required" json:"used_count,required"`
+	RequireAuth  bool   `thrift:"require_auth,11,required" form:"require_auth,required" json:"require_auth,required"`
+	UploadType   string `thrift:"upload_type,12,required" form:"upload_type,required" json:"upload_type,required"`
 	// RFC3339Nano
-	CreatedAt string `thrift:"created_at,15,required" form:"created_at,required" json:"created_at,required"`
-	UpdatedAt string `thrift:"updated_at,16,required" form:"updated_at,required" json:"updated_at,required"`
+	CreatedAt string `thrift:"created_at,13,required" form:"created_at,required" json:"created_at,required"`
+	UpdatedAt string `thrift:"updated_at,14,required" form:"updated_at,required" json:"updated_at,required"`
 	// 回收站
-	DeletedAt   *string `thrift:"deleted_at,17,optional" form:"deleted_at" json:"deleted_at,omitempty"`
-	ViewerIP    string  `thrift:"viewer_ip,18,required" form:"viewer_ip,required" json:"viewer_ip,required"`
-	ViewerAt    *string `thrift:"viewer_at,19,optional" form:"viewer_at" json:"viewer_at,omitempty"`
-	ViewerCount int32   `thrift:"viewer_count,20,required" form:"viewer_count,required" json:"viewer_count,required"`
-	IsExpired   bool    `thrift:"is_expired,21,required" form:"is_expired,required" json:"is_expired,required"`
-	IsTextShare bool    `thrift:"is_text_share,22,required" form:"is_text_share,required" json:"is_text_share,required"`
+	DeletedAt   *string `thrift:"deleted_at,15,optional" form:"deleted_at" json:"deleted_at,omitempty"`
+	ViewerIP    string  `thrift:"viewer_ip,16,required" form:"viewer_ip,required" json:"viewer_ip,required"`
+	ViewerAt    *string `thrift:"viewer_at,17,optional" form:"viewer_at" json:"viewer_at,omitempty"`
+	ViewerCount int32   `thrift:"viewer_count,18,required" form:"viewer_count,required" json:"viewer_count,required"`
+	IsExpired   bool    `thrift:"is_expired,19,required" form:"is_expired,required" json:"is_expired,required"`
+	IsTextShare bool    `thrift:"is_text_share,20,required" form:"is_text_share,required" json:"is_text_share,required"`
 	// normal/blocked/pending_review
-	Status string `thrift:"status,23,required" form:"status,required" json:"status,required"`
+	Status string `thrift:"status,21,required" form:"status,required" json:"status,required"`
 	// P0 多文件：子文件数
-	FileCount int32 `thrift:"file_count,24,required" form:"file_count,required" json:"file_count,required"`
+	FileCount int32 `thrift:"file_count,22,required" form:"file_count,required" json:"file_count,required"`
 	// 文件备注（可空）
-	Note *string `thrift:"note,25,optional" form:"note" json:"note,omitempty"`
+	Note *string `thrift:"note,23,optional" form:"note" json:"note,omitempty"`
 	// 逐条取件明细（2026-10-24 新增）：一次取件 = 一次内容交付 = 一个取件凭证，
 	// 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
 	// 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
-	Pickups []*PickupRecord `thrift:"pickups,26,optional,list<PickupRecord>" form:"pickups" json:"pickups,omitempty"`
+	Pickups []*PickupRecord `thrift:"pickups,24,optional,list<PickupRecord>" form:"pickups" json:"pickups,omitempty"`
 }
 
 func NewUserShareItemData() *UserShareItemData {
@@ -4001,14 +4001,6 @@ func (p *UserShareItemData) GetPickupCode() (v string) {
 		return UserShareItemData_PickupCode_DEFAULT
 	}
 	return *p.PickupCode
-}
-
-func (p *UserShareItemData) GetPrefix() (v string) {
-	return p.Prefix
-}
-
-func (p *UserShareItemData) GetSuffix() (v string) {
-	return p.Suffix
 }
 
 func (p *UserShareItemData) GetFileName() (v string) {
@@ -4124,29 +4116,27 @@ var fieldIDToName_UserShareItemData = map[int16]string{
 	1:  "id",
 	2:  "code",
 	3:  "pickup_code",
-	4:  "prefix",
-	5:  "suffix",
-	6:  "file_name",
-	7:  "file_path",
-	8:  "size",
-	9:  "text",
-	10: "expired_at",
-	11: "expired_count",
-	12: "used_count",
-	13: "require_auth",
-	14: "upload_type",
-	15: "created_at",
-	16: "updated_at",
-	17: "deleted_at",
-	18: "viewer_ip",
-	19: "viewer_at",
-	20: "viewer_count",
-	21: "is_expired",
-	22: "is_text_share",
-	23: "status",
-	24: "file_count",
-	25: "note",
-	26: "pickups",
+	4:  "file_name",
+	5:  "file_path",
+	6:  "size",
+	7:  "text",
+	8:  "expired_at",
+	9:  "expired_count",
+	10: "used_count",
+	11: "require_auth",
+	12: "upload_type",
+	13: "created_at",
+	14: "updated_at",
+	15: "deleted_at",
+	16: "viewer_ip",
+	17: "viewer_at",
+	18: "viewer_count",
+	19: "is_expired",
+	20: "is_text_share",
+	21: "status",
+	22: "file_count",
+	23: "note",
+	24: "pickups",
 }
 
 func (p *UserShareItemData) IsSetPickupCode() bool {
@@ -4179,8 +4169,6 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	var issetID bool = false
 	var issetCode bool = false
-	var issetPrefix bool = false
-	var issetSuffix bool = false
 	var issetFileName bool = false
 	var issetFilePath bool = false
 	var issetSize bool = false
@@ -4243,7 +4231,7 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetPrefix = true
+				issetFileName = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4252,16 +4240,16 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetSuffix = true
+				issetFilePath = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 6:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetFileName = true
+				issetSize = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4270,60 +4258,60 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetFilePath = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetSize = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 9:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField9(iprot); err != nil {
-					goto ReadFieldError
-				}
 				issetText = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 10:
+		case 8:
 			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField10(iprot); err != nil {
+				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 11:
+		case 9:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField11(iprot); err != nil {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetExpiredCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 12:
+		case 10:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField12(iprot); err != nil {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetUsedCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 13:
+		case 11:
 			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField13(iprot); err != nil {
+				if err = p.ReadField11(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetRequireAuth = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetUploadType = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCreatedAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4332,7 +4320,7 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetUploadType = true
+				issetUpdatedAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4341,7 +4329,6 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField15(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetCreatedAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4350,7 +4337,7 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField16(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetUpdatedAt = true
+				issetViewerIP = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4363,46 +4350,47 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 18:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField18(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetViewerIP = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 19:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField19(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 20:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField20(iprot); err != nil {
+				if err = p.ReadField18(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetViewerCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 21:
+		case 19:
 			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField21(iprot); err != nil {
+				if err = p.ReadField19(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetIsExpired = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 22:
+		case 20:
 			if fieldTypeId == thrift.BOOL {
-				if err = p.ReadField22(iprot); err != nil {
+				if err = p.ReadField20(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetIsTextShare = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 21:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField21(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetStatus = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 22:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField22(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetFileCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4411,30 +4399,12 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField23(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetStatus = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 24:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField24(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetFileCount = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 25:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField25(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 26:
 			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField26(iprot); err != nil {
+				if err = p.ReadField24(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4463,93 +4433,83 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetPrefix {
+	if !issetFileName {
 		fieldId = 4
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetSuffix {
+	if !issetFilePath {
 		fieldId = 5
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetFileName {
+	if !issetSize {
 		fieldId = 6
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetFilePath {
+	if !issetText {
 		fieldId = 7
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetSize {
-		fieldId = 8
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetText {
+	if !issetExpiredCount {
 		fieldId = 9
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetExpiredCount {
-		fieldId = 11
-		goto RequiredFieldNotSetError
-	}
-
 	if !issetUsedCount {
-		fieldId = 12
+		fieldId = 10
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetRequireAuth {
-		fieldId = 13
+		fieldId = 11
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetUploadType {
-		fieldId = 14
+		fieldId = 12
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetCreatedAt {
-		fieldId = 15
+		fieldId = 13
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetUpdatedAt {
-		fieldId = 16
+		fieldId = 14
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetViewerIP {
-		fieldId = 18
+		fieldId = 16
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetViewerCount {
-		fieldId = 20
+		fieldId = 18
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetIsExpired {
-		fieldId = 21
+		fieldId = 19
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetIsTextShare {
-		fieldId = 22
+		fieldId = 20
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetStatus {
-		fieldId = 23
+		fieldId = 21
 		goto RequiredFieldNotSetError
 	}
 
 	if !issetFileCount {
-		fieldId = 24
+		fieldId = 22
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -4611,7 +4571,7 @@ func (p *UserShareItemData) ReadField4(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Prefix = _field
+	p.FileName = _field
 	return nil
 }
 func (p *UserShareItemData) ReadField5(iprot thrift.TProtocol) error {
@@ -4622,32 +4582,10 @@ func (p *UserShareItemData) ReadField5(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Suffix = _field
-	return nil
-}
-func (p *UserShareItemData) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.FileName = _field
-	return nil
-}
-func (p *UserShareItemData) ReadField7(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
 	p.FilePath = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField8(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
@@ -4658,7 +4596,7 @@ func (p *UserShareItemData) ReadField8(iprot thrift.TProtocol) error {
 	p.Size = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField9(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4669,7 +4607,7 @@ func (p *UserShareItemData) ReadField9(iprot thrift.TProtocol) error {
 	p.Text = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField10(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField8(iprot thrift.TProtocol) error {
 
 	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4680,7 +4618,7 @@ func (p *UserShareItemData) ReadField10(iprot thrift.TProtocol) error {
 	p.ExpiredAt = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField11(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField9(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4691,7 +4629,7 @@ func (p *UserShareItemData) ReadField11(iprot thrift.TProtocol) error {
 	p.ExpiredCount = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField12(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField10(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4702,7 +4640,7 @@ func (p *UserShareItemData) ReadField12(iprot thrift.TProtocol) error {
 	p.UsedCount = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField13(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField11(iprot thrift.TProtocol) error {
 
 	var _field bool
 	if v, err := iprot.ReadBool(); err != nil {
@@ -4713,7 +4651,7 @@ func (p *UserShareItemData) ReadField13(iprot thrift.TProtocol) error {
 	p.RequireAuth = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField14(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField12(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4724,7 +4662,7 @@ func (p *UserShareItemData) ReadField14(iprot thrift.TProtocol) error {
 	p.UploadType = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField15(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField13(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4735,7 +4673,7 @@ func (p *UserShareItemData) ReadField15(iprot thrift.TProtocol) error {
 	p.CreatedAt = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField16(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField14(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4746,7 +4684,7 @@ func (p *UserShareItemData) ReadField16(iprot thrift.TProtocol) error {
 	p.UpdatedAt = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField17(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField15(iprot thrift.TProtocol) error {
 
 	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4757,7 +4695,7 @@ func (p *UserShareItemData) ReadField17(iprot thrift.TProtocol) error {
 	p.DeletedAt = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField18(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField16(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4768,7 +4706,7 @@ func (p *UserShareItemData) ReadField18(iprot thrift.TProtocol) error {
 	p.ViewerIP = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField19(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField17(iprot thrift.TProtocol) error {
 
 	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4779,7 +4717,7 @@ func (p *UserShareItemData) ReadField19(iprot thrift.TProtocol) error {
 	p.ViewerAt = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField20(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField18(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4790,7 +4728,7 @@ func (p *UserShareItemData) ReadField20(iprot thrift.TProtocol) error {
 	p.ViewerCount = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField21(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField19(iprot thrift.TProtocol) error {
 
 	var _field bool
 	if v, err := iprot.ReadBool(); err != nil {
@@ -4801,7 +4739,7 @@ func (p *UserShareItemData) ReadField21(iprot thrift.TProtocol) error {
 	p.IsExpired = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField22(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField20(iprot thrift.TProtocol) error {
 
 	var _field bool
 	if v, err := iprot.ReadBool(); err != nil {
@@ -4812,7 +4750,7 @@ func (p *UserShareItemData) ReadField22(iprot thrift.TProtocol) error {
 	p.IsTextShare = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField23(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField21(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4823,7 +4761,7 @@ func (p *UserShareItemData) ReadField23(iprot thrift.TProtocol) error {
 	p.Status = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField24(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField22(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4834,7 +4772,7 @@ func (p *UserShareItemData) ReadField24(iprot thrift.TProtocol) error {
 	p.FileCount = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField25(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField23(iprot thrift.TProtocol) error {
 
 	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4845,7 +4783,7 @@ func (p *UserShareItemData) ReadField25(iprot thrift.TProtocol) error {
 	p.Note = _field
 	return nil
 }
-func (p *UserShareItemData) ReadField26(iprot thrift.TProtocol) error {
+func (p *UserShareItemData) ReadField24(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
 		return err
@@ -4971,14 +4909,6 @@ func (p *UserShareItemData) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 24
 			goto WriteFieldError
 		}
-		if err = p.writeField25(oprot); err != nil {
-			fieldId = 25
-			goto WriteFieldError
-		}
-		if err = p.writeField26(oprot); err != nil {
-			fieldId = 26
-			goto WriteFieldError
-		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -5051,10 +4981,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("prefix", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("file_name", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Prefix); err != nil {
+	if err := oprot.WriteString(p.FileName); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5068,10 +4998,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("suffix", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("file_path", thrift.STRING, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Suffix); err != nil {
+	if err := oprot.WriteString(p.FilePath); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5085,10 +5015,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_name", thrift.STRING, 6); err != nil {
+	if err = oprot.WriteFieldBegin("size", thrift.I64, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.FileName); err != nil {
+	if err := oprot.WriteI64(p.Size); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5102,10 +5032,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_path", thrift.STRING, 7); err != nil {
+	if err = oprot.WriteFieldBegin("text", thrift.STRING, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.FilePath); err != nil {
+	if err := oprot.WriteString(p.Text); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5119,14 +5049,16 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("size", thrift.I64, 8); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.Size); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetExpiredAt() {
+		if err = oprot.WriteFieldBegin("expired_at", thrift.STRING, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ExpiredAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -5136,10 +5068,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("text", thrift.STRING, 9); err != nil {
+	if err = oprot.WriteFieldBegin("expired_count", thrift.I32, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Text); err != nil {
+	if err := oprot.WriteI32(p.ExpiredCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5153,16 +5085,14 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField10(oprot thrift.TProtocol) (err error) {
-	if p.IsSetExpiredAt() {
-		if err = oprot.WriteFieldBegin("expired_at", thrift.STRING, 10); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.ExpiredAt); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("used_count", thrift.I32, 10); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.UsedCount); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -5172,10 +5102,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("expired_count", thrift.I32, 11); err != nil {
+	if err = oprot.WriteFieldBegin("require_auth", thrift.BOOL, 11); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.ExpiredCount); err != nil {
+	if err := oprot.WriteBool(p.RequireAuth); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5189,10 +5119,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("used_count", thrift.I32, 12); err != nil {
+	if err = oprot.WriteFieldBegin("upload_type", thrift.STRING, 12); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.UsedCount); err != nil {
+	if err := oprot.WriteString(p.UploadType); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5206,10 +5136,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField13(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("require_auth", thrift.BOOL, 13); err != nil {
+	if err = oprot.WriteFieldBegin("created_at", thrift.STRING, 13); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBool(p.RequireAuth); err != nil {
+	if err := oprot.WriteString(p.CreatedAt); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5223,10 +5153,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField14(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("upload_type", thrift.STRING, 14); err != nil {
+	if err = oprot.WriteFieldBegin("updated_at", thrift.STRING, 14); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.UploadType); err != nil {
+	if err := oprot.WriteString(p.UpdatedAt); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5240,14 +5170,16 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField15(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("created_at", thrift.STRING, 15); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.CreatedAt); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetDeletedAt() {
+		if err = oprot.WriteFieldBegin("deleted_at", thrift.STRING, 15); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.DeletedAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -5257,10 +5189,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField16(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("updated_at", thrift.STRING, 16); err != nil {
+	if err = oprot.WriteFieldBegin("viewer_ip", thrift.STRING, 16); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.UpdatedAt); err != nil {
+	if err := oprot.WriteString(p.ViewerIP); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5274,11 +5206,11 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField17(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDeletedAt() {
-		if err = oprot.WriteFieldBegin("deleted_at", thrift.STRING, 17); err != nil {
+	if p.IsSetViewerAt() {
+		if err = oprot.WriteFieldBegin("viewer_at", thrift.STRING, 17); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.DeletedAt); err != nil {
+		if err := oprot.WriteString(*p.ViewerAt); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -5293,10 +5225,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField18(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("viewer_ip", thrift.STRING, 18); err != nil {
+	if err = oprot.WriteFieldBegin("viewer_count", thrift.I32, 18); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ViewerIP); err != nil {
+	if err := oprot.WriteI32(p.ViewerCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5310,16 +5242,14 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField19(oprot thrift.TProtocol) (err error) {
-	if p.IsSetViewerAt() {
-		if err = oprot.WriteFieldBegin("viewer_at", thrift.STRING, 19); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.ViewerAt); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("is_expired", thrift.BOOL, 19); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.IsExpired); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -5329,10 +5259,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField20(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("viewer_count", thrift.I32, 20); err != nil {
+	if err = oprot.WriteFieldBegin("is_text_share", thrift.BOOL, 20); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.ViewerCount); err != nil {
+	if err := oprot.WriteBool(p.IsTextShare); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5346,10 +5276,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField21(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_expired", thrift.BOOL, 21); err != nil {
+	if err = oprot.WriteFieldBegin("status", thrift.STRING, 21); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBool(p.IsExpired); err != nil {
+	if err := oprot.WriteString(p.Status); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5363,10 +5293,10 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField22(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("is_text_share", thrift.BOOL, 22); err != nil {
+	if err = oprot.WriteFieldBegin("file_count", thrift.I32, 22); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBool(p.IsTextShare); err != nil {
+	if err := oprot.WriteI32(p.FileCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -5380,42 +5310,8 @@ WriteFieldEndError:
 }
 
 func (p *UserShareItemData) writeField23(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("status", thrift.STRING, 23); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Status); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
-}
-
-func (p *UserShareItemData) writeField24(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_count", thrift.I32, 24); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.FileCount); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
-}
-
-func (p *UserShareItemData) writeField25(oprot thrift.TProtocol) (err error) {
 	if p.IsSetNote() {
-		if err = oprot.WriteFieldBegin("note", thrift.STRING, 25); err != nil {
+		if err = oprot.WriteFieldBegin("note", thrift.STRING, 23); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteString(*p.Note); err != nil {
@@ -5427,14 +5323,14 @@ func (p *UserShareItemData) writeField25(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 23 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 23 end error: ", p), err)
 }
 
-func (p *UserShareItemData) writeField26(oprot thrift.TProtocol) (err error) {
+func (p *UserShareItemData) writeField24(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPickups() {
-		if err = oprot.WriteFieldBegin("pickups", thrift.LIST, 26); err != nil {
+		if err = oprot.WriteFieldBegin("pickups", thrift.LIST, 24); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Pickups)); err != nil {
@@ -5454,9 +5350,9 @@ func (p *UserShareItemData) writeField26(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 26 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
 }
 
 func (p *UserShareItemData) String() string {

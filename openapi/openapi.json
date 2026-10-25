@@ -4602,9 +4602,6 @@
             },
             "type": "array"
           },
-          "prefix": {
-            "type": "string"
-          },
           "require_auth": {
             "type": "boolean"
           },
@@ -4613,9 +4610,6 @@
             "type": "integer"
           },
           "status": {
-            "type": "string"
-          },
-          "suffix": {
             "type": "string"
           },
           "text": {
@@ -4643,8 +4637,6 @@
         "required": [
           "id",
           "code",
-          "prefix",
-          "suffix",
           "file_name",
           "file_path",
           "size",
@@ -5838,15 +5830,9 @@
             "format": "int64",
             "type": "integer"
           },
-          "prefix": {
-            "type": "string"
-          },
           "size": {
             "format": "int64",
             "type": "integer"
-          },
-          "suffix": {
-            "type": "string"
           },
           "updated_at": {
             "type": "string"
@@ -5858,8 +5844,6 @@
         "required": [
           "id",
           "code",
-          "prefix",
-          "suffix",
           "file_name",
           "file_path",
           "size",

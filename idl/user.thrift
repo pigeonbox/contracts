@@ -117,19 +117,19 @@ struct UserFilesReq {
     2: required i32 page_size (api.query = "page_size"),
 }
 
+// prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+// 全库恒空且无写入方；文件名统一走 file_name。
 struct UserFileItem {
     1: required i64    id            (api.body = "id"),
     2: required string code          (api.body = "code"),
-    3: required string prefix        (api.body = "prefix"),
-    4: required string suffix        (api.body = "suffix"),
-    5: required string file_name     (api.body = "file_name"),
-    6: required string file_path     (api.body = "file_path"),
-    7: required i64    size          (api.body = "size"),
-    8: required string expired_at    (api.body = "expired_at"),
-    9: required i32    expired_count (api.body = "expired_count"),
-    10: required i32   used_count    (api.body = "used_count"),
-    11: required string created_at   (api.body = "created_at"),
-    12: required string updated_at   (api.body = "updated_at"),
+    3: required string file_name     (api.body = "file_name"),
+    4: required string file_path     (api.body = "file_path"),
+    5: required i64    size          (api.body = "size"),
+    6: required string expired_at    (api.body = "expired_at"),
+    7: required i32    expired_count (api.body = "expired_count"),
+    8: required i32   used_count    (api.body = "used_count"),
+    9: required string created_at   (api.body = "created_at"),
+    10: required string updated_at   (api.body = "updated_at"),
 }
 
 struct UserFilePagination {

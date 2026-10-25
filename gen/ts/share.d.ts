@@ -127,13 +127,15 @@ export interface UserSharesListReq {
   page_size?: number;
 }
 
+/**
+ * prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+ * 全库恒空且无写入方；文件名统一走 file_name。
+ */
 export interface UserShareItemData {
   id: number;
   code: string;
   /** 6 位取件码（落库持久化；空 = 未铸造：E2E/历史数据） */
   pickup_code?: string;
-  prefix: string;
-  suffix: string;
   file_name: string;
   file_path: string;
   size: number;

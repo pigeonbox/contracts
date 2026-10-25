@@ -126,37 +126,37 @@ struct UserSharesListReq {
     4: optional i32    page_size (api.query = "page_size"),
 }
 
+// prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+// 全库恒空且无写入方；文件名统一走 file_name。
 struct UserShareItemData {
     1: required i64     id            (api.body = "id"),
     2: required string  code          (api.body = "code"),
     // 6 位取件码（落库持久化；空 = 未铸造：E2E/历史数据）
     3: optional string  pickup_code   (api.body = "pickup_code"),
-    4: required string  prefix        (api.body = "prefix"),
-    5: required string  suffix        (api.body = "suffix"),
-    6: required string  file_name     (api.body = "file_name"),
-    7: required string  file_path     (api.body = "file_path"),
-    8: required i64     size          (api.body = "size"),
-    9: required string  text          (api.body = "text"),
-    10: optional string expired_at    (api.body = "expired_at"),     // RFC3339Nano
-    11: required i32    expired_count (api.body = "expired_count"),  // -1=无限, 0=耗尽, >0=剩余
-    12: required i32    used_count    (api.body = "used_count"),
-    13: required bool   require_auth  (api.body = "require_auth"),
-    14: required string upload_type   (api.body = "upload_type"),
-    15: required string created_at    (api.body = "created_at"),     // RFC3339Nano
-    16: required string updated_at    (api.body = "updated_at"),
-    17: optional string deleted_at    (api.body = "deleted_at"),     // 回收站
-    18: required string  viewer_ip     (api.body = "viewer_ip"),
-    19: optional string viewer_at     (api.body = "viewer_at"),
-    20: required i32    viewer_count  (api.body = "viewer_count"),
-    21: required bool   is_expired    (api.body = "is_expired"),
-    22: required bool   is_text_share (api.body = "is_text_share"),
-    23: required string  status        (api.body = "status"),         // normal/blocked/pending_review
-    24: required i32    file_count    (api.body = "file_count"),     // P0 多文件：子文件数
-    25: optional string note          (api.body = "note"),           // 文件备注（可空）
+    4: required string  file_name     (api.body = "file_name"),
+    5: required string  file_path     (api.body = "file_path"),
+    6: required i64     size          (api.body = "size"),
+    7: required string  text          (api.body = "text"),
+    8: optional string expired_at    (api.body = "expired_at"),     // RFC3339Nano
+    9: required i32    expired_count (api.body = "expired_count"),  // -1=无限, 0=耗尽, >0=剩余
+    10: required i32    used_count    (api.body = "used_count"),
+    11: required bool   require_auth  (api.body = "require_auth"),
+    12: required string upload_type   (api.body = "upload_type"),
+    13: required string created_at    (api.body = "created_at"),     // RFC3339Nano
+    14: required string updated_at    (api.body = "updated_at"),
+    15: optional string deleted_at    (api.body = "deleted_at"),     // 回收站
+    16: required string  viewer_ip     (api.body = "viewer_ip"),
+    17: optional string viewer_at     (api.body = "viewer_at"),
+    18: required i32    viewer_count  (api.body = "viewer_count"),
+    19: required bool   is_expired    (api.body = "is_expired"),
+    20: required bool   is_text_share (api.body = "is_text_share"),
+    21: required string  status        (api.body = "status"),         // normal/blocked/pending_review
+    22: required i32    file_count    (api.body = "file_count"),     // P0 多文件：子文件数
+    23: optional string note          (api.body = "note"),           // 文件备注（可空）
     // 逐条取件明细（2026-10-24 新增）：一次取件 = 一次内容交付 = 一个取件凭证，
     // 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
     // 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
-    26: optional list<PickupRecord> pickups (api.body = "pickups"),
+    24: optional list<PickupRecord> pickups (api.body = "pickups"),
 }
 
 // PickupRecord 一次取件的明细（owner 侧「取件历史」逐条展示）。

@@ -3915,19 +3915,19 @@ func (p *UserFilesReq) String() string {
 
 }
 
+// prefix/suffix 已退役（2026-10-26）：旧直传布局的「原始名拆分」死列，
+// 全库恒空且无写入方；文件名统一走 file_name。
 type UserFileItem struct {
 	ID           int64  `thrift:"id,1,required" form:"id,required" json:"id,required"`
 	Code         string `thrift:"code,2,required" form:"code,required" json:"code,required"`
-	Prefix       string `thrift:"prefix,3,required" form:"prefix,required" json:"prefix,required"`
-	Suffix       string `thrift:"suffix,4,required" form:"suffix,required" json:"suffix,required"`
-	FileName     string `thrift:"file_name,5,required" form:"file_name,required" json:"file_name,required"`
-	FilePath     string `thrift:"file_path,6,required" form:"file_path,required" json:"file_path,required"`
-	Size         int64  `thrift:"size,7,required" form:"size,required" json:"size,required"`
-	ExpiredAt    string `thrift:"expired_at,8,required" form:"expired_at,required" json:"expired_at,required"`
-	ExpiredCount int32  `thrift:"expired_count,9,required" form:"expired_count,required" json:"expired_count,required"`
-	UsedCount    int32  `thrift:"used_count,10,required" form:"used_count,required" json:"used_count,required"`
-	CreatedAt    string `thrift:"created_at,11,required" form:"created_at,required" json:"created_at,required"`
-	UpdatedAt    string `thrift:"updated_at,12,required" form:"updated_at,required" json:"updated_at,required"`
+	FileName     string `thrift:"file_name,3,required" form:"file_name,required" json:"file_name,required"`
+	FilePath     string `thrift:"file_path,4,required" form:"file_path,required" json:"file_path,required"`
+	Size         int64  `thrift:"size,5,required" form:"size,required" json:"size,required"`
+	ExpiredAt    string `thrift:"expired_at,6,required" form:"expired_at,required" json:"expired_at,required"`
+	ExpiredCount int32  `thrift:"expired_count,7,required" form:"expired_count,required" json:"expired_count,required"`
+	UsedCount    int32  `thrift:"used_count,8,required" form:"used_count,required" json:"used_count,required"`
+	CreatedAt    string `thrift:"created_at,9,required" form:"created_at,required" json:"created_at,required"`
+	UpdatedAt    string `thrift:"updated_at,10,required" form:"updated_at,required" json:"updated_at,required"`
 }
 
 func NewUserFileItem() *UserFileItem {
@@ -3943,14 +3943,6 @@ func (p *UserFileItem) GetID() (v int64) {
 
 func (p *UserFileItem) GetCode() (v string) {
 	return p.Code
-}
-
-func (p *UserFileItem) GetPrefix() (v string) {
-	return p.Prefix
-}
-
-func (p *UserFileItem) GetSuffix() (v string) {
-	return p.Suffix
 }
 
 func (p *UserFileItem) GetFileName() (v string) {
@@ -3988,16 +3980,14 @@ func (p *UserFileItem) GetUpdatedAt() (v string) {
 var fieldIDToName_UserFileItem = map[int16]string{
 	1:  "id",
 	2:  "code",
-	3:  "prefix",
-	4:  "suffix",
-	5:  "file_name",
-	6:  "file_path",
-	7:  "size",
-	8:  "expired_at",
-	9:  "expired_count",
-	10: "used_count",
-	11: "created_at",
-	12: "updated_at",
+	3:  "file_name",
+	4:  "file_path",
+	5:  "size",
+	6:  "expired_at",
+	7:  "expired_count",
+	8:  "used_count",
+	9:  "created_at",
+	10: "updated_at",
 }
 
 func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
@@ -4006,8 +3996,6 @@ func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
 	var fieldId int16
 	var issetID bool = false
 	var issetCode bool = false
-	var issetPrefix bool = false
-	var issetSuffix bool = false
 	var issetFileName bool = false
 	var issetFilePath bool = false
 	var issetSize bool = false
@@ -4054,7 +4042,7 @@ func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetPrefix = true
+				issetFileName = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4063,16 +4051,16 @@ func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetSuffix = true
+				issetFilePath = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetFileName = true
+				issetSize = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -4081,58 +4069,40 @@ func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetFilePath = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 7:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField7(iprot); err != nil {
-					goto ReadFieldError
-				}
-				issetSize = true
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 8:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField8(iprot); err != nil {
-					goto ReadFieldError
-				}
 				issetExpiredAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 9:
+		case 7:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField9(iprot); err != nil {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetExpiredCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 10:
+		case 8:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField10(iprot); err != nil {
+				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetUsedCount = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 11:
+		case 9:
 			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField11(iprot); err != nil {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetCreatedAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 12:
+		case 10:
 			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField12(iprot); err != nil {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetUpdatedAt = true
@@ -4162,53 +4132,43 @@ func (p *UserFileItem) Read(iprot thrift.TProtocol) (err error) {
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetPrefix {
+	if !issetFileName {
 		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetSuffix {
+	if !issetFilePath {
 		fieldId = 4
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetFileName {
+	if !issetSize {
 		fieldId = 5
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetFilePath {
+	if !issetExpiredAt {
 		fieldId = 6
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetSize {
+	if !issetExpiredCount {
 		fieldId = 7
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetExpiredAt {
+	if !issetUsedCount {
 		fieldId = 8
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetExpiredCount {
+	if !issetCreatedAt {
 		fieldId = 9
 		goto RequiredFieldNotSetError
 	}
 
-	if !issetUsedCount {
-		fieldId = 10
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetCreatedAt {
-		fieldId = 11
-		goto RequiredFieldNotSetError
-	}
-
 	if !issetUpdatedAt {
-		fieldId = 12
+		fieldId = 10
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -4259,7 +4219,7 @@ func (p *UserFileItem) ReadField3(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Prefix = _field
+	p.FileName = _field
 	return nil
 }
 func (p *UserFileItem) ReadField4(iprot thrift.TProtocol) error {
@@ -4270,32 +4230,10 @@ func (p *UserFileItem) ReadField4(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Suffix = _field
-	return nil
-}
-func (p *UserFileItem) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.FileName = _field
-	return nil
-}
-func (p *UserFileItem) ReadField6(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
 	p.FilePath = _field
 	return nil
 }
-func (p *UserFileItem) ReadField7(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField5(iprot thrift.TProtocol) error {
 
 	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
@@ -4306,7 +4244,7 @@ func (p *UserFileItem) ReadField7(iprot thrift.TProtocol) error {
 	p.Size = _field
 	return nil
 }
-func (p *UserFileItem) ReadField8(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4317,7 +4255,7 @@ func (p *UserFileItem) ReadField8(iprot thrift.TProtocol) error {
 	p.ExpiredAt = _field
 	return nil
 }
-func (p *UserFileItem) ReadField9(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField7(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4328,7 +4266,7 @@ func (p *UserFileItem) ReadField9(iprot thrift.TProtocol) error {
 	p.ExpiredCount = _field
 	return nil
 }
-func (p *UserFileItem) ReadField10(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField8(iprot thrift.TProtocol) error {
 
 	var _field int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -4339,7 +4277,7 @@ func (p *UserFileItem) ReadField10(iprot thrift.TProtocol) error {
 	p.UsedCount = _field
 	return nil
 }
-func (p *UserFileItem) ReadField11(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField9(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4350,7 +4288,7 @@ func (p *UserFileItem) ReadField11(iprot thrift.TProtocol) error {
 	p.CreatedAt = _field
 	return nil
 }
-func (p *UserFileItem) ReadField12(iprot thrift.TProtocol) error {
+func (p *UserFileItem) ReadField10(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -4408,14 +4346,6 @@ func (p *UserFileItem) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 10
 			goto WriteFieldError
 		}
-		if err = p.writeField11(oprot); err != nil {
-			fieldId = 11
-			goto WriteFieldError
-		}
-		if err = p.writeField12(oprot); err != nil {
-			fieldId = 12
-			goto WriteFieldError
-		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -4469,10 +4399,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("prefix", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("file_name", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Prefix); err != nil {
+	if err := oprot.WriteString(p.FileName); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4486,10 +4416,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("suffix", thrift.STRING, 4); err != nil {
+	if err = oprot.WriteFieldBegin("file_path", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Suffix); err != nil {
+	if err := oprot.WriteString(p.FilePath); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4503,10 +4433,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_name", thrift.STRING, 5); err != nil {
+	if err = oprot.WriteFieldBegin("size", thrift.I64, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.FileName); err != nil {
+	if err := oprot.WriteI64(p.Size); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4520,10 +4450,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_path", thrift.STRING, 6); err != nil {
+	if err = oprot.WriteFieldBegin("expired_at", thrift.STRING, 6); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.FilePath); err != nil {
+	if err := oprot.WriteString(p.ExpiredAt); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4537,10 +4467,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("size", thrift.I64, 7); err != nil {
+	if err = oprot.WriteFieldBegin("expired_count", thrift.I32, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.Size); err != nil {
+	if err := oprot.WriteI32(p.ExpiredCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4554,10 +4484,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("expired_at", thrift.STRING, 8); err != nil {
+	if err = oprot.WriteFieldBegin("used_count", thrift.I32, 8); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.ExpiredAt); err != nil {
+	if err := oprot.WriteI32(p.UsedCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4571,10 +4501,10 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField9(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("expired_count", thrift.I32, 9); err != nil {
+	if err = oprot.WriteFieldBegin("created_at", thrift.STRING, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.ExpiredCount); err != nil {
+	if err := oprot.WriteString(p.CreatedAt); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -4588,41 +4518,7 @@ WriteFieldEndError:
 }
 
 func (p *UserFileItem) writeField10(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("used_count", thrift.I32, 10); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.UsedCount); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
-}
-
-func (p *UserFileItem) writeField11(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("created_at", thrift.STRING, 11); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.CreatedAt); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
-}
-
-func (p *UserFileItem) writeField12(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("updated_at", thrift.STRING, 12); err != nil {
+	if err = oprot.WriteFieldBegin("updated_at", thrift.STRING, 10); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.UpdatedAt); err != nil {
@@ -4633,9 +4529,9 @@ func (p *UserFileItem) writeField12(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 
 func (p *UserFileItem) String() string {
