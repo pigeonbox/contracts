@@ -212,13 +212,18 @@ func (p *AdminLoginReq) String() string {
 
 // 登录成功后的数据。
 //
-// **不再回传 token**：浏览器端令牌已迁到 HttpOnly 会话 Cookie（前端不再持久化
-// 令牌、不再往 Authorization 头塞 token）⇒ 响应体带 token 只是**旧前端兼容**
-// （且它让令牌多一处泄漏面：响应体可能被日志/代理记录）⇒ 2026-10-25 随旧版本
-// 兼容一并删除。命令行/桌面端走 API Key，不经本端点。
+// token **必须回传**：它不是「旧前端兼容」，而是**脚本/客户端的认证通道**
+// （管理端鉴权同时认 `Authorization: Bearer <token>` 与会话 Cookie——浏览器走
+// Cookie，脚本走 Bearer；hub 自己的 scripts/smoke-full.sh 就是后者）。
+// 2026-10-25 曾把它当「旧前端兼容」删掉 ⇒ CI 冒烟 17 条断言连锁红
+// （S4 登录取不到 token ⇒ 后续 admin 面全部 401）⇒ 教训：**盘点「零引用」时
+// 别只看产品仓，本仓的脚本/冒烟也是第一方消费者**。
+//
+// 浏览器端则**不读**它（前端只用 HttpOnly 会话 Cookie，token 不进 localStorage）。
 type AdminLoginData struct {
-	TokenType *string `thrift:"token_type,1,optional" form:"token_type" json:"token_type,omitempty"`
-	ExpiresIn *int64  `thrift:"expires_in,2,optional" form:"expires_in" json:"expires_in,omitempty"`
+	Token     string `thrift:"token,1,required" form:"token,required" json:"token,required"`
+	TokenType string `thrift:"token_type,2,required" form:"token_type,required" json:"token_type,required"`
+	ExpiresIn int64  `thrift:"expires_in,3,required" form:"expires_in,required" json:"expires_in,required"`
 }
 
 func NewAdminLoginData() *AdminLoginData {
@@ -228,41 +233,31 @@ func NewAdminLoginData() *AdminLoginData {
 func (p *AdminLoginData) InitDefault() {
 }
 
-var AdminLoginData_TokenType_DEFAULT string
-
-func (p *AdminLoginData) GetTokenType() (v string) {
-	if !p.IsSetTokenType() {
-		return AdminLoginData_TokenType_DEFAULT
-	}
-	return *p.TokenType
+func (p *AdminLoginData) GetToken() (v string) {
+	return p.Token
 }
 
-var AdminLoginData_ExpiresIn_DEFAULT int64
+func (p *AdminLoginData) GetTokenType() (v string) {
+	return p.TokenType
+}
 
 func (p *AdminLoginData) GetExpiresIn() (v int64) {
-	if !p.IsSetExpiresIn() {
-		return AdminLoginData_ExpiresIn_DEFAULT
-	}
-	return *p.ExpiresIn
+	return p.ExpiresIn
 }
 
 var fieldIDToName_AdminLoginData = map[int16]string{
-	1: "token_type",
-	2: "expires_in",
-}
-
-func (p *AdminLoginData) IsSetTokenType() bool {
-	return p.TokenType != nil
-}
-
-func (p *AdminLoginData) IsSetExpiresIn() bool {
-	return p.ExpiresIn != nil
+	1: "token",
+	2: "token_type",
+	3: "expires_in",
 }
 
 func (p *AdminLoginData) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetToken bool = false
+	var issetTokenType bool = false
+	var issetExpiresIn bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -283,14 +278,25 @@ func (p *AdminLoginData) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetToken = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
+				issetTokenType = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetExpiresIn = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -307,6 +313,20 @@ func (p *AdminLoginData) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetToken {
+		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetTokenType {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetExpiresIn {
+		fieldId = 3
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
@@ -321,26 +341,39 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_AdminLoginData[fieldId]))
 }
 
 func (p *AdminLoginData) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field *string
+	var _field string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
-	p.TokenType = _field
+	p.Token = _field
 	return nil
 }
 func (p *AdminLoginData) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field *int64
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.TokenType = _field
+	return nil
+}
+func (p *AdminLoginData) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		_field = &v
+		_field = v
 	}
 	p.ExpiresIn = _field
 	return nil
@@ -358,6 +391,10 @@ func (p *AdminLoginData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -379,16 +416,14 @@ WriteStructEndError:
 }
 
 func (p *AdminLoginData) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetTokenType() {
-		if err = oprot.WriteFieldBegin("token_type", thrift.STRING, 1); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteString(*p.TokenType); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("token", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Token); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
@@ -398,22 +433,37 @@ WriteFieldEndError:
 }
 
 func (p *AdminLoginData) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetExpiresIn() {
-		if err = oprot.WriteFieldBegin("expires_in", thrift.I64, 2); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI64(*p.ExpiresIn); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
+	if err = oprot.WriteFieldBegin("token_type", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.TokenType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
 	}
 	return nil
 WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *AdminLoginData) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("expires_in", thrift.I64, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ExpiresIn); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *AdminLoginData) String() string {

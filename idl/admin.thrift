@@ -15,13 +15,18 @@ struct AdminLoginReq {
 
 // 登录成功后的数据。
 //
-// **不再回传 token**：浏览器端令牌已迁到 HttpOnly 会话 Cookie（前端不再持久化
-// 令牌、不再往 Authorization 头塞 token）⇒ 响应体带 token 只是**旧前端兼容**
-// （且它让令牌多一处泄漏面：响应体可能被日志/代理记录）⇒ 2026-10-25 随旧版本
-// 兼容一并删除。命令行/桌面端走 API Key，不经本端点。
+// token **必须回传**：它不是「旧前端兼容」，而是**脚本/客户端的认证通道**
+// （管理端鉴权同时认 `Authorization: Bearer <token>` 与会话 Cookie——浏览器走
+// Cookie，脚本走 Bearer；hub 自己的 scripts/smoke-full.sh 就是后者）。
+// 2026-10-25 曾把它当「旧前端兼容」删掉 ⇒ CI 冒烟 17 条断言连锁红
+// （S4 登录取不到 token ⇒ 后续 admin 面全部 401）⇒ 教训：**盘点「零引用」时
+// 别只看产品仓，本仓的脚本/冒烟也是第一方消费者**。
+//
+// 浏览器端则**不读**它（前端只用 HttpOnly 会话 Cookie，token 不进 localStorage）。
 struct AdminLoginData {
-    1: optional string token_type (api.body = "token_type"),
-    2: optional i64    expires_in (api.body = "expires_in"),
+    1: required string token      (api.body = "token"),
+    2: required string token_type (api.body = "token_type"),
+    3: required i64    expires_in (api.body = "expires_in"),
 }
 
 struct AdminLoginResp {

@@ -912,10 +912,18 @@
             "format": "int64",
             "type": "integer"
           },
+          "token": {
+            "type": "string"
+          },
           "token_type": {
             "type": "string"
           }
         },
+        "required": [
+          "token",
+          "token_type",
+          "expires_in"
+        ],
         "type": "object"
       },
       "admin.AdminLoginReq": {
