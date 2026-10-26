@@ -20,3 +20,119 @@ export interface IndexResp {
 export interface PingResp {
   message: string;
 }
+
+/**
+ * ==================== 网页端通用面（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ **为什么这批路由放在 common 域**：core 的部署模式过滤是**按 hz 生成的路由组**
+ * 挑选的（core/bootstrap/deployment.go 的 registerGeneratedRoutes）⇒ 一个 IDL 域 =
+ * 一个生成组 = 整组注册/不注册。
+ * · genshare 只在 public 副本注册 ⇒ 「匿名上传面」（multi-direct/multi-bind）留在
+ * share.thrift ⇒ **仅公开面**，与收敛前一致；
+ * · gencommon 在 public 与 admin **两面都注册** ⇒ 会话/元信息/公告/联邦/本地导入
+ * 这批「各副本都要有」的路由放这里 ⇒ **两面都在**，与收敛前一致。
+ * ⇒ 迁移不改变任何一条路由的副本可见性（这批路由原先是 bootstrap/routes_custom.go
+ * 里的无条件注册）。
+ */
+export interface ShareMetadataReq {
+  code: string;
+}
+
+export interface ShareMetadataData {
+  code: string;
+  /** text | file */
+  type: string;
+  /** 仅 file 分享 */
+  name?: string;
+  size: number;
+  has_password: boolean;
+  /** RFC3339 */
+  expired_at?: string;
+  /** -1 无限 / 0 耗尽 / >0 剩余 */
+  expired_count: number;
+  used_count: number;
+  encrypted: boolean;
+  file_count: number;
+  /** RFC3339 */
+  created_at: string;
+}
+
+export interface ShareMetadataResp {
+  code: number;
+  message: string;
+  data: ShareMetadataData;
+}
+
+export interface UserSharesImportLocalReq {
+  path: string;
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  custom_code?: string;
+}
+
+export interface UserSharesImportLocalData {
+  code: string;
+  share_url: string;
+}
+
+export interface UserSharesImportLocalResp {
+  code: number;
+  message: string;
+  data: UserSharesImportLocalData;
+}
+
+export interface UserRefreshData {
+  token: string;
+}
+
+export interface UserRefreshResp {
+  code: number;
+  message: string;
+  data: UserRefreshData;
+}
+
+export interface UserLogoutResp {
+  code: number;
+  message: string;
+}
+
+export interface UserCheckAuthData {
+  id: number;
+  username: string;
+  role: string;
+}
+
+export interface UserCheckAuthResp {
+  code: number;
+  message: string;
+  data: UserCheckAuthData;
+}
+
+export interface UserAPIKeysRevokeAllData {
+  revoked: number;
+}
+
+export interface UserAPIKeysRevokeAllResp {
+  code: number;
+  message: string;
+  data: UserAPIKeysRevokeAllData;
+}
+
+export interface FederationResolveReq {
+  code: string;
+}
+
+export interface FederationResolveData {
+  available: boolean;
+  url?: string;
+  node_id?: string;
+  name?: string;
+  expires_at?: number;
+}
+
+export interface FederationResolveResp {
+  code: number;
+  message: string;
+  data: FederationResolveData;
+}

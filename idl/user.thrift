@@ -201,42 +201,12 @@ struct DeleteAPIKeyResp {
 // ⚠️ 收敛前这些端点是 bootstrap/routes_custom.go 里的**内联闭包**（无契约）⇒
 //   wire 形状按现状镜像：logout 成功响应**没有 data 字段**（不声明 data）。
 
-struct UserRefreshData {
-    1: required string token (api.body = "token"),
-}
 
-struct UserRefreshResp {
-    1: required i32           code    (api.body = "code"),
-    2: required string        message (api.body = "message"),
-    3: required UserRefreshData data   (api.body = "data"),
-}
 
-struct UserLogoutResp {
-    1: required i32    code    (api.body = "code"),
-    2: required string message (api.body = "message"),
-}
 
-struct UserCheckAuthData {
-    1: required i64    id       (api.body = "id"),
-    2: required string username (api.body = "username"),
-    3: required string role     (api_body = "role"),
-}
 
-struct UserCheckAuthResp {
-    1: required i32             code    (api.body = "code"),
-    2: required string          message (api.body = "message"),
-    3: required UserCheckAuthData data  (api.body = "data"),
-}
 
-struct UserAPIKeysRevokeAllData {
-    1: required i64 revoked (api.body = "revoked"),
-}
 
-struct UserAPIKeysRevokeAllResp {
-    1: required i32                     code    (api.body = "code"),
-    2: required string                  message (api.body = "message"),
-    3: required UserAPIKeysRevokeAllData data    (api.body = "data"),
-}
 
 // ==================== 服务定义 ====================
 
@@ -273,16 +243,8 @@ service UserService {
 
     // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
 
-    // UserRefresh 刷新会话令牌（前端 401 拦截器调用；Cookie 认证时须带 CSRF 头）
-    UserRefreshResp UserRefresh(1: EmptyReq req) (api.post = "/api/v1/user/refresh")
 
-    // UserLogout 显式注销（令牌进黑名单 + 清 Cookie）
-    UserLogoutResp UserLogout(1: EmptyReq req) (api.post = "/api/v1/user/logout")
 
-    // UserCheckAuth 校验登录态并回带用户信息（前端启动时用）
-    UserCheckAuthResp UserCheckAuth(1: EmptyReq req) (api.get = "/api/v1/user/check-auth")
 
-    // UserAPIKeysRevokeAll 一键吊销全部 API Key（JWT-only；应急止损）
-    UserAPIKeysRevokeAllResp UserAPIKeysRevokeAll(1: EmptyReq req) (api.post = "/user/api-keys/revoke-all")
 
 }

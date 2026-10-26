@@ -2101,6 +2101,60 @@
         "properties": {},
         "type": "object"
       },
+      "common.FederationResolveData": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "type": "object"
+      },
+      "common.FederationResolveReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "common.FederationResolveResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.FederationResolveData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "common.HealthResp": {
         "properties": {
           "status": {
@@ -2139,6 +2193,262 @@
         },
         "required": [
           "message"
+        ],
+        "type": "object"
+      },
+      "common.ShareMetadataData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "expired_at": {
+            "type": "string"
+          },
+          "expired_count": {
+            "type": "integer"
+          },
+          "file_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "has_password": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "used_count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "size",
+          "has_password",
+          "expired_count",
+          "used_count",
+          "encrypted",
+          "file_count",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "common.ShareMetadataReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "common.ShareMetadataResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.ShareMetadataData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "common.UserAPIKeysRevokeAllData": {
+        "properties": {
+          "revoked": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revoked"
+        ],
+        "type": "object"
+      },
+      "common.UserAPIKeysRevokeAllResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.UserAPIKeysRevokeAllData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "common.UserCheckAuthData": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "role"
+        ],
+        "type": "object"
+      },
+      "common.UserCheckAuthResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.UserCheckAuthData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "common.UserLogoutResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "common.UserRefreshData": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "common.UserRefreshResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.UserRefreshData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "common.UserSharesImportLocalData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "share_url"
+        ],
+        "type": "object"
+      },
+      "common.UserSharesImportLocalReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "common.UserSharesImportLocalResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.UserSharesImportLocalData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -3287,60 +3597,6 @@
         "required": [
           "code",
           "message"
-        ],
-        "type": "object"
-      },
-      "p2p.FederationResolveData": {
-        "properties": {
-          "available": {
-            "type": "boolean"
-          },
-          "expires_at": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "node_id": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "available"
-        ],
-        "type": "object"
-      },
-      "p2p.FederationResolveReq": {
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code"
-        ],
-        "type": "object"
-      },
-      "p2p.FederationResolveResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/p2p.FederationResolveData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
         ],
         "type": "object"
       },
@@ -4727,87 +4983,6 @@
         ],
         "type": "object"
       },
-      "share.ShareMetadataData": {
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string"
-          },
-          "encrypted": {
-            "type": "boolean"
-          },
-          "expired_at": {
-            "type": "string"
-          },
-          "expired_count": {
-            "type": "integer"
-          },
-          "file_count": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "has_password": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "size": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "type": {
-            "type": "string"
-          },
-          "used_count": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "code",
-          "type",
-          "size",
-          "has_password",
-          "expired_count",
-          "used_count",
-          "encrypted",
-          "file_count",
-          "created_at"
-        ],
-        "type": "object"
-      },
-      "share.ShareMetadataReq": {
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code"
-        ],
-        "type": "object"
-      },
-      "share.ShareMetadataResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/share.ShareMetadataData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
       "share.ShareTextReq": {
         "properties": {
           "custom_code": {
@@ -5024,66 +5199,6 @@
         "required": [
           "code",
           "message"
-        ],
-        "type": "object"
-      },
-      "share.UserSharesImportLocalData": {
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "share_url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "share_url"
-        ],
-        "type": "object"
-      },
-      "share.UserSharesImportLocalReq": {
-        "properties": {
-          "custom_code": {
-            "type": "string"
-          },
-          "expire_style": {
-            "type": "string"
-          },
-          "expire_value": {
-            "type": "integer"
-          },
-          "password": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "require_auth": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "path"
-        ],
-        "type": "object"
-      },
-      "share.UserSharesImportLocalResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/share.UserSharesImportLocalData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
         ],
         "type": "object"
       },
@@ -6177,76 +6292,6 @@
         ],
         "type": "object"
       },
-      "user.UserAPIKeysRevokeAllData": {
-        "properties": {
-          "revoked": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "revoked"
-        ],
-        "type": "object"
-      },
-      "user.UserAPIKeysRevokeAllResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/user.UserAPIKeysRevokeAllData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
-      "user.UserCheckAuthData": {
-        "properties": {
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "role": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "username",
-          "role"
-        ],
-        "type": "object"
-      },
-      "user.UserCheckAuthResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/user.UserCheckAuthData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
       "user.UserData": {
         "properties": {
           "avatar": {
@@ -6430,51 +6475,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/user.UserData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
-      "user.UserLogoutResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message"
-        ],
-        "type": "object"
-      },
-      "user.UserRefreshData": {
-        "properties": {
-          "token": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "token"
-        ],
-        "type": "object"
-      },
-      "user.UserRefreshResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/user.UserRefreshData"
           },
           "message": {
             "type": "string"
@@ -9020,7 +9020,7 @@
     },
     "/api/v1/federation/resolve": {
       "get": {
-        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nFederationResolve 口令联邦解析（前端录码本站未命中时查联邦；只做发现，不代理流量）",
+        "description": "FederationResolve 口令联邦解析（前端录码本站未命中时查联邦；只做发现，不代理流量）",
         "operationId": "FederationResolve",
         "parameters": [
           {
@@ -9037,7 +9037,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/p2p.FederationResolveResp"
+                  "$ref": "#/components/schemas/common.FederationResolveResp"
                 }
               }
             },
@@ -9046,7 +9046,7 @@
         },
         "summary": "GET /api/v1/federation/resolve",
         "tags": [
-          "P2PPublicService"
+          "CommonService"
         ]
       }
     },
@@ -9514,7 +9514,7 @@
     },
     "/api/v1/share/multi-direct": {
       "post": {
-        "description": "MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）",
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nMultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）",
         "operationId": "MultiShareDirect",
         "requestBody": {
           "content": {
@@ -9576,7 +9576,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user.UserCheckAuthResp"
+                  "$ref": "#/components/schemas/common.UserCheckAuthResp"
                 }
               }
             },
@@ -9585,7 +9585,7 @@
         },
         "summary": "GET /api/v1/user/check-auth",
         "tags": [
-          "UserService"
+          "CommonService"
         ]
       }
     },
@@ -9598,7 +9598,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user.UserLogoutResp"
+                  "$ref": "#/components/schemas/common.UserLogoutResp"
                 }
               }
             },
@@ -9607,20 +9607,20 @@
         },
         "summary": "POST /api/v1/user/logout",
         "tags": [
-          "UserService"
+          "CommonService"
         ]
       }
     },
     "/api/v1/user/refresh": {
       "post": {
-        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nUserRefresh 刷新会话令牌（前端 401 拦截器调用；Cookie 认证时须带 CSRF 头）",
+        "description": "UserRefresh 刷新会话令牌（前端 401 拦截器调用；Cookie 认证时须带 CSRF 头）",
         "operationId": "UserRefresh",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user.UserRefreshResp"
+                  "$ref": "#/components/schemas/common.UserRefreshResp"
                 }
               }
             },
@@ -9629,7 +9629,7 @@
         },
         "summary": "POST /api/v1/user/refresh",
         "tags": [
-          "UserService"
+          "CommonService"
         ]
       }
     },
@@ -9924,7 +9924,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/share.UserSharesImportLocalResp"
+                  "$ref": "#/components/schemas/common.UserSharesImportLocalResp"
                 }
               }
             },
@@ -9933,7 +9933,7 @@
         },
         "summary": "POST /api/v1/user/shares/import-local",
         "tags": [
-          "ShareService"
+          "CommonService"
         ]
       }
     },
@@ -10681,7 +10681,7 @@
     },
     "/share/metadata/{code}": {
       "get": {
-        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nShareMetadata 取件元数据（不扣次数、不要密码；取件页渲染用）",
+        "description": "ShareMetadata 取件元数据（不扣次数、不要密码；取件页渲染用）",
         "operationId": "ShareMetadata",
         "parameters": [
           {
@@ -10698,7 +10698,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/share.ShareMetadataResp"
+                  "$ref": "#/components/schemas/common.ShareMetadataResp"
                 }
               }
             },
@@ -10707,7 +10707,7 @@
         },
         "summary": "GET /share/metadata/:code",
         "tags": [
-          "ShareService"
+          "CommonService"
         ]
       }
     },
@@ -10887,7 +10887,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/user.UserAPIKeysRevokeAllResp"
+                  "$ref": "#/components/schemas/common.UserAPIKeysRevokeAllResp"
                 }
               }
             },
@@ -10896,7 +10896,7 @@
         },
         "summary": "POST /user/api-keys/revoke-all",
         "tags": [
-          "UserService"
+          "CommonService"
         ]
       }
     },

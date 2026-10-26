@@ -210,29 +210,8 @@ struct UserShareOpResp {
 //   · expired_at 原为 *time.Time（null）⇒ optional（缺省不输出；前端用 ?? null 兜）
 //   · 其余字段恒有 ⇒ required
 
-struct ShareMetadataReq {
-    1: required string code (api.path = "code"),
-}
 
-struct ShareMetadataData {
-    1: required string code         (api.body = "code"),
-    2: required string type         (api.body = "type"),        // text | file
-    3: optional string name         (api.body = "name"),        // 仅 file 分享
-    4: required i64    size         (api.body = "size"),
-    5: required bool   has_password (api.body = "has_password"),
-    6: optional string expired_at   (api.body = "expired_at"),  // RFC3339
-    7: required i32    expired_count (api.body = "expired_count"), // -1 无限 / 0 耗尽 / >0 剩余
-    8: required i32    used_count   (api.body = "used_count"),
-    9: required bool   encrypted    (api.body = "encrypted"),
-    10: required i64   file_count   (api.body = "file_count"),
-    11: required string created_at  (api.body = "created_at"),  // RFC3339
-}
 
-struct ShareMetadataResp {
-    1: required i32             code    (api.body = "code"),
-    2: required string          message (api.body = "message"),
-    3: required ShareMetadataData data   (api.body = "data"),
-}
 
 // ==================== 多文件分享（2026-10-26 自 customHandler 收敛进 IDL） ====================
 //
@@ -290,25 +269,8 @@ struct MultiShareBindResp {
 
 // ==================== 服务器本地文件导入（2026-10-26 自 customHandler 收敛进 IDL） ====================
 
-struct UserSharesImportLocalReq {
-    1: required string path         (api.body = "path"),
-    2: optional i32    expire_value (api.body = "expire_value"),
-    3: optional string expire_style (api.body = "expire_style"),
-    4: optional bool   require_auth (api.body = "require_auth"),
-    5: optional string password     (api.body = "password"),
-    6: optional string custom_code  (api.body = "custom_code"),
-}
 
-struct UserSharesImportLocalData {
-    1: required string code      (api.body = "code"),
-    2: required string share_url (api.body = "share_url"),
-}
 
-struct UserSharesImportLocalResp {
-    1: required i32                    code    (api.body = "code"),
-    2: required string                 message (api.body = "message"),
-    3: required UserSharesImportLocalData data  (api.body = "data"),
-}
 
 // ==================== 服务定义 ====================
 
@@ -344,8 +306,6 @@ service ShareService {
 
     // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
 
-    // ShareMetadata 取件元数据（不扣次数、不要密码；取件页渲染用）
-    ShareMetadataResp ShareMetadata(1: ShareMetadataReq req) (api.get = "/share/metadata/:code")
 
     // MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）
     MultiShareDirectResp MultiShareDirect(1: MultiShareDirectReq req) (api.post = "/api/v1/share/multi-direct")
@@ -353,7 +313,5 @@ service ShareService {
     // MultiShareBind 多文件绑定建分享（分片会话 / 已直传对象）
     MultiShareBindResp MultiShareBind(1: MultiShareBindReq req) (api.post = "/api/v1/share/multi-bind")
 
-    // UserSharesImportLocal 服务器本地文件导入为分享（NAS 免上传场景）
-    UserSharesImportLocalResp UserSharesImportLocal(1: UserSharesImportLocalReq req) (api.post = "/api/v1/user/shares/import-local")
 
 }
