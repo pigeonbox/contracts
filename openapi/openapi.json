@@ -2101,60 +2101,6 @@
         "properties": {},
         "type": "object"
       },
-      "common.FederationResolveData": {
-        "properties": {
-          "available": {
-            "type": "boolean"
-          },
-          "expires_at": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "node_id": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "available"
-        ],
-        "type": "object"
-      },
-      "common.FederationResolveReq": {
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code"
-        ],
-        "type": "object"
-      },
-      "common.FederationResolveResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/common.FederationResolveData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
       "common.HealthResp": {
         "properties": {
           "status": {
@@ -2193,87 +2139,6 @@
         },
         "required": [
           "message"
-        ],
-        "type": "object"
-      },
-      "common.ShareMetadataData": {
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string"
-          },
-          "encrypted": {
-            "type": "boolean"
-          },
-          "expired_at": {
-            "type": "string"
-          },
-          "expired_count": {
-            "type": "integer"
-          },
-          "file_count": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "has_password": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "string"
-          },
-          "size": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "type": {
-            "type": "string"
-          },
-          "used_count": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "code",
-          "type",
-          "size",
-          "has_password",
-          "expired_count",
-          "used_count",
-          "encrypted",
-          "file_count",
-          "created_at"
-        ],
-        "type": "object"
-      },
-      "common.ShareMetadataReq": {
-        "properties": {
-          "code": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code"
-        ],
-        "type": "object"
-      },
-      "common.ShareMetadataResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/common.ShareMetadataData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
         ],
         "type": "object"
       },
@@ -2380,66 +2245,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/common.UserRefreshData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
-      "common.UserSharesImportLocalData": {
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "share_url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "share_url"
-        ],
-        "type": "object"
-      },
-      "common.UserSharesImportLocalReq": {
-        "properties": {
-          "custom_code": {
-            "type": "string"
-          },
-          "expire_style": {
-            "type": "string"
-          },
-          "expire_value": {
-            "type": "integer"
-          },
-          "password": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "require_auth": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "path"
-        ],
-        "type": "object"
-      },
-      "common.UserSharesImportLocalResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/common.UserSharesImportLocalData"
           },
           "message": {
             "type": "string"
@@ -3973,6 +3778,343 @@
         ],
         "type": "object"
       },
+      "publicapi.FederationResolveData": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationResolveReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationResolveResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.FederationResolveData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "publicapi.MultiShareBindEntry": {
+        "properties": {
+          "file_name": {
+            "type": "string"
+          },
+          "object_key": {
+            "type": "string"
+          },
+          "upload_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_name"
+        ],
+        "type": "object"
+      },
+      "publicapi.MultiShareBindReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/publicapi.MultiShareBindEntry"
+            },
+            "type": "array"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "type": "object"
+      },
+      "publicapi.MultiShareBindResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.MultiShareData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "publicapi.MultiShareData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "file_count": {
+            "type": "integer"
+          },
+          "pickup_code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "url",
+          "share_url",
+          "file_count"
+        ],
+        "type": "object"
+      },
+      "publicapi.MultiShareDirectReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "publicapi.MultiShareDirectResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.MultiShareData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "publicapi.ShareMetadataData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "expired_at": {
+            "type": "string"
+          },
+          "expired_count": {
+            "type": "integer"
+          },
+          "file_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "has_password": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "used_count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "size",
+          "has_password",
+          "expired_count",
+          "used_count",
+          "encrypted",
+          "file_count",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "publicapi.ShareMetadataReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "publicapi.ShareMetadataResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.ShareMetadataData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "publicapi.UserSharesImportLocalData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "share_url"
+        ],
+        "type": "object"
+      },
+      "publicapi.UserSharesImportLocalReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "publicapi.UserSharesImportLocalResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.UserSharesImportLocalData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "qrcode.GenerateQRCodeReq": {
         "properties": {
           "data": {
@@ -4669,148 +4811,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/share.ShareDetail"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
-      "share.MultiShareBindEntry": {
-        "properties": {
-          "file_name": {
-            "type": "string"
-          },
-          "object_key": {
-            "type": "string"
-          },
-          "upload_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "file_name"
-        ],
-        "type": "object"
-      },
-      "share.MultiShareBindReq": {
-        "properties": {
-          "custom_code": {
-            "type": "string"
-          },
-          "encrypted": {
-            "type": "boolean"
-          },
-          "entries": {
-            "items": {
-              "$ref": "#/components/schemas/share.MultiShareBindEntry"
-            },
-            "type": "array"
-          },
-          "expire_style": {
-            "type": "string"
-          },
-          "expire_value": {
-            "type": "integer"
-          },
-          "note": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "require_auth": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "entries"
-        ],
-        "type": "object"
-      },
-      "share.MultiShareBindResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/share.MultiShareData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
-        ],
-        "type": "object"
-      },
-      "share.MultiShareData": {
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "file_count": {
-            "type": "integer"
-          },
-          "pickup_code": {
-            "type": "string"
-          },
-          "share_url": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "url",
-          "share_url",
-          "file_count"
-        ],
-        "type": "object"
-      },
-      "share.MultiShareDirectReq": {
-        "properties": {
-          "custom_code": {
-            "type": "string"
-          },
-          "encrypted": {
-            "type": "boolean"
-          },
-          "expire_style": {
-            "type": "string"
-          },
-          "expire_value": {
-            "type": "integer"
-          },
-          "note": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "require_auth": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
-      "share.MultiShareDirectResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/share.MultiShareData"
           },
           "message": {
             "type": "string"
@@ -9037,7 +9037,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/common.FederationResolveResp"
+                  "$ref": "#/components/schemas/publicapi.FederationResolveResp"
                 }
               }
             },
@@ -9046,7 +9046,7 @@
         },
         "summary": "GET /api/v1/federation/resolve",
         "tags": [
-          "CommonService"
+          "PublicApiService"
         ]
       }
     },
@@ -9465,7 +9465,7 @@
                   },
                   "entries": {
                     "items": {
-                      "$ref": "#/components/schemas/share.MultiShareBindEntry"
+                      "$ref": "#/components/schemas/publicapi.MultiShareBindEntry"
                     },
                     "type": "array"
                   },
@@ -9499,7 +9499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/share.MultiShareBindResp"
+                  "$ref": "#/components/schemas/publicapi.MultiShareBindResp"
                 }
               }
             },
@@ -9508,13 +9508,13 @@
         },
         "summary": "POST /api/v1/share/multi-bind",
         "tags": [
-          "ShareService"
+          "PublicApiService"
         ]
       }
     },
     "/api/v1/share/multi-direct": {
       "post": {
-        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nMultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）",
+        "description": "MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）",
         "operationId": "MultiShareDirect",
         "requestBody": {
           "content": {
@@ -9554,7 +9554,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/share.MultiShareDirectResp"
+                  "$ref": "#/components/schemas/publicapi.MultiShareDirectResp"
                 }
               }
             },
@@ -9563,7 +9563,7 @@
         },
         "summary": "POST /api/v1/share/multi-direct",
         "tags": [
-          "ShareService"
+          "PublicApiService"
         ]
       }
     },
@@ -9924,7 +9924,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/common.UserSharesImportLocalResp"
+                  "$ref": "#/components/schemas/publicapi.UserSharesImportLocalResp"
                 }
               }
             },
@@ -9933,7 +9933,7 @@
         },
         "summary": "POST /api/v1/user/shares/import-local",
         "tags": [
-          "CommonService"
+          "PublicApiService"
         ]
       }
     },
@@ -10698,7 +10698,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/common.ShareMetadataResp"
+                  "$ref": "#/components/schemas/publicapi.ShareMetadataResp"
                 }
               }
             },
@@ -10707,7 +10707,7 @@
         },
         "summary": "GET /share/metadata/:code",
         "tags": [
-          "CommonService"
+          "PublicApiService"
         ]
       }
     },

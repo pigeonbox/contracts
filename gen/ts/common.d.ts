@@ -33,55 +33,6 @@ export interface PingResp {
  * ⇒ 迁移不改变任何一条路由的副本可见性（这批路由原先是 bootstrap/routes_custom.go
  * 里的无条件注册）。
  */
-export interface ShareMetadataReq {
-  code: string;
-}
-
-export interface ShareMetadataData {
-  code: string;
-  /** text | file */
-  type: string;
-  /** 仅 file 分享 */
-  name?: string;
-  size: number;
-  has_password: boolean;
-  /** RFC3339 */
-  expired_at?: string;
-  /** -1 无限 / 0 耗尽 / >0 剩余 */
-  expired_count: number;
-  used_count: number;
-  encrypted: boolean;
-  file_count: number;
-  /** RFC3339 */
-  created_at: string;
-}
-
-export interface ShareMetadataResp {
-  code: number;
-  message: string;
-  data: ShareMetadataData;
-}
-
-export interface UserSharesImportLocalReq {
-  path: string;
-  expire_value?: number;
-  expire_style?: string;
-  require_auth?: boolean;
-  password?: string;
-  custom_code?: string;
-}
-
-export interface UserSharesImportLocalData {
-  code: string;
-  share_url: string;
-}
-
-export interface UserSharesImportLocalResp {
-  code: number;
-  message: string;
-  data: UserSharesImportLocalData;
-}
-
 export interface UserRefreshData {
   token: string;
 }
@@ -117,22 +68,4 @@ export interface UserAPIKeysRevokeAllResp {
   code: number;
   message: string;
   data: UserAPIKeysRevokeAllData;
-}
-
-export interface FederationResolveReq {
-  code: string;
-}
-
-export interface FederationResolveData {
-  available: boolean;
-  url?: string;
-  node_id?: string;
-  name?: string;
-  expires_at?: number;
-}
-
-export interface FederationResolveResp {
-  code: number;
-  message: string;
-  data: FederationResolveData;
 }

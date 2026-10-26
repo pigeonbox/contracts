@@ -219,53 +219,11 @@ struct UserShareOpResp {
 //   （缺字段时 handler 显式兜底）⇒ 行为与收敛前完全一致（原来缺 expire_value 不报 400）。
 //   文件本体**不入契约**（多文件 multipart 无法用 form 绑定表达）⇒ handler 仍手工取。
 
-struct MultiShareDirectReq {
-    1: optional i32    expire_value (api.form = "expire_value"),
-    2: optional string expire_style (api.form = "expire_style"),
-    3: optional bool   require_auth (api.form = "require_auth"),
-    4: optional string password     (api.form = "password"),
-    5: optional bool   encrypted    (api.form = "encrypted"),
-    6: optional string custom_code  (api.form = "custom_code"),
-    7: optional string note         (api.form = "note"),
-}
 
-struct MultiShareBindReq {
-    1: optional i32    expire_value (api.body = "expire_value"),
-    2: optional string expire_style (api.body = "expire_style"),
-    3: optional bool   require_auth (api.body = "require_auth"),
-    4: optional string password     (api.body = "password"),
-    5: optional bool   encrypted    (api.body = "encrypted"),
-    6: optional string custom_code  (api.body = "custom_code"),
-    7: optional string note         (api.body = "note"),
-    8: required list<MultiShareBindEntry> entries (api.body = "entries"),
-}
 
-// MultiShareBindEntry multi-bind 的一个条目（分片会话 或 已直传对象，二选一）。
-struct MultiShareBindEntry {
-    1: optional string upload_id  (api.body = "upload_id"),
-    2: optional string object_key (api.body = "object_key"),
-    3: required string file_name  (api.body = "file_name"),
-}
 
-struct MultiShareData {
-    1: required string code        (api.body = "code"),
-    2: required string url         (api.body = "url"),
-    3: required string share_url   (api.body = "share_url"),
-    4: required i32    file_count  (api.body = "file_count"),
-    5: optional string pickup_code (api.body = "pickup_code"),
-}
 
-struct MultiShareDirectResp {
-    1: required i32          code    (api.body = "code"),
-    2: required string       message (api.body = "message"),
-    3: required MultiShareData data   (api.body = "data"),
-}
 
-struct MultiShareBindResp {
-    1: required i32          code    (api.body = "code"),
-    2: required string       message (api.body = "message"),
-    3: required MultiShareData data   (api.body = "data"),
-}
 
 // ==================== 服务器本地文件导入（2026-10-26 自 customHandler 收敛进 IDL） ====================
 
@@ -307,11 +265,7 @@ service ShareService {
     // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
 
 
-    // MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）
-    MultiShareDirectResp MultiShareDirect(1: MultiShareDirectReq req) (api.post = "/api/v1/share/multi-direct")
 
-    // MultiShareBind 多文件绑定建分享（分片会话 / 已直传对象）
-    MultiShareBindResp MultiShareBind(1: MultiShareBindReq req) (api.post = "/api/v1/share/multi-bind")
 
 
 }
