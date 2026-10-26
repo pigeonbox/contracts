@@ -189,32 +189,11 @@ struct MarkReadResp {
     3: optional MarkReadData data (api.body = "data"),
 }
 
-// ==================== 公开公告（2026-10-26 自 customHandler 收敛进 IDL） ====================
-
-struct NotifyPublicItem {
-    1: required i64    id       (api.body = "id"),
-    2: required string title    (api.body = "title"),
-    3: required string content  (api.body = "content"),
-    4: required string type     (api.body = "type"),
-    5: required string level    (api.body = "level"),
-    6: required string start_at (api.body = "start_at"),
-    7: required string end_at   (api.body = "end_at"),
-}
-
-struct NotifyPublicListReq {
-}
-
-struct NotifyPublicListData {
-    1: required list<NotifyPublicItem> items (api.body = "items"),
-}
-
-struct NotifyPublicListResp {
-    1: required i32                code    (api.body = "code"),
-    2: required string             message (api.body = "message"),
-    3: required NotifyPublicListData data   (api.body = "data"),
-}
-
 // ==================== 服务定义 ====================
+//
+// ⚠️ 站级公开公告（/api/v1/notifies/public）**不在本文件**：见 common.thrift 的
+// 「站级公开公告」段——它必须挂在一个 /api 组不带鉴权的 IDL 域下（本域的 /api 组
+// 挂了 UserOrAPIKey，公开端点落进来就会被误加登录门槛）。
 
 service NotifyService {
     // List 通知列表（管理）
@@ -245,10 +224,5 @@ service NotifyService {
 
     // MarkRead 标记已读（当前仅支持 all=true）
     MarkReadResp MarkRead(1: MarkReadReq req) (api.post = "/api/v1/notifies/mark-read")
-
-    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
-
-    // NotifyPublicList 站级公开公告列表（匿名可访问；最多 50 条）
-    NotifyPublicListResp NotifyPublicList(1: NotifyPublicListReq req) (api.get = "/api/v1/notifies/public")
 
 }

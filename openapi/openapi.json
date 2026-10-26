@@ -2131,6 +2131,79 @@
         ],
         "type": "object"
       },
+      "common.NotifyPublicItem": {
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "end_at": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "start_at": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "type",
+          "level",
+          "start_at",
+          "end_at"
+        ],
+        "type": "object"
+      },
+      "common.NotifyPublicListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/common.NotifyPublicItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "common.NotifyPublicListReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "common.NotifyPublicListResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/common.NotifyPublicListData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "common.PingResp": {
         "properties": {
           "message": {
@@ -3069,79 +3142,6 @@
         },
         "required": [
           "value"
-        ],
-        "type": "object"
-      },
-      "notify.NotifyPublicItem": {
-        "properties": {
-          "content": {
-            "type": "string"
-          },
-          "end_at": {
-            "type": "string"
-          },
-          "id": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "level": {
-            "type": "string"
-          },
-          "start_at": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "content",
-          "type",
-          "level",
-          "start_at",
-          "end_at"
-        ],
-        "type": "object"
-      },
-      "notify.NotifyPublicListData": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/notify.NotifyPublicItem"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "notify.NotifyPublicListReq": {
-        "properties": {},
-        "type": "object"
-      },
-      "notify.NotifyPublicListResp": {
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/notify.NotifyPublicListData"
-          },
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "message",
-          "data"
         ],
         "type": "object"
       },
@@ -9127,14 +9127,14 @@
     },
     "/api/v1/notifies/public": {
       "get": {
-        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nNotifyPublicList 站级公开公告列表（匿名可访问；最多 50 条）",
+        "description": "NotifyPublicList 站级公开公告列表（匿名可访问；最多 50 条）",
         "operationId": "NotifyPublicList",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/notify.NotifyPublicListResp"
+                  "$ref": "#/components/schemas/common.NotifyPublicListResp"
                 }
               }
             },
@@ -9143,7 +9143,7 @@
         },
         "summary": "GET /api/v1/notifies/public",
         "tags": [
-          "NotifyService"
+          "CommonService"
         ]
       }
     },

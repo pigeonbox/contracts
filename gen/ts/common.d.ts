@@ -69,3 +69,37 @@ export interface UserAPIKeysRevokeAllResp {
   message: string;
   data: UserAPIKeysRevokeAllData;
 }
+
+/**
+ * ==================== 站级公开公告（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ **为什么公告端点不放在 notify.thrift**：hz 生成的路由是**按路径**建组的
+ * （cmd/hz 的 RouterNode.FindNearest/Insert 走路径树），同一路径前缀下的路由**共用
+ * 同一组中间件**。notify.thrift 的 /api 组挂了 UserOrAPIKey（2026-10-09「我的通知」
+ * 组的守卫），所以 /api/v1/notifies/public 一旦留在 notify.thrift 就会落进那个组 ⇒
+ * 公开公告端点被误加登录门槛（收敛前是 `r.GET(...)` 无中间件的匿名端点）。
+ * 而 hz 是**按 IDL 文件**各生成一棵独立的路由树 ⇒ 把该端点挪到 common.thrift，
+ * 它落在 common 域自己的 /api 组（该组不带鉴权）⇒ 恢复匿名可访问。
+ * 副本可见性不变：本域在 public 与 admin **两面都注册**（gencommon），与收敛前
+ * 「无条件注册」一致。
+ */
+export interface NotifyPublicItem {
+  id: number;
+  title: string;
+  content: string;
+  type: string;
+  level: string;
+  start_at: string;
+  end_at: string;
+}
+
+export interface NotifyPublicListReq {}
+
+export interface NotifyPublicListData {
+  items: NotifyPublicItem[];
+}
+
+export interface NotifyPublicListResp {
+  code: number;
+  message: string;
+  data: NotifyPublicListData;
+}

@@ -78,6 +78,42 @@ struct UserAPIKeysRevokeAllResp {
     3: required UserAPIKeysRevokeAllData data    (api.body = "data"),
 }
 
+// ==================== 站级公开公告（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ **为什么公告端点不放在 notify.thrift**：hz 生成的路由是**按路径**建组的
+// （cmd/hz 的 RouterNode.FindNearest/Insert 走路径树），同一路径前缀下的路由**共用
+// 同一组中间件**。notify.thrift 的 /api 组挂了 UserOrAPIKey（2026-10-09「我的通知」
+// 组的守卫），所以 /api/v1/notifies/public 一旦留在 notify.thrift 就会落进那个组 ⇒
+// 公开公告端点被误加登录门槛（收敛前是 `r.GET(...)` 无中间件的匿名端点）。
+// 而 hz 是**按 IDL 文件**各生成一棵独立的路由树 ⇒ 把该端点挪到 common.thrift，
+// 它落在 common 域自己的 /api 组（该组不带鉴权）⇒ 恢复匿名可访问。
+//
+// 副本可见性不变：本域在 public 与 admin **两面都注册**（gencommon），与收敛前
+// 「无条件注册」一致。
+
+struct NotifyPublicItem {
+    1: required i64    id       (api.body = "id"),
+    2: required string title    (api.body = "title"),
+    3: required string content  (api.body = "content"),
+    4: required string type     (api.body = "type"),
+    5: required string level    (api.body = "level"),
+    6: required string start_at (api.body = "start_at"),
+    7: required string end_at   (api.body = "end_at"),
+}
+
+struct NotifyPublicListReq {
+}
+
+struct NotifyPublicListData {
+    1: required list<NotifyPublicItem> items (api.body = "items"),
+}
+
+struct NotifyPublicListResp {
+    1: required i32                 code    (api.body = "code"),
+    2: required string              message (api.body = "message"),
+    3: required NotifyPublicListData data   (api.body = "data"),
+}
+
 // ==================== 服务定义 ====================
 //
 // 注意：根路径 "/" 不在此注册。前端 SPA 首页由 bootstrap.customizedRegister
@@ -100,5 +136,7 @@ service CommonService {
     // UserAPIKeysRevokeAll 一键吊销全部 API Key（JWT-only；应急止损）
     UserAPIKeysRevokeAllResp UserAPIKeysRevokeAll(1: EmptyReq req) (api.post = "/user/api-keys/revoke-all")
 
+    // NotifyPublicList 站级公开公告列表（匿名可访问；最多 50 条）
+    NotifyPublicListResp NotifyPublicList(1: NotifyPublicListReq req) (api.get = "/api/v1/notifies/public")
 
 }
