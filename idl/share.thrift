@@ -203,6 +203,113 @@ struct UserShareOpResp {
     3: optional map<string, i32> data (api.body = "data"),
 }
 
+// ==================== 取件元数据（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 字段名/可空性**必须**与收敛前的 JSON 完全一致（前端与外部集成方都依赖）：
+//   · name  仅 file 分享有 ⇒ optional（缺省不输出，与原 omitempty 一致）
+//   · expired_at 原为 *time.Time（null）⇒ optional（缺省不输出；前端用 ?? null 兜）
+//   · 其余字段恒有 ⇒ required
+
+struct ShareMetadataReq {
+    1: required string code (api.path = "code"),
+}
+
+struct ShareMetadataData {
+    1: required string code         (api.body = "code"),
+    2: required string type         (api.body = "type"),        // text | file
+    3: optional string name         (api.body = "name"),        // 仅 file 分享
+    4: required i64    size         (api.body = "size"),
+    5: required bool   has_password (api.body = "has_password"),
+    6: optional string expired_at   (api.body = "expired_at"),  // RFC3339
+    7: required i32    expired_count (api.body = "expired_count"), // -1 无限 / 0 耗尽 / >0 剩余
+    8: required i32    used_count   (api.body = "used_count"),
+    9: required bool   encrypted    (api.body = "encrypted"),
+    10: required i64   file_count   (api.body = "file_count"),
+    11: required string created_at  (api.body = "created_at"),  // RFC3339
+}
+
+struct ShareMetadataResp {
+    1: required i32             code    (api.body = "code"),
+    2: required string          message (api.body = "message"),
+    3: required ShareMetadataData data   (api.body = "data"),
+}
+
+// ==================== 多文件分享（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 公共参数在收敛前用 DefaultPostForm 读（**缺省值兜底**）⇒ 契约里一律 optional
+//   （缺字段时 handler 显式兜底）⇒ 行为与收敛前完全一致（原来缺 expire_value 不报 400）。
+//   文件本体**不入契约**（多文件 multipart 无法用 form 绑定表达）⇒ handler 仍手工取。
+
+struct MultiShareDirectReq {
+    1: optional i32    expire_value (api.form = "expire_value"),
+    2: optional string expire_style (api.form = "expire_style"),
+    3: optional bool   require_auth (api.form = "require_auth"),
+    4: optional string password     (api.form = "password"),
+    5: optional bool   encrypted    (api.form = "encrypted"),
+    6: optional string custom_code  (api.form = "custom_code"),
+    7: optional string note         (api.form = "note"),
+}
+
+struct MultiShareBindReq {
+    1: optional i32    expire_value (api.body = "expire_value"),
+    2: optional string expire_style (api.body = "expire_style"),
+    3: optional bool   require_auth (api.body = "require_auth"),
+    4: optional string password     (api.body = "password"),
+    5: optional bool   encrypted    (api.body = "encrypted"),
+    6: optional string custom_code  (api.body = "custom_code"),
+    7: optional string note         (api.body = "note"),
+    8: required list<MultiShareBindEntry> entries (api.body = "entries"),
+}
+
+// MultiShareBindEntry multi-bind 的一个条目（分片会话 或 已直传对象，二选一）。
+struct MultiShareBindEntry {
+    1: optional string upload_id  (api.body = "upload_id"),
+    2: optional string object_key (api.body = "object_key"),
+    3: required string file_name  (api.body = "file_name"),
+}
+
+struct MultiShareData {
+    1: required string code        (api.body = "code"),
+    2: required string url         (api.body = "url"),
+    3: required string share_url   (api.body = "share_url"),
+    4: required i32    file_count  (api.body = "file_count"),
+    5: optional string pickup_code (api.body = "pickup_code"),
+}
+
+struct MultiShareDirectResp {
+    1: required i32          code    (api.body = "code"),
+    2: required string       message (api.body = "message"),
+    3: required MultiShareData data   (api.body = "data"),
+}
+
+struct MultiShareBindResp {
+    1: required i32          code    (api.body = "code"),
+    2: required string       message (api.body = "message"),
+    3: required MultiShareData data   (api.body = "data"),
+}
+
+// ==================== 服务器本地文件导入（2026-10-26 自 customHandler 收敛进 IDL） ====================
+
+struct UserSharesImportLocalReq {
+    1: required string path         (api.body = "path"),
+    2: optional i32    expire_value (api.body = "expire_value"),
+    3: optional string expire_style (api.body = "expire_style"),
+    4: optional bool   require_auth (api.body = "require_auth"),
+    5: optional string password     (api.body = "password"),
+    6: optional string custom_code  (api.body = "custom_code"),
+}
+
+struct UserSharesImportLocalData {
+    1: required string code      (api.body = "code"),
+    2: required string share_url (api.body = "share_url"),
+}
+
+struct UserSharesImportLocalResp {
+    1: required i32                    code    (api.body = "code"),
+    2: required string                 message (api.body = "message"),
+    3: required UserSharesImportLocalData data  (api.body = "data"),
+}
+
 // ==================== 服务定义 ====================
 
 service ShareService {
@@ -234,4 +341,19 @@ service ShareService {
 
     // UserSharesHardDelete 永久删除（仅回收站内）
     UserShareOpResp UserSharesHardDelete(1: UserShareCodeReq req) (api.delete = "/api/v1/user/shares/:code/hard")
+
+    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
+
+    // ShareMetadata 取件元数据（不扣次数、不要密码；取件页渲染用）
+    ShareMetadataResp ShareMetadata(1: ShareMetadataReq req) (api.get = "/share/metadata/:code")
+
+    // MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）
+    MultiShareDirectResp MultiShareDirect(1: MultiShareDirectReq req) (api.post = "/api/v1/share/multi-direct")
+
+    // MultiShareBind 多文件绑定建分享（分片会话 / 已直传对象）
+    MultiShareBindResp MultiShareBind(1: MultiShareBindReq req) (api.post = "/api/v1/share/multi-bind")
+
+    // UserSharesImportLocal 服务器本地文件导入为分享（NAS 免上传场景）
+    UserSharesImportLocalResp UserSharesImportLocal(1: UserSharesImportLocalReq req) (api.post = "/api/v1/user/shares/import-local")
+
 }

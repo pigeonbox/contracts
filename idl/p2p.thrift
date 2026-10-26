@@ -94,8 +94,36 @@ struct AdminP2pDirectoryResp {
 }
 
 // 公开收件端点(限流桶=download;实例间递送口令)
+// ==================== 联邦解析代理（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 未命中时**只有** available 一个字段（其余 optional 不输出）⇒ 与收敛前一致。
+
+struct FederationResolveReq {
+    1: required string code (api.query = "code"),
+}
+
+struct FederationResolveData {
+    1: required bool   available  (api.body = "available"),
+    2: optional string url        (api.body = "url"),
+    3: optional string node_id    (api.body = "node_id"),
+    4: optional string name       (api.body = "name"),
+    5: optional i64    expires_at (api.body = "expires_at"),
+}
+
+struct FederationResolveResp {
+    1: required i32                  code    (api.body = "code"),
+    2: required string               message (api.body = "message"),
+    3: required FederationResolveData data   (api.body = "data"),
+}
+
 service P2PPublicService {
     PostP2PInviteResp PostP2PInvite(1: PostP2PInviteReq req) (api.post = "/api/v1/p2p/invite")
+
+    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
+
+    // FederationResolve 口令联邦解析（前端录码本站未命中时查联邦；只做发现，不代理流量）
+    FederationResolveResp FederationResolve(1: FederationResolveReq req) (api.get = "/api/v1/federation/resolve")
+
 }
 
 // 管理端联邦面（全部挂 /admin 组，AdminMiddleware；操作留审计）

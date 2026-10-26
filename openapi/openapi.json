@@ -2957,6 +2957,79 @@
         ],
         "type": "object"
       },
+      "notify.NotifyPublicItem": {
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "end_at": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "start_at": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "type",
+          "level",
+          "start_at",
+          "end_at"
+        ],
+        "type": "object"
+      },
+      "notify.NotifyPublicListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/notify.NotifyPublicItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "notify.NotifyPublicListReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "notify.NotifyPublicListResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/notify.NotifyPublicListData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "notify.NotifyType": {
         "properties": {
           "value": {
@@ -3214,6 +3287,60 @@
         "required": [
           "code",
           "message"
+        ],
+        "type": "object"
+      },
+      "p2p.FederationResolveData": {
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "type": "object"
+      },
+      "p2p.FederationResolveReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "p2p.FederationResolveResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/p2p.FederationResolveData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -4298,6 +4425,148 @@
         ],
         "type": "object"
       },
+      "share.MultiShareBindEntry": {
+        "properties": {
+          "file_name": {
+            "type": "string"
+          },
+          "object_key": {
+            "type": "string"
+          },
+          "upload_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_name"
+        ],
+        "type": "object"
+      },
+      "share.MultiShareBindReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/share.MultiShareBindEntry"
+            },
+            "type": "array"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "type": "object"
+      },
+      "share.MultiShareBindResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/share.MultiShareData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "share.MultiShareData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "file_count": {
+            "type": "integer"
+          },
+          "pickup_code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "url",
+          "share_url",
+          "file_count"
+        ],
+        "type": "object"
+      },
+      "share.MultiShareDirectReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "share.MultiShareDirectResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/share.MultiShareData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "share.PickupRecord": {
         "properties": {
           "channel": {
@@ -4446,6 +4715,87 @@
           },
           "data": {
             "$ref": "#/components/schemas/share.ShareData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "share.ShareMetadataData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "expired_at": {
+            "type": "string"
+          },
+          "expired_count": {
+            "type": "integer"
+          },
+          "file_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "has_password": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          },
+          "used_count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "size",
+          "has_password",
+          "expired_count",
+          "used_count",
+          "encrypted",
+          "file_count",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "share.ShareMetadataReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "share.ShareMetadataResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/share.ShareMetadataData"
           },
           "message": {
             "type": "string"
@@ -4674,6 +5024,66 @@
         "required": [
           "code",
           "message"
+        ],
+        "type": "object"
+      },
+      "share.UserSharesImportLocalData": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "share_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "share_url"
+        ],
+        "type": "object"
+      },
+      "share.UserSharesImportLocalReq": {
+        "properties": {
+          "custom_code": {
+            "type": "string"
+          },
+          "expire_style": {
+            "type": "string"
+          },
+          "expire_value": {
+            "type": "integer"
+          },
+          "password": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "require_auth": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "share.UserSharesImportLocalResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/share.UserSharesImportLocalData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -5767,6 +6177,76 @@
         ],
         "type": "object"
       },
+      "user.UserAPIKeysRevokeAllData": {
+        "properties": {
+          "revoked": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revoked"
+        ],
+        "type": "object"
+      },
+      "user.UserAPIKeysRevokeAllResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.UserAPIKeysRevokeAllData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "user.UserCheckAuthData": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "role"
+        ],
+        "type": "object"
+      },
+      "user.UserCheckAuthResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.UserCheckAuthData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "user.UserData": {
         "properties": {
           "avatar": {
@@ -5950,6 +6430,51 @@
           },
           "data": {
             "$ref": "#/components/schemas/user.UserData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "user.UserLogoutResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "user.UserRefreshData": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "user.UserRefreshResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.UserRefreshData"
           },
           "message": {
             "type": "string"
@@ -8493,6 +9018,38 @@
         ]
       }
     },
+    "/api/v1/federation/resolve": {
+      "get": {
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nFederationResolve 口令联邦解析（前端录码本站未命中时查联邦；只做发现，不代理流量）",
+        "operationId": "FederationResolve",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/p2p.FederationResolveResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /api/v1/federation/resolve",
+        "tags": [
+          "P2PPublicService"
+        ]
+      }
+    },
     "/api/v1/notifies/mark-read": {
       "post": {
         "description": "MarkRead 标记已读（当前仅支持 all=true）",
@@ -8563,6 +9120,28 @@
           }
         },
         "summary": "GET /api/v1/notifies/mine",
+        "tags": [
+          "NotifyService"
+        ]
+      }
+    },
+    "/api/v1/notifies/public": {
+      "get": {
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nNotifyPublicList 站级公开公告列表（匿名可访问；最多 50 条）",
+        "operationId": "NotifyPublicList",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.NotifyPublicListResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /api/v1/notifies/public",
         "tags": [
           "NotifyService"
         ]
@@ -8869,6 +9448,191 @@
         ]
       }
     },
+    "/api/v1/share/multi-bind": {
+      "post": {
+        "description": "MultiShareBind 多文件绑定建分享（分片会话 / 已直传对象）",
+        "operationId": "MultiShareBind",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "encrypted": {
+                    "type": "boolean"
+                  },
+                  "entries": {
+                    "items": {
+                      "$ref": "#/components/schemas/share.MultiShareBindEntry"
+                    },
+                    "type": "array"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "entries"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/share.MultiShareBindResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/share/multi-bind",
+        "tags": [
+          "ShareService"
+        ]
+      }
+    },
+    "/api/v1/share/multi-direct": {
+      "post": {
+        "description": "MultiShareDirect 多文件直传建分享（multipart；文件本体不入契约，handler 手工取）",
+        "operationId": "MultiShareDirect",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "encrypted": {
+                    "type": "boolean"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/share.MultiShareDirectResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/share/multi-direct",
+        "tags": [
+          "ShareService"
+        ]
+      }
+    },
+    "/api/v1/user/check-auth": {
+      "get": {
+        "description": "UserCheckAuth 校验登录态并回带用户信息（前端启动时用）",
+        "operationId": "UserCheckAuth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.UserCheckAuthResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /api/v1/user/check-auth",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/logout": {
+      "post": {
+        "description": "UserLogout 显式注销（令牌进黑名单 + 清 Cookie）",
+        "operationId": "UserLogout",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.UserLogoutResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/user/logout",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/refresh": {
+      "post": {
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nUserRefresh 刷新会话令牌（前端 401 拦截器调用；Cookie 认证时须带 CSRF 头）",
+        "operationId": "UserRefresh",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.UserRefreshResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/user/refresh",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/api/v1/user/requests": {
       "get": {
         "description": "ListMine 我的投递链接列表（登录用户）",
@@ -9113,6 +9877,61 @@
           }
         },
         "summary": "POST /api/v1/user/shares/batch-extend",
+        "tags": [
+          "ShareService"
+        ]
+      }
+    },
+    "/api/v1/user/shares/import-local": {
+      "post": {
+        "description": "UserSharesImportLocal 服务器本地文件导入为分享（NAS 免上传场景）",
+        "operationId": "UserSharesImportLocal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "custom_code": {
+                    "type": "string"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/share.UserSharesImportLocalResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/user/shares/import-local",
         "tags": [
           "ShareService"
         ]
@@ -9860,6 +10679,38 @@
         ]
       }
     },
+    "/share/metadata/{code}": {
+      "get": {
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\nShareMetadata 取件元数据（不扣次数、不要密码；取件页渲染用）",
+        "operationId": "ShareMetadata",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/share.ShareMetadataResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /share/metadata/:code",
+        "tags": [
+          "ShareService"
+        ]
+      }
+    },
     "/share/select/": {
       "get": {
         "description": "GetShare 获取分享内容",
@@ -10022,6 +10873,28 @@
           }
         },
         "summary": "POST /user/api-keys",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/api-keys/revoke-all": {
+      "post": {
+        "description": "UserAPIKeysRevokeAll 一键吊销全部 API Key（JWT-only；应急止损）",
+        "operationId": "UserAPIKeysRevokeAll",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.UserAPIKeysRevokeAllResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/api-keys/revoke-all",
         "tags": [
           "UserService"
         ]

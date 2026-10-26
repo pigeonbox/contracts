@@ -219,3 +219,114 @@ export interface UserShareOpResp {
   message: string;
   data?: Record<string, number>;
 }
+
+/**
+ * ==================== 取件元数据（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ 字段名/可空性**必须**与收敛前的 JSON 完全一致（前端与外部集成方都依赖）：
+ * · name  仅 file 分享有 ⇒ optional（缺省不输出，与原 omitempty 一致）
+ * · expired_at 原为 *time.Time（null）⇒ optional（缺省不输出；前端用 ?? null 兜）
+ * · 其余字段恒有 ⇒ required
+ */
+export interface ShareMetadataReq {
+  code: string;
+}
+
+export interface ShareMetadataData {
+  code: string;
+  /** text | file */
+  type: string;
+  /** 仅 file 分享 */
+  name?: string;
+  size: number;
+  has_password: boolean;
+  /** RFC3339 */
+  expired_at?: string;
+  /** -1 无限 / 0 耗尽 / >0 剩余 */
+  expired_count: number;
+  used_count: number;
+  encrypted: boolean;
+  file_count: number;
+  /** RFC3339 */
+  created_at: string;
+}
+
+export interface ShareMetadataResp {
+  code: number;
+  message: string;
+  data: ShareMetadataData;
+}
+
+/**
+ * ==================== 多文件分享（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ 公共参数在收敛前用 DefaultPostForm 读（**缺省值兜底**）⇒ 契约里一律 optional
+ * （缺字段时 handler 显式兜底）⇒ 行为与收敛前完全一致（原来缺 expire_value 不报 400）。
+ * 文件本体**不入契约**（多文件 multipart 无法用 form 绑定表达）⇒ handler 仍手工取。
+ */
+export interface MultiShareDirectReq {
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  encrypted?: boolean;
+  custom_code?: string;
+  note?: string;
+}
+
+export interface MultiShareBindReq {
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  encrypted?: boolean;
+  custom_code?: string;
+  note?: string;
+  entries: MultiShareBindEntry[];
+}
+
+/** MultiShareBindEntry multi-bind 的一个条目（分片会话 或 已直传对象，二选一）。 */
+export interface MultiShareBindEntry {
+  upload_id?: string;
+  object_key?: string;
+  file_name: string;
+}
+
+export interface MultiShareData {
+  code: string;
+  url: string;
+  share_url: string;
+  file_count: number;
+  pickup_code?: string;
+}
+
+export interface MultiShareDirectResp {
+  code: number;
+  message: string;
+  data: MultiShareData;
+}
+
+export interface MultiShareBindResp {
+  code: number;
+  message: string;
+  data: MultiShareData;
+}
+
+/** ==================== 服务器本地文件导入（2026-10-26 自 customHandler 收敛进 IDL） ==================== */
+export interface UserSharesImportLocalReq {
+  path: string;
+  expire_value?: number;
+  expire_style?: string;
+  require_auth?: boolean;
+  password?: string;
+  custom_code?: string;
+}
+
+export interface UserSharesImportLocalData {
+  code: string;
+  share_url: string;
+}
+
+export interface UserSharesImportLocalResp {
+  code: number;
+  message: string;
+  data: UserSharesImportLocalData;
+}

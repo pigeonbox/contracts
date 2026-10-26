@@ -184,3 +184,26 @@ export interface MarkReadResp {
   message: string;
   data?: MarkReadData;
 }
+
+/** ==================== 公开公告（2026-10-26 自 customHandler 收敛进 IDL） ==================== */
+export interface NotifyPublicItem {
+  id: number;
+  title: string;
+  content: string;
+  type: string;
+  level: string;
+  start_at: string;
+  end_at: string;
+}
+
+export interface NotifyPublicListReq {}
+
+export interface NotifyPublicListData {
+  items: NotifyPublicItem[];
+}
+
+export interface NotifyPublicListResp {
+  code: number;
+  message: string;
+  data: NotifyPublicListData;
+}
