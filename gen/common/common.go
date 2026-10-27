@@ -2202,14 +2202,27 @@ func (p *UserAPIKeysRevokeAllResp) String() string {
 //
 // 副本可见性不变：本域在 public 与 admin **两面都注册**（gencommon），与收敛前
 // 「无条件注册」一致。
+// 公开公告条目（⚠️ start_at/end_at 运行时**可能回 null**）。
+//
+// ⚠️ **形状差（2026-10-27 真机冒烟实测记录）**：该端点的响应**不是**由本契约的
+// 模型序列化出来的 —— core 侧是 transport/http/handler/notify_public.go 里的
+// 手工 map（逐字段挑的 7 个字段），未设置生效窗口时 **start_at/end_at 显式回
+// null**（而不是空串、也不是缺省）。
+// ⇒ 这里把两字段声明为 **optional**（TS 侧 `start_at?: string`）而不是 required：
+//
+//	required 会让 TS 以为它恒为 string，消费面直接 `.slice()`/`.length` 会在
+//	运行时被 null 打断；optional 至少让 TS 强制消费面处理「可能没有」。
+//
+// ⚠️ 消费面仍不得当非空字符串用（null ≠ undefined）；本仓库的公告横幅组件
+// （NotifyBanner.vue）不消费这两个字段。
 type NotifyPublicItem struct {
-	ID      int64  `thrift:"id,1,required" form:"id,required" json:"id,required"`
-	Title   string `thrift:"title,2,required" form:"title,required" json:"title,required"`
-	Content string `thrift:"content,3,required" form:"content,required" json:"content,required"`
-	Type    string `thrift:"type,4,required" form:"type,required" json:"type,required"`
-	Level   string `thrift:"level,5,required" form:"level,required" json:"level,required"`
-	StartAt string `thrift:"start_at,6,required" form:"start_at,required" json:"start_at,required"`
-	EndAt   string `thrift:"end_at,7,required" form:"end_at,required" json:"end_at,required"`
+	ID      int64   `thrift:"id,1,required" form:"id,required" json:"id,required"`
+	Title   string  `thrift:"title,2,required" form:"title,required" json:"title,required"`
+	Content string  `thrift:"content,3,required" form:"content,required" json:"content,required"`
+	Type    string  `thrift:"type,4,required" form:"type,required" json:"type,required"`
+	Level   string  `thrift:"level,5,required" form:"level,required" json:"level,required"`
+	StartAt *string `thrift:"start_at,6,optional" form:"start_at" json:"start_at,omitempty"`
+	EndAt   *string `thrift:"end_at,7,optional" form:"end_at" json:"end_at,omitempty"`
 }
 
 func NewNotifyPublicItem() *NotifyPublicItem {
@@ -2239,12 +2252,22 @@ func (p *NotifyPublicItem) GetLevel() (v string) {
 	return p.Level
 }
 
+var NotifyPublicItem_StartAt_DEFAULT string
+
 func (p *NotifyPublicItem) GetStartAt() (v string) {
-	return p.StartAt
+	if !p.IsSetStartAt() {
+		return NotifyPublicItem_StartAt_DEFAULT
+	}
+	return *p.StartAt
 }
 
+var NotifyPublicItem_EndAt_DEFAULT string
+
 func (p *NotifyPublicItem) GetEndAt() (v string) {
-	return p.EndAt
+	if !p.IsSetEndAt() {
+		return NotifyPublicItem_EndAt_DEFAULT
+	}
+	return *p.EndAt
 }
 
 var fieldIDToName_NotifyPublicItem = map[int16]string{
@@ -2257,6 +2280,14 @@ var fieldIDToName_NotifyPublicItem = map[int16]string{
 	7: "end_at",
 }
 
+func (p *NotifyPublicItem) IsSetStartAt() bool {
+	return p.StartAt != nil
+}
+
+func (p *NotifyPublicItem) IsSetEndAt() bool {
+	return p.EndAt != nil
+}
+
 func (p *NotifyPublicItem) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
@@ -2266,8 +2297,6 @@ func (p *NotifyPublicItem) Read(iprot thrift.TProtocol) (err error) {
 	var issetContent bool = false
 	var issetType bool = false
 	var issetLevel bool = false
-	var issetStartAt bool = false
-	var issetEndAt bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -2333,7 +2362,6 @@ func (p *NotifyPublicItem) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetStartAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2342,7 +2370,6 @@ func (p *NotifyPublicItem) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetEndAt = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -2381,16 +2408,6 @@ func (p *NotifyPublicItem) Read(iprot thrift.TProtocol) (err error) {
 
 	if !issetLevel {
 		fieldId = 5
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetStartAt {
-		fieldId = 6
-		goto RequiredFieldNotSetError
-	}
-
-	if !issetEndAt {
-		fieldId = 7
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -2468,22 +2485,22 @@ func (p *NotifyPublicItem) ReadField5(iprot thrift.TProtocol) error {
 }
 func (p *NotifyPublicItem) ReadField6(iprot thrift.TProtocol) error {
 
-	var _field string
+	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = v
+		_field = &v
 	}
 	p.StartAt = _field
 	return nil
 }
 func (p *NotifyPublicItem) ReadField7(iprot thrift.TProtocol) error {
 
-	var _field string
+	var _field *string
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		_field = v
+		_field = &v
 	}
 	p.EndAt = _field
 	return nil
@@ -2627,14 +2644,16 @@ WriteFieldEndError:
 }
 
 func (p *NotifyPublicItem) writeField6(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("start_at", thrift.STRING, 6); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.StartAt); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetStartAt() {
+		if err = oprot.WriteFieldBegin("start_at", thrift.STRING, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.StartAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -2644,14 +2663,16 @@ WriteFieldEndError:
 }
 
 func (p *NotifyPublicItem) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("end_at", thrift.STRING, 7); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.EndAt); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetEndAt() {
+		if err = oprot.WriteFieldBegin("end_at", thrift.STRING, 7); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.EndAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:

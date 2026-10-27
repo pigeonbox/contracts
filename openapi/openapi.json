@@ -2161,9 +2161,7 @@
           "title",
           "content",
           "type",
-          "level",
-          "start_at",
-          "end_at"
+          "level"
         ],
         "type": "object"
       },

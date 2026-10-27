@@ -91,14 +91,25 @@ struct UserAPIKeysRevokeAllResp {
 // 副本可见性不变：本域在 public 与 admin **两面都注册**（gencommon），与收敛前
 // 「无条件注册」一致。
 
+// 公开公告条目（⚠️ start_at/end_at 运行时**可能回 null**）。
+//
+// ⚠️ **形状差（2026-10-27 真机冒烟实测记录）**：该端点的响应**不是**由本契约的
+// 模型序列化出来的 —— core 侧是 transport/http/handler/notify_public.go 里的
+// 手工 map（逐字段挑的 7 个字段），未设置生效窗口时 **start_at/end_at 显式回
+// null**（而不是空串、也不是缺省）。
+// ⇒ 这里把两字段声明为 **optional**（TS 侧 `start_at?: string`）而不是 required：
+//   required 会让 TS 以为它恒为 string，消费面直接 `.slice()`/`.length` 会在
+//   运行时被 null 打断；optional 至少让 TS 强制消费面处理「可能没有」。
+// ⚠️ 消费面仍不得当非空字符串用（null ≠ undefined）；本仓库的公告横幅组件
+// （NotifyBanner.vue）不消费这两个字段。
 struct NotifyPublicItem {
     1: required i64    id       (api.body = "id"),
     2: required string title    (api.body = "title"),
     3: required string content  (api.body = "content"),
     4: required string type     (api.body = "type"),
     5: required string level    (api.body = "level"),
-    6: required string start_at (api.body = "start_at"),
-    7: required string end_at   (api.body = "end_at"),
+    6: optional string start_at (api.body = "start_at"),
+    7: optional string end_at   (api.body = "end_at"),
 }
 
 struct NotifyPublicListReq {
