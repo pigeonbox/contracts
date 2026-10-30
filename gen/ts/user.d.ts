@@ -147,6 +147,13 @@ export interface APIKeyData {
   expires_at: string;
   created_at: string;
   revoked: boolean;
+  /**
+ * 8: 权限范围（2026-10-30）：该 Key 被允许的能力面。
+ * **缺省/空 = 全量**（与本字段引入前行为完全一致 ⇒ 老 Key 无需重建）。
+ * 取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
+ * 服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
+ */
+  scopes?: string[];
 }
 
 export interface APIKeyListResp {
@@ -159,6 +166,11 @@ export interface CreateAPIKeyReq {
   name: string;
   expires_at?: string;
   expires_in_days?: number;
+  /**
+ * 4: 权限范围（2026-10-30）：缺省 = 全量（老行为不变）。
+ * 取值：admin / user / share；服务端校验取值合法，非法值直接 400。
+ */
+  scopes?: string[];
 }
 
 export interface CreateAPIKeyData {

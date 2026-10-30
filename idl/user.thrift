@@ -162,6 +162,11 @@ struct APIKeyData {
     5: required string expires_at   (api.body = "expires_at"),
     6: required string created_at   (api.body = "created_at"),
     7: required bool   revoked      (api.body = "revoked"),
+    // 8: 权限范围（2026-10-30）：该 Key 被允许的能力面。
+    //    **缺省/空 = 全量**（与本字段引入前行为完全一致 ⇒ 老 Key 无需重建）。
+    //    取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
+    //    服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
+    8: optional list<string> scopes (api.body = "scopes"),
 }
 
 struct APIKeyListResp {
@@ -174,6 +179,9 @@ struct CreateAPIKeyReq {
     1: required string name             (api.body = "name"),
     2: optional string expires_at       (api.body = "expires_at"),
     3: optional i64    expires_in_days  (api.body = "expires_in_days"),
+    // 4: 权限范围（2026-10-30）：缺省 = 全量（老行为不变）。
+    //    取值：admin / user / share；服务端校验取值合法，非法值直接 400。
+    4: optional list<string> scopes     (api.body = "scopes"),
 }
 
 struct CreateAPIKeyData {
