@@ -5573,6 +5573,89 @@
         ],
         "type": "object"
       },
+      "storage.MigrateStorageData": {
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "copied": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "failed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "from_type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "objects": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "skipped": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "switched": {
+            "type": "boolean"
+          },
+          "to_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "switched",
+          "copied",
+          "skipped",
+          "failed",
+          "bytes",
+          "objects",
+          "from_type",
+          "to_type"
+        ],
+        "type": "object"
+      },
+      "storage.MigrateStorageReq": {
+        "properties": {
+          "dry_run": {
+            "type": "boolean"
+          },
+          "target_path": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_type"
+        ],
+        "type": "object"
+      },
+      "storage.MigrateStorageResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/storage.MigrateStorageData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "storage.NFSConfig": {
         "properties": {
           "auto_mount": {
@@ -8424,6 +8507,52 @@
           }
         },
         "summary": "GET /admin/storage/insights",
+        "tags": [
+          "StorageService"
+        ]
+      }
+    },
+    "/admin/storage/migrate": {
+      "post": {
+        "description": "MigrateStorage 存储迁移：把存量对象搬到目标后端（**全部复制成功后才切换**）",
+        "operationId": "MigrateStorage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dry_run": {
+                    "type": "boolean"
+                  },
+                  "target_path": {
+                    "type": "string"
+                  },
+                  "target_type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "target_type"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/storage.MigrateStorageResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/storage/migrate",
         "tags": [
           "StorageService"
         ]
