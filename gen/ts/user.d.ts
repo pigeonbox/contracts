@@ -154,6 +154,13 @@ export interface APIKeyData {
  * 服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
  */
   scopes?: string[];
+  /**
+ * 9: 撤销时间（2026-10-30 真机实录补齐）。
+ * 撤销是**软撤销**（保留审计留痕，列表**含**已撤销项），DB 里 revoked_at
+ * 一直有值，但此前**响应里没有这个字段** ⇒ 用户/前端看不到「这把 Key 是什么
+ * 时候被撤销的」⇒ 审计信息断在回传面。空串 = 未撤销。
+ */
+  revoked_at?: string;
 }
 
 export interface APIKeyListResp {

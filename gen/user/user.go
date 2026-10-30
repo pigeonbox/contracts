@@ -5456,6 +5456,11 @@ type APIKeyData struct {
 	//    取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
 	//    服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
 	Scopes []string `thrift:"scopes,8,optional,list<string>" form:"scopes" json:"scopes,omitempty"`
+	// 9: 撤销时间（2026-10-30 真机实录补齐）。
+	//    撤销是**软撤销**（保留审计留痕，列表**含**已撤销项），DB 里 revoked_at
+	//    一直有值，但此前**响应里没有这个字段** ⇒ 用户/前端看不到「这把 Key 是什么
+	//    时候被撤销的」⇒ 审计信息断在回传面。空串 = 未撤销。
+	RevokedAt *string `thrift:"revoked_at,9,optional" form:"revoked_at" json:"revoked_at,omitempty"`
 }
 
 func NewAPIKeyData() *APIKeyData {
@@ -5502,6 +5507,15 @@ func (p *APIKeyData) GetScopes() (v []string) {
 	return p.Scopes
 }
 
+var APIKeyData_RevokedAt_DEFAULT string
+
+func (p *APIKeyData) GetRevokedAt() (v string) {
+	if !p.IsSetRevokedAt() {
+		return APIKeyData_RevokedAt_DEFAULT
+	}
+	return *p.RevokedAt
+}
+
 var fieldIDToName_APIKeyData = map[int16]string{
 	1: "id",
 	2: "name",
@@ -5511,10 +5525,15 @@ var fieldIDToName_APIKeyData = map[int16]string{
 	6: "created_at",
 	7: "revoked",
 	8: "scopes",
+	9: "revoked_at",
 }
 
 func (p *APIKeyData) IsSetScopes() bool {
 	return p.Scopes != nil
+}
+
+func (p *APIKeyData) IsSetRevokedAt() bool {
+	return p.RevokedAt != nil
 }
 
 func (p *APIKeyData) Read(iprot thrift.TProtocol) (err error) {
@@ -5609,6 +5628,14 @@ func (p *APIKeyData) Read(iprot thrift.TProtocol) (err error) {
 		case 8:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -5779,6 +5806,17 @@ func (p *APIKeyData) ReadField8(iprot thrift.TProtocol) error {
 	p.Scopes = _field
 	return nil
 }
+func (p *APIKeyData) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.RevokedAt = _field
+	return nil
+}
 
 func (p *APIKeyData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5816,6 +5854,10 @@ func (p *APIKeyData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
 			goto WriteFieldError
 		}
 	}
@@ -5980,6 +6022,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *APIKeyData) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRevokedAt() {
+		if err = oprot.WriteFieldBegin("revoked_at", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.RevokedAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 
 func (p *APIKeyData) String() string {

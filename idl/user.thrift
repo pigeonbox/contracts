@@ -167,6 +167,11 @@ struct APIKeyData {
     //    取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
     //    服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
     8: optional list<string> scopes (api.body = "scopes"),
+    // 9: 撤销时间（2026-10-30 真机实录补齐）。
+    //    撤销是**软撤销**（保留审计留痕，列表**含**已撤销项），DB 里 revoked_at
+    //    一直有值，但此前**响应里没有这个字段** ⇒ 用户/前端看不到「这把 Key 是什么
+    //    时候被撤销的」⇒ 审计信息断在回传面。空串 = 未撤销。
+    9: optional string revoked_at (api.body = "revoked_at"),
 }
 
 struct APIKeyListResp {

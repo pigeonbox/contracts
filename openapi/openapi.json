@@ -6101,6 +6101,9 @@
           "revoked": {
             "type": "boolean"
           },
+          "revoked_at": {
+            "type": "string"
+          },
           "scopes": {
             "items": {
               "type": "string"
