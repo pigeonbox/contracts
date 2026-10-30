@@ -6017,6 +6017,12 @@
           },
           "revoked": {
             "type": "boolean"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -6108,6 +6114,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -10847,6 +10859,12 @@
                   },
                   "name": {
                     "type": "string"
+                  },
+                  "scopes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
                   }
                 },
                 "required": [
