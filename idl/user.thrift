@@ -162,6 +162,16 @@ struct APIKeyData {
     5: required string expires_at   (api.body = "expires_at"),
     6: required string created_at   (api.body = "created_at"),
     7: required bool   revoked      (api.body = "revoked"),
+    // 8: 权限范围（2026-10-30）：该 Key 被允许的能力面。
+    //    **缺省/空 = 全量**（与本字段引入前行为完全一致 ⇒ 老 Key 无需重建）。
+    //    取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
+    //    服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
+    8: optional list<string> scopes (api.body = "scopes"),
+    // 9: 撤销时间（2026-10-30 真机实录补齐）。
+    //    撤销是**软撤销**（保留审计留痕，列表**含**已撤销项），DB 里 revoked_at
+    //    一直有值，但此前**响应里没有这个字段** ⇒ 用户/前端看不到「这把 Key 是什么
+    //    时候被撤销的」⇒ 审计信息断在回传面。空串 = 未撤销。
+    9: optional string revoked_at (api.body = "revoked_at"),
 }
 
 struct APIKeyListResp {
@@ -174,6 +184,9 @@ struct CreateAPIKeyReq {
     1: required string name             (api.body = "name"),
     2: optional string expires_at       (api.body = "expires_at"),
     3: optional i64    expires_in_days  (api.body = "expires_in_days"),
+    // 4: 权限范围（2026-10-30）：缺省 = 全量（老行为不变）。
+    //    取值：admin / user / share；服务端校验取值合法，非法值直接 400。
+    4: optional list<string> scopes     (api.body = "scopes"),
 }
 
 struct CreateAPIKeyData {
@@ -195,6 +208,18 @@ struct DeleteAPIKeyResp {
     1: required i32    code    (api.body = "code"),
     2: required string message (api.body = "message"),
 }
+
+// ==================== 会话与 API Key（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 收敛前这些端点是 bootstrap/routes_custom.go 里的**内联闭包**（无契约）⇒
+//   wire 形状按现状镜像：logout 成功响应**没有 data 字段**（不声明 data）。
+
+
+
+
+
+
+
 
 // ==================== 服务定义 ====================
 
@@ -228,4 +253,11 @@ service UserService {
 
     // DeleteAPIKey 删除 API Key
     DeleteAPIKeyResp DeleteAPIKey(1: DeleteAPIKeyReq req) (api.delete = "/user/api-keys/:id")
+
+    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
+
+
+
+
+
 }

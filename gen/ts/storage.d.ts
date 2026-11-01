@@ -73,6 +73,45 @@ export interface SwitchStorageReq {
   type: string;
 }
 
+/**
+ * ==================== 存储迁移 ====================
+ * MigrateStorageReq 存储迁移请求：把**存量对象**从当前后端搬到目标后端。
+ */
+export interface MigrateStorageReq {
+  /** 1: 目标后端类型（local / s3 / webdav / …；用管理台已配置的目标段凭据） */
+  target_type: string;
+  /** 2: 目标本地目录（仅 target_type=local 时有意义；缺省 = 沿用现配置的 storage_path） */
+  target_path?: string;
+  /** 3: 只算计划不搬（先看再动：对象数/字节数/源→目标） */
+  dry_run?: boolean;
+}
+
+/** MigrateStorageData 迁移结果。 */
+export interface MigrateStorageData {
+  /** 是否已切换到目标后端 */
+  switched: boolean;
+  /** 本次复制成功的对象数 */
+  copied: number;
+  /** 目标已存在（续跑跳过） */
+  skipped: number;
+  /** 复制失败的对象数 */
+  failed: number;
+  /** 复制字节数 */
+  bytes: number;
+  /** 计划涉及的对象总数 */
+  objects: number;
+  from_type: string;
+  to_type: string;
+  /** 失败摘要（failed>0 时） */
+  message?: string;
+}
+
+export interface MigrateStorageResp {
+  code: number;
+  message: string;
+  data: MigrateStorageData;
+}
+
 export interface SwitchStorageData {
   success: boolean;
   message: string;

@@ -3163,6 +3163,9 @@ func (p *AdminP2pDirectoryResp) String() string {
 }
 
 // 公开收件端点(限流桶=download;实例间递送口令)
+// ==================== 联邦解析代理（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 未命中时**只有** available 一个字段（其余 optional 不输出）⇒ 与收敛前一致。
 type P2PPublicService interface {
 	PostP2PInvite(ctx context.Context, req *PostP2PInviteReq) (r *PostP2PInviteResp, err error)
 }

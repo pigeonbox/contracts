@@ -190,6 +190,10 @@ struct MarkReadResp {
 }
 
 // ==================== 服务定义 ====================
+//
+// ⚠️ 站级公开公告（/api/v1/notifies/public）**不在本文件**：见 common.thrift 的
+// 「站级公开公告」段——它必须挂在一个 /api 组不带鉴权的 IDL 域下（本域的 /api 组
+// 挂了 UserOrAPIKey，公开端点落进来就会被误加登录门槛）。
 
 service NotifyService {
     // List 通知列表（管理）
@@ -220,4 +224,5 @@ service NotifyService {
 
     // MarkRead 标记已读（当前仅支持 all=true）
     MarkReadResp MarkRead(1: MarkReadReq req) (api.post = "/api/v1/notifies/mark-read")
+
 }

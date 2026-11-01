@@ -5451,6 +5451,16 @@ type APIKeyData struct {
 	ExpiresAt  string `thrift:"expires_at,5,required" form:"expires_at,required" json:"expires_at,required"`
 	CreatedAt  string `thrift:"created_at,6,required" form:"created_at,required" json:"created_at,required"`
 	Revoked    bool   `thrift:"revoked,7,required" form:"revoked,required" json:"revoked,required"`
+	// 8: 权限范围（2026-10-30）：该 Key 被允许的能力面。
+	//    **缺省/空 = 全量**（与本字段引入前行为完全一致 ⇒ 老 Key 无需重建）。
+	//    取值：admin（管理面）/ user（用户自有资源）/ share（寄件·取件）。
+	//    服务端按**请求路径**判定所需能力，Key 缺该能力 ⇒ 403。
+	Scopes []string `thrift:"scopes,8,optional,list<string>" form:"scopes" json:"scopes,omitempty"`
+	// 9: 撤销时间（2026-10-30 真机实录补齐）。
+	//    撤销是**软撤销**（保留审计留痕，列表**含**已撤销项），DB 里 revoked_at
+	//    一直有值，但此前**响应里没有这个字段** ⇒ 用户/前端看不到「这把 Key 是什么
+	//    时候被撤销的」⇒ 审计信息断在回传面。空串 = 未撤销。
+	RevokedAt *string `thrift:"revoked_at,9,optional" form:"revoked_at" json:"revoked_at,omitempty"`
 }
 
 func NewAPIKeyData() *APIKeyData {
@@ -5488,6 +5498,24 @@ func (p *APIKeyData) GetRevoked() (v bool) {
 	return p.Revoked
 }
 
+var APIKeyData_Scopes_DEFAULT []string
+
+func (p *APIKeyData) GetScopes() (v []string) {
+	if !p.IsSetScopes() {
+		return APIKeyData_Scopes_DEFAULT
+	}
+	return p.Scopes
+}
+
+var APIKeyData_RevokedAt_DEFAULT string
+
+func (p *APIKeyData) GetRevokedAt() (v string) {
+	if !p.IsSetRevokedAt() {
+		return APIKeyData_RevokedAt_DEFAULT
+	}
+	return *p.RevokedAt
+}
+
 var fieldIDToName_APIKeyData = map[int16]string{
 	1: "id",
 	2: "name",
@@ -5496,6 +5524,16 @@ var fieldIDToName_APIKeyData = map[int16]string{
 	5: "expires_at",
 	6: "created_at",
 	7: "revoked",
+	8: "scopes",
+	9: "revoked_at",
+}
+
+func (p *APIKeyData) IsSetScopes() bool {
+	return p.Scopes != nil
+}
+
+func (p *APIKeyData) IsSetRevokedAt() bool {
+	return p.RevokedAt != nil
 }
 
 func (p *APIKeyData) Read(iprot thrift.TProtocol) (err error) {
@@ -5584,6 +5622,22 @@ func (p *APIKeyData) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetRevoked = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -5729,6 +5783,40 @@ func (p *APIKeyData) ReadField7(iprot thrift.TProtocol) error {
 	p.Revoked = _field
 	return nil
 }
+func (p *APIKeyData) ReadField8(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Scopes = _field
+	return nil
+}
+func (p *APIKeyData) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.RevokedAt = _field
+	return nil
+}
 
 func (p *APIKeyData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5762,6 +5850,14 @@ func (p *APIKeyData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
 			goto WriteFieldError
 		}
 	}
@@ -5899,6 +5995,52 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
+func (p *APIKeyData) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScopes() {
+		if err = oprot.WriteFieldBegin("scopes", thrift.LIST, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Scopes)); err != nil {
+			return err
+		}
+		for _, v := range p.Scopes {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *APIKeyData) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRevokedAt() {
+		if err = oprot.WriteFieldBegin("revoked_at", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.RevokedAt); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 
 func (p *APIKeyData) String() string {
@@ -6187,6 +6329,9 @@ type CreateAPIKeyReq struct {
 	Name          string  `thrift:"name,1,required" form:"name,required" json:"name,required"`
 	ExpiresAt     *string `thrift:"expires_at,2,optional" form:"expires_at" json:"expires_at,omitempty"`
 	ExpiresInDays *int64  `thrift:"expires_in_days,3,optional" form:"expires_in_days" json:"expires_in_days,omitempty"`
+	// 4: 权限范围（2026-10-30）：缺省 = 全量（老行为不变）。
+	//    取值：admin / user / share；服务端校验取值合法，非法值直接 400。
+	Scopes []string `thrift:"scopes,4,optional,list<string>" form:"scopes" json:"scopes,omitempty"`
 }
 
 func NewCreateAPIKeyReq() *CreateAPIKeyReq {
@@ -6218,10 +6363,20 @@ func (p *CreateAPIKeyReq) GetExpiresInDays() (v int64) {
 	return *p.ExpiresInDays
 }
 
+var CreateAPIKeyReq_Scopes_DEFAULT []string
+
+func (p *CreateAPIKeyReq) GetScopes() (v []string) {
+	if !p.IsSetScopes() {
+		return CreateAPIKeyReq_Scopes_DEFAULT
+	}
+	return p.Scopes
+}
+
 var fieldIDToName_CreateAPIKeyReq = map[int16]string{
 	1: "name",
 	2: "expires_at",
 	3: "expires_in_days",
+	4: "scopes",
 }
 
 func (p *CreateAPIKeyReq) IsSetExpiresAt() bool {
@@ -6230,6 +6385,10 @@ func (p *CreateAPIKeyReq) IsSetExpiresAt() bool {
 
 func (p *CreateAPIKeyReq) IsSetExpiresInDays() bool {
 	return p.ExpiresInDays != nil
+}
+
+func (p *CreateAPIKeyReq) IsSetScopes() bool {
+	return p.Scopes != nil
 }
 
 func (p *CreateAPIKeyReq) Read(iprot thrift.TProtocol) (err error) {
@@ -6272,6 +6431,14 @@ func (p *CreateAPIKeyReq) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6345,6 +6512,29 @@ func (p *CreateAPIKeyReq) ReadField3(iprot thrift.TProtocol) error {
 	p.ExpiresInDays = _field
 	return nil
 }
+func (p *CreateAPIKeyReq) ReadField4(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Scopes = _field
+	return nil
+}
 
 func (p *CreateAPIKeyReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -6362,6 +6552,10 @@ func (p *CreateAPIKeyReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -6435,6 +6629,33 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *CreateAPIKeyReq) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScopes() {
+		if err = oprot.WriteFieldBegin("scopes", thrift.LIST, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Scopes)); err != nil {
+			return err
+		}
+		for _, v := range p.Scopes {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *CreateAPIKeyReq) String() string {
@@ -7261,6 +7482,12 @@ func (p *DeleteAPIKeyResp) String() string {
 
 }
 
+// ==================== 会话与 API Key（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 收敛前这些端点是 bootstrap/routes_custom.go 里的**内联闭包**（无契约）⇒
+//
+//	wire 形状按现状镜像：logout 成功响应**没有 data 字段**（不声明 data）。
+//
 // ==================== 服务定义 ====================
 type UserService interface {
 	// Register 用户注册

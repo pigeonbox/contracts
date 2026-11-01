@@ -11,6 +11,7 @@ export type * as notify from './notify';
 export type * as p2p from './p2p';
 export type * as presign from './presign';
 export type * as preview from './preview';
+export type * as publicapi from './publicapi';
 export type * as qrcode from './qrcode';
 export type * as ratelimit from './ratelimit';
 export type * as request from './request';
