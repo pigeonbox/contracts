@@ -82,6 +82,11 @@ export interface MultiShareDirectReq {
   encrypted?: boolean;
   custom_code?: string;
   note?: string;
+  /**
+ * 口令型 E2E 包装密钥（2026-11-02，core#30）：多文件直传的全部子文件共用一把内容密钥，
+ * 语义/格式同 ShareTextReq.wrapped_key（服务端零知识：只存只发）
+ */
+  wrapped_key?: string;
 }
 
 export interface MultiShareBindReq {
@@ -92,6 +97,8 @@ export interface MultiShareBindReq {
   encrypted?: boolean;
   custom_code?: string;
   note?: string;
+  /** 口令型 E2E 包装密钥（2026-11-02，core#30）：语义/格式同 ShareTextReq.wrapped_key */
+  wrapped_key?: string;
   entries: MultiShareBindEntry[];
 }
 
