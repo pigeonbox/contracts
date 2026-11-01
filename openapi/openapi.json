@@ -3776,6 +3776,101 @@
         ],
         "type": "object"
       },
+      "publicapi.FederationDeliverData": {
+        "properties": {
+          "file_count": {
+            "type": "integer"
+          },
+          "pickup_code": {
+            "type": "string"
+          },
+          "target_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_count"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationDeliverReq": {
+        "properties": {
+          "note": {
+            "type": "string"
+          },
+          "target_url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_url"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationDeliverResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.FederationDeliverData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationDeliverySlotData": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "publicapi.FederationDeliverySlotReq": {
+        "properties": {
+          "from_name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "publicapi.FederationDeliverySlotResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/publicapi.FederationDeliverySlotData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
       "publicapi.FederationResolveData": {
         "properties": {
           "available": {
@@ -4527,6 +4622,9 @@
         "properties": {
           "file_count": {
             "type": "integer"
+          },
+          "pickup_code": {
+            "type": "string"
           }
         },
         "required": [
@@ -9157,6 +9255,95 @@
         "summary": "GET /anonymous/search/:code",
         "tags": [
           "ShareAnonymousService"
+        ]
+      }
+    },
+    "/api/v1/federation/deliver": {
+      "post": {
+        "description": "FederationDeliver 访客跨站投递：转发到已登记对端，返回对方柜铸的取件码\n（multipart；文件本体不入契约，handler 手工取）",
+        "operationId": "FederationDeliver",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "note": {
+                    "type": "string"
+                  },
+                  "target_url": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "target_url"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicapi.FederationDeliverResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/federation/deliver",
+        "tags": [
+          "PublicApiService"
+        ]
+      }
+    },
+    "/api/v1/federation/delivery-slot": {
+      "post": {
+        "description": "FederationDeliverySlot 为对面柜铸一个访客投递槽位（公开面；口令 bearer 授权）",
+        "operationId": "FederationDeliverySlot",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "from_name": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicapi.FederationDeliverySlotResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /api/v1/federation/delivery-slot",
+        "tags": [
+          "PublicApiService"
         ]
       }
     },
