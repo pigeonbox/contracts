@@ -3970,6 +3970,9 @@
           },
           "require_auth": {
             "type": "boolean"
+          },
+          "wrapped_key": {
+            "type": "string"
           }
         },
         "required": [
@@ -4044,6 +4047,9 @@
           },
           "require_auth": {
             "type": "boolean"
+          },
+          "wrapped_key": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -9827,6 +9833,9 @@
                   },
                   "require_auth": {
                     "type": "boolean"
+                  },
+                  "wrapped_key": {
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -9885,6 +9894,9 @@
                   },
                   "require_auth": {
                     "type": "boolean"
+                  },
+                  "wrapped_key": {
+                    "type": "string"
                   }
                 },
                 "type": "object"

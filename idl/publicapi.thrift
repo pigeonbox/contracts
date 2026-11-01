@@ -84,6 +84,9 @@ struct MultiShareDirectReq {
     5: optional bool   encrypted    (api.form = "encrypted"),
     6: optional string custom_code  (api.form = "custom_code"),
     7: optional string note         (api.form = "note"),
+    // 口令型 E2E 包装密钥（2026-11-02，core#30）：多文件直传的全部子文件共用一把内容密钥，
+    // 语义/格式同 ShareTextReq.wrapped_key（服务端零知识：只存只发）
+    8: optional string wrapped_key  (api.form = "wrapped_key"),
 }
 struct MultiShareBindReq {
     1: optional i32    expire_value (api.body = "expire_value"),
@@ -93,7 +96,9 @@ struct MultiShareBindReq {
     5: optional bool   encrypted    (api.body = "encrypted"),
     6: optional string custom_code  (api.body = "custom_code"),
     7: optional string note         (api.body = "note"),
-    8: required list<MultiShareBindEntry> entries (api.body = "entries"),
+    // 口令型 E2E 包装密钥（2026-11-02，core#30）：语义/格式同 ShareTextReq.wrapped_key
+    8: optional string wrapped_key  (api.body = "wrapped_key"),
+    9: required list<MultiShareBindEntry> entries (api.body = "entries"),
 }
 struct MultiShareData {
     1: required string code        (api.body = "code"),

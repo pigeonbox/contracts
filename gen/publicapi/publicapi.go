@@ -2853,6 +2853,9 @@ type MultiShareDirectReq struct {
 	Encrypted   *bool   `thrift:"encrypted,5,optional" form:"encrypted" json:"encrypted,omitempty"`
 	CustomCode  *string `thrift:"custom_code,6,optional" form:"custom_code" json:"custom_code,omitempty"`
 	Note        *string `thrift:"note,7,optional" form:"note" json:"note,omitempty"`
+	// 口令型 E2E 包装密钥（2026-11-02，core#30）：多文件直传的全部子文件共用一把内容密钥，
+	// 语义/格式同 ShareTextReq.wrapped_key（服务端零知识：只存只发）
+	WrappedKey *string `thrift:"wrapped_key,8,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
 }
 
 func NewMultiShareDirectReq() *MultiShareDirectReq {
@@ -2925,6 +2928,15 @@ func (p *MultiShareDirectReq) GetNote() (v string) {
 	return *p.Note
 }
 
+var MultiShareDirectReq_WrappedKey_DEFAULT string
+
+func (p *MultiShareDirectReq) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return MultiShareDirectReq_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 var fieldIDToName_MultiShareDirectReq = map[int16]string{
 	1: "expire_value",
 	2: "expire_style",
@@ -2933,6 +2945,7 @@ var fieldIDToName_MultiShareDirectReq = map[int16]string{
 	5: "encrypted",
 	6: "custom_code",
 	7: "note",
+	8: "wrapped_key",
 }
 
 func (p *MultiShareDirectReq) IsSetExpireValue() bool {
@@ -2961,6 +2974,10 @@ func (p *MultiShareDirectReq) IsSetCustomCode() bool {
 
 func (p *MultiShareDirectReq) IsSetNote() bool {
 	return p.Note != nil
+}
+
+func (p *MultiShareDirectReq) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *MultiShareDirectReq) Read(iprot thrift.TProtocol) (err error) {
@@ -3033,6 +3050,14 @@ func (p *MultiShareDirectReq) Read(iprot thrift.TProtocol) (err error) {
 		case 7:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3144,6 +3169,17 @@ func (p *MultiShareDirectReq) ReadField7(iprot thrift.TProtocol) error {
 	p.Note = _field
 	return nil
 }
+func (p *MultiShareDirectReq) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
 
 func (p *MultiShareDirectReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3177,6 +3213,10 @@ func (p *MultiShareDirectReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
 			goto WriteFieldError
 		}
 	}
@@ -3330,6 +3370,25 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
 }
 
+func (p *MultiShareDirectReq) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
 func (p *MultiShareDirectReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -3339,14 +3398,16 @@ func (p *MultiShareDirectReq) String() string {
 }
 
 type MultiShareBindReq struct {
-	ExpireValue *int32                 `thrift:"expire_value,1,optional" form:"expire_value" json:"expire_value,omitempty"`
-	ExpireStyle *string                `thrift:"expire_style,2,optional" form:"expire_style" json:"expire_style,omitempty"`
-	RequireAuth *bool                  `thrift:"require_auth,3,optional" form:"require_auth" json:"require_auth,omitempty"`
-	Password    *string                `thrift:"password,4,optional" form:"password" json:"password,omitempty"`
-	Encrypted   *bool                  `thrift:"encrypted,5,optional" form:"encrypted" json:"encrypted,omitempty"`
-	CustomCode  *string                `thrift:"custom_code,6,optional" form:"custom_code" json:"custom_code,omitempty"`
-	Note        *string                `thrift:"note,7,optional" form:"note" json:"note,omitempty"`
-	Entries     []*MultiShareBindEntry `thrift:"entries,8,required,list<MultiShareBindEntry>" form:"entries,required" json:"entries,required"`
+	ExpireValue *int32  `thrift:"expire_value,1,optional" form:"expire_value" json:"expire_value,omitempty"`
+	ExpireStyle *string `thrift:"expire_style,2,optional" form:"expire_style" json:"expire_style,omitempty"`
+	RequireAuth *bool   `thrift:"require_auth,3,optional" form:"require_auth" json:"require_auth,omitempty"`
+	Password    *string `thrift:"password,4,optional" form:"password" json:"password,omitempty"`
+	Encrypted   *bool   `thrift:"encrypted,5,optional" form:"encrypted" json:"encrypted,omitempty"`
+	CustomCode  *string `thrift:"custom_code,6,optional" form:"custom_code" json:"custom_code,omitempty"`
+	Note        *string `thrift:"note,7,optional" form:"note" json:"note,omitempty"`
+	// 口令型 E2E 包装密钥（2026-11-02，core#30）：语义/格式同 ShareTextReq.wrapped_key
+	WrappedKey *string                `thrift:"wrapped_key,8,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
+	Entries    []*MultiShareBindEntry `thrift:"entries,9,required,list<MultiShareBindEntry>" form:"entries,required" json:"entries,required"`
 }
 
 func NewMultiShareBindReq() *MultiShareBindReq {
@@ -3419,6 +3480,15 @@ func (p *MultiShareBindReq) GetNote() (v string) {
 	return *p.Note
 }
 
+var MultiShareBindReq_WrappedKey_DEFAULT string
+
+func (p *MultiShareBindReq) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return MultiShareBindReq_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 func (p *MultiShareBindReq) GetEntries() (v []*MultiShareBindEntry) {
 	return p.Entries
 }
@@ -3431,7 +3501,8 @@ var fieldIDToName_MultiShareBindReq = map[int16]string{
 	5: "encrypted",
 	6: "custom_code",
 	7: "note",
-	8: "entries",
+	8: "wrapped_key",
+	9: "entries",
 }
 
 func (p *MultiShareBindReq) IsSetExpireValue() bool {
@@ -3460,6 +3531,10 @@ func (p *MultiShareBindReq) IsSetCustomCode() bool {
 
 func (p *MultiShareBindReq) IsSetNote() bool {
 	return p.Note != nil
+}
+
+func (p *MultiShareBindReq) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *MultiShareBindReq) Read(iprot thrift.TProtocol) (err error) {
@@ -3539,8 +3614,16 @@ func (p *MultiShareBindReq) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 8:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 				issetEntries = true
@@ -3561,7 +3644,7 @@ func (p *MultiShareBindReq) Read(iprot thrift.TProtocol) (err error) {
 	}
 
 	if !issetEntries {
-		fieldId = 8
+		fieldId = 9
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -3660,6 +3743,17 @@ func (p *MultiShareBindReq) ReadField7(iprot thrift.TProtocol) error {
 	return nil
 }
 func (p *MultiShareBindReq) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
+func (p *MultiShareBindReq) ReadField9(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
 		return err
@@ -3719,6 +3813,10 @@ func (p *MultiShareBindReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
 			goto WriteFieldError
 		}
 	}
@@ -3873,7 +3971,26 @@ WriteFieldEndError:
 }
 
 func (p *MultiShareBindReq) writeField8(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("entries", thrift.LIST, 8); err != nil {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *MultiShareBindReq) writeField9(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("entries", thrift.LIST, 9); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Entries)); err != nil {
@@ -3892,9 +4009,9 @@ func (p *MultiShareBindReq) writeField8(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 
 func (p *MultiShareBindReq) String() string {
