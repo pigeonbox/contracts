@@ -116,6 +116,66 @@ struct MultiShareBindEntry {
     3: required string file_name  (api.body = "file_name"),
 }
 
+// ==================== 跨站投递（联邦前台化，2026-11-01） ====================
+//
+// 形态（设计稿：docs/specs/2026-11-01-federation-frontend-delivery-design.md）：
+//
+//	访客 ──① 在本站（A 柜）填「对方柜 URL」+ 选文件
+//	        A 柜 ──② 校验目标 ∈ 管理员登记的「可投递对端」
+//	        A 柜 ──③ 带共享口令调对方柜（B 柜）铸投递槽位
+//	        A 柜 ──④ 把文件转发到 B 柜的 /api/v1/request/:token/upload
+//	                B 柜落库 ⇒ **B 柜的 share 域铸 6 位取件码**
+//	        A 柜 ──⑤ 把 B 的 6 位码回给访客（访客转告取件人）
+//	取件人 ──⑥ 在 **B 柜** 用 6 位码取件
+//
+// 关键语义：
+//
+//	· **取件码由对方柜铸** ⇒ 码空间天然是对方的（取件人站在对方柜取件）
+//	  ⇒ 不需要跨柜共享码空间，也不需要「A 柜铸、B 柜认」的额外协议。
+//	· 信任模型 = **口令 bearer**（同现有联邦的「口令即权限」手工交接级）；
+//	  口令由**双方管理员事先登记**（双向登记才允许投递）。
+//	· 出站目标 URL **只来自管理员登记的对端**，不是访客任意输入
+//	  ⇒ SSRF 面从「任意 URL」收窄到「admin 配的 URL」；
+//	  私网对端（自托管常态）按**对端粒度**放行，不动全局 SSRF 开关。
+//
+// ==================== 对方柜侧：铸投递槽位 ====================
+
+struct FederationDeliverySlotReq {
+    1: optional string from_name (api.body = "from_name")  // 发起柜展示名
+    2: optional string note      (api.body = "note")       // 留言
+    3: optional string title     (api.body = "title")      // 投递链接标题
+}
+struct FederationDeliverySlotData {
+    1: required string token (api.body = "token")  // 寄件码 token（投递链接令牌）
+}
+struct FederationDeliverySlotResp {
+    1: required i32                        code    (api.body = "code")
+    2: required string                     message (api.body = "message")
+    3: optional FederationDeliverySlotData data    (api.body = "data")
+}
+
+// ==================== 发起柜侧：访客跨站投递 ====================
+
+struct FederationDeliverReq {
+    // 对方柜基址（URL 口径；须命中本站登记的「可投递对端」，否则拒绝）
+    1: required string target_url (api.body = "target_url")
+    2: optional string title      (api.body = "title")
+    3: optional string note       (api.body = "note")
+    // 文件通过 multipart/form-data 上传（字段名 files，兼容 file；1-100 项），
+    // 文件本体不入契约，handler 手工取（同 MultiShareDirect 形态）。
+}
+struct FederationDeliverData {
+    1: required i32    file_count   (api.body = "file_count")
+    // 对方柜铸的 6 位取件码（**在对方柜使用**；本站不铸码，只透传）
+    2: optional string pickup_code (api.body = "pickup_code")
+    3: optional string target_url  (api.body = "target_url")
+}
+struct FederationDeliverResp {
+    1: required i32                    code    (api.body = "code")
+    2: required string                 message (api.body = "message")
+    3: optional FederationDeliverData data    (api.body = "data")
+}
+
 // ==================== 服务定义 ====================
 
 service PublicApiService {
@@ -129,4 +189,9 @@ service PublicApiService {
     MultiShareDirectResp MultiShareDirect(1: MultiShareDirectReq req) (api.post = "/api/v1/share/multi-direct")
     // MultiShareBind 多文件绑定建分享（分片会话 / 已直传对象）
     MultiShareBindResp MultiShareBind(1: MultiShareBindReq req) (api.post = "/api/v1/share/multi-bind")
+    // FederationDeliverySlot 为对面柜铸一个访客投递槽位（公开面；口令 bearer 授权）
+    FederationDeliverySlotResp FederationDeliverySlot(1: FederationDeliverySlotReq req) (api.post = "/api/v1/federation/delivery-slot")
+    // FederationDeliver 访客跨站投递：转发到已登记对端，返回对方柜铸的取件码
+    // （multipart；文件本体不入契约，handler 手工取）
+    FederationDeliverResp FederationDeliver(1: FederationDeliverReq req) (api.post = "/api/v1/federation/deliver")
 }

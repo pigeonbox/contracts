@@ -2958,6 +2958,12 @@ func (p *GuestUploadReq) String() string {
 
 type GuestUploadData struct {
 	FileCount int32 `thrift:"file_count,1,required" form:"file_count,required" json:"file_count,required"`
+	// 落成分享的 6 位取件码（2026-11-01 跨站投递增量）：
+	// 访客投到本站后由本站 share 域铸造 ⇒ **归属 = 本站**。
+	// 跨站投递时，发起柜（A 柜）转发到对方柜（B 柜）后，
+	// 由 B 柜回传此码给 A 柜 ⇒ A 柜透传给访客（访客在 B 柜取件）。
+	// ⚠️ optional = 非破坏：老消费方（不读此字段）不受影响。
+	PickupCode *string `thrift:"pickup_code,2,optional" form:"pickup_code" json:"pickup_code,omitempty"`
 }
 
 func NewGuestUploadData() *GuestUploadData {
@@ -2971,8 +2977,22 @@ func (p *GuestUploadData) GetFileCount() (v int32) {
 	return p.FileCount
 }
 
+var GuestUploadData_PickupCode_DEFAULT string
+
+func (p *GuestUploadData) GetPickupCode() (v string) {
+	if !p.IsSetPickupCode() {
+		return GuestUploadData_PickupCode_DEFAULT
+	}
+	return *p.PickupCode
+}
+
 var fieldIDToName_GuestUploadData = map[int16]string{
 	1: "file_count",
+	2: "pickup_code",
+}
+
+func (p *GuestUploadData) IsSetPickupCode() bool {
+	return p.PickupCode != nil
 }
 
 func (p *GuestUploadData) Read(iprot thrift.TProtocol) (err error) {
@@ -3001,6 +3021,14 @@ func (p *GuestUploadData) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetFileCount = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -3050,6 +3078,17 @@ func (p *GuestUploadData) ReadField1(iprot thrift.TProtocol) error {
 	p.FileCount = _field
 	return nil
 }
+func (p *GuestUploadData) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.PickupCode = _field
+	return nil
+}
 
 func (p *GuestUploadData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3059,6 +3098,10 @@ func (p *GuestUploadData) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -3094,6 +3137,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *GuestUploadData) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPickupCode() {
+		if err = oprot.WriteFieldBegin("pickup_code", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.PickupCode); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
 func (p *GuestUploadData) String() string {
