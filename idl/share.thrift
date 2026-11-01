@@ -19,6 +19,12 @@ struct ShareTextReq {
     6: optional string custom_code   (api.body = "custom_code"),
     // E2E 密文分享:true 时文本跳过 HTML 转义(转义会破坏解密)
     7: optional bool   encrypted     (api.body = "encrypted"),
+    // 口令型 E2E 的包装密钥（2026-11-01，core#30「走出 secure-context」）：
+    // 服务端只存此 wrapped_key、永不接触明文口令与明文密钥（零知识不变）。
+    // 格式 = base64( 0x01 || salt(16B) || nonce(12B) || AES-256-GCM(KEK, content_key) || tag(16B) )，
+    // KEK = PBKDF2-HMAC-SHA256(口令, salt, c=210000, 32B)；**服务端不解析、只按长度/字符集校验**。
+    // 非空 = 口令型 E2E（取件码 + 口令两因子）；空且 encrypted = 旧「密钥在链接 #fragment」形态。
+    8: optional string wrapped_key   (api.body = "wrapped_key"),
 }
 
 struct ShareData {
@@ -49,6 +55,8 @@ struct ShareFileReq {
     4: optional string password     (api.form = "password"),
     // 文件备注(可空):随分享展示给取件人,文件+文本一并投递(2026-10-12 #489)
     5: optional string note         (api.form = "note"),
+    // 口令型 E2E 包装密钥（2026-11-01，core#30）：语义/格式同 ShareTextReq.wrapped_key
+    6: optional string wrapped_key  (api.form = "wrapped_key"),
 }
 
 struct ShareFileResp {
@@ -81,6 +89,11 @@ struct ShareDetail {
     11: optional bool   is_multi     (api.body = "is_multi"),     // 多文件分享(前端显示"打包下载")
     12: optional list<ShareFileItem> files (api.body = "files"),  // 文件清单(含单文件,前端统一渲染)
     13: optional string note         (api.body = "note"),         // 文件备注(可空,取件页展示)
+    // 口令型 E2E 包装密钥（2026-11-01，core#30）：格式同 ShareTextReq.wrapped_key。
+    // 只随取件详情（GetShare）下发——取件元数据（metadata）只给 has_wrapped_key 标志，
+    // wrapped_key 本体在元数据面不暴露（离线撞口令面按「已知取件码」收敛）。
+    // 口令错误的失败面在**客户端** unwrap 失败（与「分享不存在」的 404/错误码天然可区分）。
+    14: optional string wrapped_key  (api.body = "wrapped_key"),
 }
 
 // 多文件清单项

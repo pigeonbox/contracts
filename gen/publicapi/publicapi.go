@@ -173,6 +173,10 @@ type ShareMetadataData struct {
 	FileCount    int64 `thrift:"file_count,10,required" form:"file_count,required" json:"file_count,required"`
 	// RFC3339
 	CreatedAt string `thrift:"created_at,11,required" form:"created_at,required" json:"created_at,required"`
+	// 口令型 E2E 标志（2026-11-01，core#30）：true = 取件需「口令」解锁 wrapped_key。
+	// ⚠️ 只给标志、**不给 wrapped_key 本体**（本体只随 GetShare 详情下发）；
+	// 「缺字段 ≠ false」：老后端不下发 ⇒ 前端按未知处理，不得据此隐藏口令输入。
+	HasWrappedKey *bool `thrift:"has_wrapped_key,12,optional" form:"has_wrapped_key" json:"has_wrapped_key,omitempty"`
 }
 
 func NewShareMetadataData() *ShareMetadataData {
@@ -236,6 +240,15 @@ func (p *ShareMetadataData) GetCreatedAt() (v string) {
 	return p.CreatedAt
 }
 
+var ShareMetadataData_HasWrappedKey_DEFAULT bool
+
+func (p *ShareMetadataData) GetHasWrappedKey() (v bool) {
+	if !p.IsSetHasWrappedKey() {
+		return ShareMetadataData_HasWrappedKey_DEFAULT
+	}
+	return *p.HasWrappedKey
+}
+
 var fieldIDToName_ShareMetadataData = map[int16]string{
 	1:  "code",
 	2:  "type",
@@ -248,6 +261,7 @@ var fieldIDToName_ShareMetadataData = map[int16]string{
 	9:  "encrypted",
 	10: "file_count",
 	11: "created_at",
+	12: "has_wrapped_key",
 }
 
 func (p *ShareMetadataData) IsSetName() bool {
@@ -256,6 +270,10 @@ func (p *ShareMetadataData) IsSetName() bool {
 
 func (p *ShareMetadataData) IsSetExpiredAt() bool {
 	return p.ExpiredAt != nil
+}
+
+func (p *ShareMetadataData) IsSetHasWrappedKey() bool {
+	return p.HasWrappedKey != nil
 }
 
 func (p *ShareMetadataData) Read(iprot thrift.TProtocol) (err error) {
@@ -380,6 +398,14 @@ func (p *ShareMetadataData) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetCreatedAt = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -579,6 +605,17 @@ func (p *ShareMetadataData) ReadField11(iprot thrift.TProtocol) error {
 	p.CreatedAt = _field
 	return nil
 }
+func (p *ShareMetadataData) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.HasWrappedKey = _field
+	return nil
+}
 
 func (p *ShareMetadataData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -628,6 +665,10 @@ func (p *ShareMetadataData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
 			goto WriteFieldError
 		}
 	}
@@ -837,6 +878,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+
+func (p *ShareMetadataData) writeField12(oprot thrift.TProtocol) (err error) {
+	if p.IsSetHasWrappedKey() {
+		if err = oprot.WriteFieldBegin("has_wrapped_key", thrift.BOOL, 12); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.HasWrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
 }
 
 func (p *ShareMetadataData) String() string {

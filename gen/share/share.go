@@ -21,6 +21,12 @@ type ShareTextReq struct {
 	CustomCode *string `thrift:"custom_code,6,optional" form:"custom_code" json:"custom_code,omitempty"`
 	// E2E 密文分享:true 时文本跳过 HTML 转义(转义会破坏解密)
 	Encrypted *bool `thrift:"encrypted,7,optional" form:"encrypted" json:"encrypted,omitempty"`
+	// 口令型 E2E 的包装密钥（2026-11-01，core#30「走出 secure-context」）：
+	// 服务端只存此 wrapped_key、永不接触明文口令与明文密钥（零知识不变）。
+	// 格式 = base64( 0x01 || salt(16B) || nonce(12B) || AES-256-GCM(KEK, content_key) || tag(16B) )，
+	// KEK = PBKDF2-HMAC-SHA256(口令, salt, c=210000, 32B)；**服务端不解析、只按长度/字符集校验**。
+	// 非空 = 口令型 E2E（取件码 + 口令两因子）；空且 encrypted = 旧「密钥在链接 #fragment」形态。
+	WrappedKey *string `thrift:"wrapped_key,8,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
 }
 
 func NewShareTextReq() *ShareTextReq {
@@ -73,6 +79,15 @@ func (p *ShareTextReq) GetEncrypted() (v bool) {
 	return *p.Encrypted
 }
 
+var ShareTextReq_WrappedKey_DEFAULT string
+
+func (p *ShareTextReq) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return ShareTextReq_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 var fieldIDToName_ShareTextReq = map[int16]string{
 	1: "text",
 	2: "expire_value",
@@ -81,6 +96,7 @@ var fieldIDToName_ShareTextReq = map[int16]string{
 	5: "password",
 	6: "custom_code",
 	7: "encrypted",
+	8: "wrapped_key",
 }
 
 func (p *ShareTextReq) IsSetPassword() bool {
@@ -93,6 +109,10 @@ func (p *ShareTextReq) IsSetCustomCode() bool {
 
 func (p *ShareTextReq) IsSetEncrypted() bool {
 	return p.Encrypted != nil
+}
+
+func (p *ShareTextReq) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *ShareTextReq) Read(iprot thrift.TProtocol) (err error) {
@@ -173,6 +193,14 @@ func (p *ShareTextReq) Read(iprot thrift.TProtocol) (err error) {
 		case 7:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField8(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -305,6 +333,17 @@ func (p *ShareTextReq) ReadField7(iprot thrift.TProtocol) error {
 	p.Encrypted = _field
 	return nil
 }
+func (p *ShareTextReq) ReadField8(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
 
 func (p *ShareTextReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -338,6 +377,10 @@ func (p *ShareTextReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField7(oprot); err != nil {
 			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
 			goto WriteFieldError
 		}
 	}
@@ -481,6 +524,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
+func (p *ShareTextReq) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 8); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 
 func (p *ShareTextReq) String() string {
@@ -1080,6 +1142,8 @@ type ShareFileReq struct {
 	Password *string `thrift:"password,4,optional" form:"password" json:"password,omitempty"`
 	// 文件备注(可空):随分享展示给取件人,文件+文本一并投递(2026-10-12 #489)
 	Note *string `thrift:"note,5,optional" form:"note" json:"note,omitempty"`
+	// 口令型 E2E 包装密钥（2026-11-01，core#30）：语义/格式同 ShareTextReq.wrapped_key
+	WrappedKey *string `thrift:"wrapped_key,6,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
 }
 
 func NewShareFileReq() *ShareFileReq {
@@ -1119,12 +1183,22 @@ func (p *ShareFileReq) GetNote() (v string) {
 	return *p.Note
 }
 
+var ShareFileReq_WrappedKey_DEFAULT string
+
+func (p *ShareFileReq) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return ShareFileReq_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 var fieldIDToName_ShareFileReq = map[int16]string{
 	1: "expire_value",
 	2: "expire_style",
 	3: "require_auth",
 	4: "password",
 	5: "note",
+	6: "wrapped_key",
 }
 
 func (p *ShareFileReq) IsSetPassword() bool {
@@ -1133,6 +1207,10 @@ func (p *ShareFileReq) IsSetPassword() bool {
 
 func (p *ShareFileReq) IsSetNote() bool {
 	return p.Note != nil
+}
+
+func (p *ShareFileReq) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *ShareFileReq) Read(iprot thrift.TProtocol) (err error) {
@@ -1195,6 +1273,14 @@ func (p *ShareFileReq) Read(iprot thrift.TProtocol) (err error) {
 		case 5:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1300,6 +1386,17 @@ func (p *ShareFileReq) ReadField5(iprot thrift.TProtocol) error {
 	p.Note = _field
 	return nil
 }
+func (p *ShareFileReq) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
 
 func (p *ShareFileReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1325,6 +1422,10 @@ func (p *ShareFileReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField5(oprot); err != nil {
 			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -1432,6 +1533,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+
+func (p *ShareFileReq) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
 func (p *ShareFileReq) String() string {
@@ -1931,6 +2051,11 @@ type ShareDetail struct {
 	Files []*ShareFileItem `thrift:"files,12,optional,list<ShareFileItem>" form:"files" json:"files,omitempty"`
 	// 文件备注(可空,取件页展示)
 	Note *string `thrift:"note,13,optional" form:"note" json:"note,omitempty"`
+	// 口令型 E2E 包装密钥（2026-11-01，core#30）：格式同 ShareTextReq.wrapped_key。
+	// 只随取件详情（GetShare）下发——取件元数据（metadata）只给 has_wrapped_key 标志，
+	// wrapped_key 本体在元数据面不暴露（离线撞口令面按「已知取件码」收敛）。
+	// 口令错误的失败面在**客户端** unwrap 失败（与「分享不存在」的 404/错误码天然可区分）。
+	WrappedKey *string `thrift:"wrapped_key,14,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
 }
 
 func NewShareDetail() *ShareDetail {
@@ -2022,6 +2147,15 @@ func (p *ShareDetail) GetNote() (v string) {
 	return *p.Note
 }
 
+var ShareDetail_WrappedKey_DEFAULT string
+
+func (p *ShareDetail) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return ShareDetail_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 var fieldIDToName_ShareDetail = map[int16]string{
 	1:  "code",
 	2:  "text",
@@ -2036,6 +2170,7 @@ var fieldIDToName_ShareDetail = map[int16]string{
 	11: "is_multi",
 	12: "files",
 	13: "note",
+	14: "wrapped_key",
 }
 
 func (p *ShareDetail) IsSetDownloadURL() bool {
@@ -2060,6 +2195,10 @@ func (p *ShareDetail) IsSetFiles() bool {
 
 func (p *ShareDetail) IsSetNote() bool {
 	return p.Note != nil
+}
+
+func (p *ShareDetail) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *ShareDetail) Read(iprot thrift.TProtocol) (err error) {
@@ -2194,6 +2333,14 @@ func (p *ShareDetail) Read(iprot thrift.TProtocol) (err error) {
 		case 13:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2419,6 +2566,17 @@ func (p *ShareDetail) ReadField13(iprot thrift.TProtocol) error {
 	p.Note = _field
 	return nil
 }
+func (p *ShareDetail) ReadField14(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
 
 func (p *ShareDetail) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2476,6 +2634,10 @@ func (p *ShareDetail) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField13(oprot); err != nil {
 			fieldId = 13
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
 			goto WriteFieldError
 		}
 	}
@@ -2735,6 +2897,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
+}
+
+func (p *ShareDetail) writeField14(oprot thrift.TProtocol) (err error) {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 14); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 
 func (p *ShareDetail) String() string {

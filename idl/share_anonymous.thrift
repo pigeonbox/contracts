@@ -67,6 +67,10 @@ struct RetrieveData {
     // 见 core/pkg/baseurl/shareurl.go）；文件分享恒空（走 download_url 下载，
     // 不回传分享码）。
     8: optional string share_code     (api.body = "share_code"),
+    // 口令型 E2E 包装密钥（2026-11-01，core#30）：格式同 share.thrift 的 wrapped_key。
+    // 6 位码取件通道也能取口令型 E2E 分享（取件码+口令两因子）⇒ 需随取件结果回传，
+    // 否则该通道取到的密文无从解密。文件分享恒可有；文本分享走 share_code 跳详情页。
+    9: optional string wrapped_key    (api.body = "wrapped_key"),
 }
 
 struct RetrieveResp {

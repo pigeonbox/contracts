@@ -34,6 +34,10 @@ struct ShareMetadataData {
     9: required bool   encrypted    (api.body = "encrypted"),
     10: required i64   file_count   (api.body = "file_count"),
     11: required string created_at  (api.body = "created_at"),  // RFC3339
+    // 口令型 E2E 标志（2026-11-01，core#30）：true = 取件需「口令」解锁 wrapped_key。
+    // ⚠️ 只给标志、**不给 wrapped_key 本体**（本体只随 GetShare 详情下发）；
+    // 「缺字段 ≠ false」：老后端不下发 ⇒ 前端按未知处理，不得据此隐藏口令输入。
+    12: optional bool  has_wrapped_key (api.body = "has_wrapped_key"),
 }
 struct ShareMetadataResp {
     1: required i32             code    (api.body = "code"),
