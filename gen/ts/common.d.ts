@@ -20,3 +20,96 @@ export interface IndexResp {
 export interface PingResp {
   message: string;
 }
+
+/**
+ * ==================== 网页端通用面（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ **为什么这批路由放在 common 域**：core 的部署模式过滤是**按 hz 生成的路由组**
+ * 挑选的（core/bootstrap/deployment.go 的 registerGeneratedRoutes）⇒ 一个 IDL 域 =
+ * 一个生成组 = 整组注册/不注册。
+ * · genshare 只在 public 副本注册 ⇒ 「匿名上传面」（multi-direct/multi-bind）留在
+ * share.thrift ⇒ **仅公开面**，与收敛前一致；
+ * · gencommon 在 public 与 admin **两面都注册** ⇒ 会话/元信息/公告/联邦/本地导入
+ * 这批「各副本都要有」的路由放这里 ⇒ **两面都在**，与收敛前一致。
+ * ⇒ 迁移不改变任何一条路由的副本可见性（这批路由原先是 bootstrap/routes_custom.go
+ * 里的无条件注册）。
+ */
+export interface UserRefreshData {
+  token: string;
+}
+
+export interface UserRefreshResp {
+  code: number;
+  message: string;
+  data: UserRefreshData;
+}
+
+export interface UserLogoutResp {
+  code: number;
+  message: string;
+}
+
+export interface UserCheckAuthData {
+  id: number;
+  username: string;
+  role: string;
+}
+
+export interface UserCheckAuthResp {
+  code: number;
+  message: string;
+  data: UserCheckAuthData;
+}
+
+export interface UserAPIKeysRevokeAllData {
+  revoked: number;
+}
+
+export interface UserAPIKeysRevokeAllResp {
+  code: number;
+  message: string;
+  data: UserAPIKeysRevokeAllData;
+}
+
+/**
+ * ==================== 站级公开公告（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ **为什么公告端点不放在 notify.thrift**：hz 生成的路由是**按路径**建组的
+ * （cmd/hz 的 RouterNode.FindNearest/Insert 走路径树），同一路径前缀下的路由**共用
+ * 同一组中间件**。notify.thrift 的 /api 组挂了 UserOrAPIKey（2026-10-09「我的通知」
+ * 组的守卫），所以 /api/v1/notifies/public 一旦留在 notify.thrift 就会落进那个组 ⇒
+ * 公开公告端点被误加登录门槛（收敛前是 `r.GET(...)` 无中间件的匿名端点）。
+ * 而 hz 是**按 IDL 文件**各生成一棵独立的路由树 ⇒ 把该端点挪到 common.thrift，
+ * 它落在 common 域自己的 /api 组（该组不带鉴权）⇒ 恢复匿名可访问。
+ * 副本可见性不变：本域在 public 与 admin **两面都注册**（gencommon），与收敛前
+ * 「无条件注册」一致。
+ * 公开公告条目（⚠️ start_at/end_at 运行时**可能回 null**）。
+ * ⚠️ **形状差（2026-10-27 真机冒烟实测记录）**：该端点的响应**不是**由本契约的
+ * 模型序列化出来的 —— core 侧是 transport/http/handler/notify_public.go 里的
+ * 手工 map（逐字段挑的 7 个字段），未设置生效窗口时 **start_at/end_at 显式回
+ * null**（而不是空串、也不是缺省）。
+ * ⇒ 这里把两字段声明为 **optional**（TS 侧 `start_at?: string`）而不是 required：
+ * required 会让 TS 以为它恒为 string，消费面直接 `.slice()`/`.length` 会在
+ * 运行时被 null 打断；optional 至少让 TS 强制消费面处理「可能没有」。
+ * ⚠️ 消费面仍不得当非空字符串用（null ≠ undefined）；本仓库的公告横幅组件
+ * （NotifyBanner.vue）不消费这两个字段。
+ */
+export interface NotifyPublicItem {
+  id: number;
+  title: string;
+  content: string;
+  type: string;
+  level: string;
+  start_at?: string;
+  end_at?: string;
+}
+
+export interface NotifyPublicListReq {}
+
+export interface NotifyPublicListData {
+  items: NotifyPublicItem[];
+}
+
+export interface NotifyPublicListResp {
+  code: number;
+  message: string;
+  data: NotifyPublicListData;
+}

@@ -79,6 +79,37 @@ struct SwitchStorageReq {
     1: required string type (api.body = "type"),
 }
 
+// ==================== 存储迁移 ====================
+
+// MigrateStorageReq 存储迁移请求：把**存量对象**从当前后端搬到目标后端。
+struct MigrateStorageReq {
+    // 1: 目标后端类型（local / s3 / webdav / …；用管理台已配置的目标段凭据）
+    1: required string target_type (api.body = "target_type"),
+    // 2: 目标本地目录（仅 target_type=local 时有意义；缺省 = 沿用现配置的 storage_path）
+    2: optional string target_path (api.body = "target_path"),
+    // 3: 只算计划不搬（先看再动：对象数/字节数/源→目标）
+    3: optional bool   dry_run     (api.body = "dry_run"),
+}
+
+// MigrateStorageData 迁移结果。
+struct MigrateStorageData {
+    1: required bool   switched  (api.body = "switched"),   // 是否已切换到目标后端
+    2: required i64    copied    (api.body = "copied"),     // 本次复制成功的对象数
+    3: required i64    skipped   (api.body = "skipped"),    // 目标已存在（续跑跳过）
+    4: required i64    failed    (api.body = "failed"),     // 复制失败的对象数
+    5: required i64    bytes     (api.body = "bytes"),      // 复制字节数
+    6: required i64    objects   (api.body = "objects"),    // 计划涉及的对象总数
+    7: required string from_type (api.body = "from_type"),
+    8: required string to_type   (api.body = "to_type"),
+    9: optional string message    (api.body = "message"),   // 失败摘要（failed>0 时）
+}
+
+struct MigrateStorageResp {
+    1: required i32              code    (api.body = "code"),
+    2: required string           message (api.body = "message"),
+    3: required MigrateStorageData data   (api.body = "data"),
+}
+
 struct SwitchStorageData {
     1: required bool   success      (api.body = "success"),
     2: required string message      (api.body = "message"),
@@ -182,6 +213,9 @@ service StorageService {
 
     // SwitchStorage 切换存储
     SwitchStorageResp SwitchStorage(1: SwitchStorageReq req) (api.post = "/admin/storage/switch")
+
+    // MigrateStorage 存储迁移：把存量对象搬到目标后端（**全部复制成功后才切换**）
+    MigrateStorageResp MigrateStorage(1: MigrateStorageReq req) (api.post = "/admin/storage/migrate")
 
     // TestStorageConnection 测试存储连接
     TestStorageConnectionResp TestStorageConnection(1: TestStorageConnectionReq req) (api.get = "/admin/storage/test/:type")

@@ -94,8 +94,19 @@ struct AdminP2pDirectoryResp {
 }
 
 // 公开收件端点(限流桶=download;实例间递送口令)
+// ==================== 联邦解析代理（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 未命中时**只有** available 一个字段（其余 optional 不输出）⇒ 与收敛前一致。
+
+
+
+
 service P2PPublicService {
     PostP2PInviteResp PostP2PInvite(1: PostP2PInviteReq req) (api.post = "/api/v1/p2p/invite")
+
+    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
+
+
 }
 
 // 管理端联邦面（全部挂 /admin 组，AdminMiddleware；操作留审计）

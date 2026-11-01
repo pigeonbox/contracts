@@ -203,6 +203,33 @@ struct UserShareOpResp {
     3: optional map<string, i32> data (api.body = "data"),
 }
 
+// ==================== 取件元数据（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 字段名/可空性**必须**与收敛前的 JSON 完全一致（前端与外部集成方都依赖）：
+//   · name  仅 file 分享有 ⇒ optional（缺省不输出，与原 omitempty 一致）
+//   · expired_at 原为 *time.Time（null）⇒ optional（缺省不输出；前端用 ?? null 兜）
+//   · 其余字段恒有 ⇒ required
+
+
+
+
+// ==================== 多文件分享（2026-10-26 自 customHandler 收敛进 IDL） ====================
+//
+// ⚠️ 公共参数在收敛前用 DefaultPostForm 读（**缺省值兜底**）⇒ 契约里一律 optional
+//   （缺字段时 handler 显式兜底）⇒ 行为与收敛前完全一致（原来缺 expire_value 不报 400）。
+//   文件本体**不入契约**（多文件 multipart 无法用 form 绑定表达）⇒ handler 仍手工取。
+
+
+
+
+
+
+
+// ==================== 服务器本地文件导入（2026-10-26 自 customHandler 收敛进 IDL） ====================
+
+
+
+
 // ==================== 服务定义 ====================
 
 service ShareService {
@@ -234,4 +261,11 @@ service ShareService {
 
     // UserSharesHardDelete 永久删除（仅回收站内）
     UserShareOpResp UserSharesHardDelete(1: UserShareCodeReq req) (api.delete = "/api/v1/user/shares/:code/hard")
+
+    // ==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================
+
+
+
+
+
 }
