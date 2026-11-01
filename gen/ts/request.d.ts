@@ -79,6 +79,14 @@ export interface GuestUploadReq {
 
 export interface GuestUploadData {
   file_count: number;
+  /**
+ * 落成分享的 6 位取件码（2026-11-01 跨站投递增量）：
+ * 访客投到本站后由本站 share 域铸造 ⇒ **归属 = 本站**。
+ * 跨站投递时，发起柜（A 柜）转发到对方柜（B 柜）后，
+ * 由 B 柜回传此码给 A 柜 ⇒ A 柜透传给访客（访客在 B 柜取件）。
+ * ⚠️ optional = 非破坏：老消费方（不读此字段）不受影响。
+ */
+  pickup_code?: string;
 }
 
 export interface GuestUploadResp {

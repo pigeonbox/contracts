@@ -115,3 +115,64 @@ export interface MultiShareBindEntry {
   object_key?: string;
   file_name: string;
 }
+
+/**
+ * ==================== 跨站投递（联邦前台化，2026-11-01） ====================
+ * 形态（设计稿：docs/specs/2026-11-01-federation-frontend-delivery-design.md）：
+ * 访客 ──① 在本站（A 柜）填「对方柜 URL」+ 选文件
+ * A 柜 ──② 校验目标 ∈ 管理员登记的「可投递对端」
+ * A 柜 ──③ 带共享口令调对方柜（B 柜）铸投递槽位
+ * A 柜 ──④ 把文件转发到 B 柜的 /api/v1/request/:token/upload
+ * B 柜落库 ⇒ **B 柜的 share 域铸 6 位取件码**
+ * A 柜 ──⑤ 把 B 的 6 位码回给访客（访客转告取件人）
+ * 取件人 ──⑥ 在 **B 柜** 用 6 位码取件
+ * 关键语义：
+ * · **取件码由对方柜铸** ⇒ 码空间天然是对方的（取件人站在对方柜取件）
+ * ⇒ 不需要跨柜共享码空间，也不需要「A 柜铸、B 柜认」的额外协议。
+ * · 信任模型 = **口令 bearer**（同现有联邦的「口令即权限」手工交接级）；
+ * 口令由**双方管理员事先登记**（双向登记才允许投递）。
+ * · 出站目标 URL **只来自管理员登记的对端**，不是访客任意输入
+ * ⇒ SSRF 面从「任意 URL」收窄到「admin 配的 URL」；
+ * 私网对端（自托管常态）按**对端粒度**放行，不动全局 SSRF 开关。
+ * ==================== 对方柜侧：铸投递槽位 ====================
+ */
+export interface FederationDeliverySlotReq {
+  /** 发起柜展示名 */
+  from_name?: string;
+  /** 留言 */
+  note?: string;
+  /** 投递链接标题 */
+  title?: string;
+}
+
+export interface FederationDeliverySlotData {
+  /** 寄件码 token（投递链接令牌） */
+  token: string;
+}
+
+export interface FederationDeliverySlotResp {
+  code: number;
+  message: string;
+  data?: FederationDeliverySlotData;
+}
+
+/** ==================== 发起柜侧：访客跨站投递 ==================== */
+export interface FederationDeliverReq {
+  /** 对方柜基址（URL 口径；须命中本站登记的「可投递对端」，否则拒绝） */
+  target_url: string;
+  title?: string;
+  note?: string;
+}
+
+export interface FederationDeliverData {
+  file_count: number;
+  /** 对方柜铸的 6 位取件码（**在对方柜使用**；本站不铸码，只透传） */
+  pickup_code?: string;
+  target_url?: string;
+}
+
+export interface FederationDeliverResp {
+  code: number;
+  message: string;
+  data?: FederationDeliverData;
+}
