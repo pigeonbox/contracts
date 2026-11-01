@@ -22,6 +22,12 @@ export interface ShareMetadataData {
   file_count: number;
   /** RFC3339 */
   created_at: string;
+  /**
+ * 口令型 E2E 标志（2026-11-01，core#30）：true = 取件需「口令」解锁 wrapped_key。
+ * ⚠️ 只给标志、**不给 wrapped_key 本体**（本体只随 GetShare 详情下发）；
+ * 「缺字段 ≠ false」：老后端不下发 ⇒ 前端按未知处理，不得据此隐藏口令输入。
+ */
+  has_wrapped_key?: boolean;
 }
 
 export interface ShareMetadataResp {

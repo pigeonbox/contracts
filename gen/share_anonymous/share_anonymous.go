@@ -1300,6 +1300,10 @@ type RetrieveData struct {
 	// 见 core/pkg/baseurl/shareurl.go）；文件分享恒空（走 download_url 下载，
 	// 不回传分享码）。
 	ShareCode *string `thrift:"share_code,8,optional" form:"share_code" json:"share_code,omitempty"`
+	// 口令型 E2E 包装密钥（2026-11-01，core#30）：格式同 share.thrift 的 wrapped_key。
+	// 6 位码取件通道也能取口令型 E2E 分享（取件码+口令两因子）⇒ 需随取件结果回传，
+	// 否则该通道取到的密文无从解密。文件分享恒可有；文本分享走 share_code 跳详情页。
+	WrappedKey *string `thrift:"wrapped_key,9,optional" form:"wrapped_key" json:"wrapped_key,omitempty"`
 }
 
 func NewRetrieveData() *RetrieveData {
@@ -1346,6 +1350,15 @@ func (p *RetrieveData) GetShareCode() (v string) {
 	return *p.ShareCode
 }
 
+var RetrieveData_WrappedKey_DEFAULT string
+
+func (p *RetrieveData) GetWrappedKey() (v string) {
+	if !p.IsSetWrappedKey() {
+		return RetrieveData_WrappedKey_DEFAULT
+	}
+	return *p.WrappedKey
+}
+
 var fieldIDToName_RetrieveData = map[int16]string{
 	1: "file_name",
 	2: "file_size",
@@ -1355,10 +1368,15 @@ var fieldIDToName_RetrieveData = map[int16]string{
 	6: "expire_at",
 	7: "require_password",
 	8: "share_code",
+	9: "wrapped_key",
 }
 
 func (p *RetrieveData) IsSetShareCode() bool {
 	return p.ShareCode != nil
+}
+
+func (p *RetrieveData) IsSetWrappedKey() bool {
+	return p.WrappedKey != nil
 }
 
 func (p *RetrieveData) Read(iprot thrift.TProtocol) (err error) {
@@ -1453,6 +1471,14 @@ func (p *RetrieveData) Read(iprot thrift.TProtocol) (err error) {
 		case 8:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1611,6 +1637,17 @@ func (p *RetrieveData) ReadField8(iprot thrift.TProtocol) error {
 	p.ShareCode = _field
 	return nil
 }
+func (p *RetrieveData) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.WrappedKey = _field
+	return nil
+}
 
 func (p *RetrieveData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1648,6 +1685,10 @@ func (p *RetrieveData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
 			goto WriteFieldError
 		}
 	}
@@ -1804,6 +1845,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *RetrieveData) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetWrappedKey() {
+		if err = oprot.WriteFieldBegin("wrapped_key", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.WrappedKey); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
 }
 
 func (p *RetrieveData) String() string {
