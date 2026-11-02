@@ -4158,6 +4158,14 @@ type UserShareItemData struct {
 	// 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
 	// 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
 	Pickups []*PickupRecord `thrift:"pickups,24,optional,list<PickupRecord>" form:"pickups" json:"pickups,omitempty"`
+	// 是否为**端到端加密**分享（2026-11-02，core#30 配套）：true = 内容是客户端密文，
+	// 消费端没有解密能力时**不能假装取到了明文** ⇒ 桌面端一等取件端据此标注
+	// 「端到端加密，请在浏览器端取件」，而不是给用户一坨解不开的密文。
+	//
+	// ⚠️ 与 wrapped_key 的关系：口令型 E2E（core#30）**有**取件码（码+口令两因子），
+	// 旧 URL-hash-key 形态**没有**取件码 ⇒ 凡是出现在待取列表里的 encrypted 分享，
+	// 必然是口令型 ⇒ 消费端按「需要口令」提示即可。
+	Encrypted *bool `thrift:"encrypted,25,optional" form:"encrypted" json:"encrypted,omitempty"`
 }
 
 func NewUserShareItemData() *UserShareItemData {
@@ -4293,6 +4301,15 @@ func (p *UserShareItemData) GetPickups() (v []*PickupRecord) {
 	return p.Pickups
 }
 
+var UserShareItemData_Encrypted_DEFAULT bool
+
+func (p *UserShareItemData) GetEncrypted() (v bool) {
+	if !p.IsSetEncrypted() {
+		return UserShareItemData_Encrypted_DEFAULT
+	}
+	return *p.Encrypted
+}
+
 var fieldIDToName_UserShareItemData = map[int16]string{
 	1:  "id",
 	2:  "code",
@@ -4318,6 +4335,7 @@ var fieldIDToName_UserShareItemData = map[int16]string{
 	22: "file_count",
 	23: "note",
 	24: "pickups",
+	25: "encrypted",
 }
 
 func (p *UserShareItemData) IsSetPickupCode() bool {
@@ -4342,6 +4360,10 @@ func (p *UserShareItemData) IsSetNote() bool {
 
 func (p *UserShareItemData) IsSetPickups() bool {
 	return p.Pickups != nil
+}
+
+func (p *UserShareItemData) IsSetEncrypted() bool {
+	return p.Encrypted != nil
 }
 
 func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
@@ -4586,6 +4608,14 @@ func (p *UserShareItemData) Read(iprot thrift.TProtocol) (err error) {
 		case 24:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField24(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 25:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField25(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4987,6 +5017,17 @@ func (p *UserShareItemData) ReadField24(iprot thrift.TProtocol) error {
 	p.Pickups = _field
 	return nil
 }
+func (p *UserShareItemData) ReadField25(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Encrypted = _field
+	return nil
+}
 
 func (p *UserShareItemData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5088,6 +5129,10 @@ func (p *UserShareItemData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField24(oprot); err != nil {
 			fieldId = 24
+			goto WriteFieldError
+		}
+		if err = p.writeField25(oprot); err != nil {
+			fieldId = 25
 			goto WriteFieldError
 		}
 	}
@@ -5534,6 +5579,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 24 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 24 end error: ", p), err)
+}
+
+func (p *UserShareItemData) writeField25(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEncrypted() {
+		if err = oprot.WriteFieldBegin("encrypted", thrift.BOOL, 25); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.Encrypted); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 25 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 25 end error: ", p), err)
 }
 
 func (p *UserShareItemData) String() string {

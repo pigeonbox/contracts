@@ -170,6 +170,14 @@ struct UserShareItemData {
     // 同一凭证至多扣 1 次 ⇒ 明细按「取件会话」记（多文件逐个下载/断点续传算同一次）。
     // 此前 owner 侧只有「最后一次取件 IP + 累计次数」⇒ 看不到逐条历史。
     24: optional list<PickupRecord> pickups (api.body = "pickups"),
+    // 是否为**端到端加密**分享（2026-11-02，core#30 配套）：true = 内容是客户端密文，
+    // 消费端没有解密能力时**不能假装取到了明文** ⇒ 桌面端一等取件端据此标注
+    // 「端到端加密，请在浏览器端取件」，而不是给用户一坨解不开的密文。
+    //
+    // ⚠️ 与 wrapped_key 的关系：口令型 E2E（core#30）**有**取件码（码+口令两因子），
+    // 旧 URL-hash-key 形态**没有**取件码 ⇒ 凡是出现在待取列表里的 encrypted 分享，
+    // 必然是口令型 ⇒ 消费端按「需要口令」提示即可。
+    25: optional bool   encrypted    (api.body = "encrypted"),
 }
 
 // PickupRecord 一次取件的明细（owner 侧「取件历史」逐条展示）。
