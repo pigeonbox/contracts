@@ -25,6 +25,8 @@ struct UserData {
     7: required string created_at (api.body = "created_at"),
     // role 仅 /user/info 返回(handler 补发,前端 admin 判定依赖),/user/login 载荷不含
     8: optional string role       (api.body = "role"),
+    // 9: 是否已开启二次验证（5.2.0）。前端据此显隐安全设置页的绑定/解绑入口。
+    9: optional bool   totp_enabled (api.body = "totp_enabled"),
 }
 
 struct RegisterResp {
@@ -38,6 +40,10 @@ struct RegisterResp {
 struct LoginReq {
     1: required string username (api.body = "username"),
     2: required string password (api.body = "password"),
+    // 3: 二次验证码（5.2.0）。仅在账号已开启 TOTP 时必填：
+    //    缺省且账号已开启 ⇒ 返回 40012（前端据此弹第二个输入框，**不是**错误提示）；
+    //    填了但不对 ⇒ 40013（计入既有失败锁定桶）。
+    3: optional string totp_code (api.body = "totp_code"),
 }
 
 struct LoginData {
@@ -221,6 +227,113 @@ struct DeleteAPIKeyResp {
 
 
 
+// ==================== 账号与信任（5.2.0） ====================
+//
+// 三组能力：二次验证（TOTP）· 邮箱自助找回密码 · 登录设备管理。
+// 全部为**新增**端点 ⇒ 未开启/未使用时，既有登录流程与 wire 形状一字不改。
+
+// ---- 二次验证（TOTP，RFC 6238）----
+
+// TotpSetupData 绑定第一步的返回值：密钥与 otpauth:// URL。
+// ⚠️ 此时**尚未启用**（totp_enabled 仍为 false）——必须再调 /user/totp/enable
+//   送一次有效验证码才算绑定成功（防止「扫了码但没验过」把自己锁在门外）。
+struct TotpSetupData {
+    1: required string secret      (api.body = "secret"),
+    2: required string otpauth_url (api.body = "otpauth_url"),
+}
+
+struct TotpSetupResp {
+    1: required i32           code    (api.body = "code"),
+    2: required string        message (api.body = "message"),
+    3: required TotpSetupData data    (api.body = "data"),
+}
+
+struct TotpEnableReq {
+    1: required string code (api.body = "code"),
+}
+
+// TotpEnableData 恢复码**只在启用这一刻返回一次**（库内只存 bcrypt 哈希）。
+struct TotpEnableData {
+    1: required list<string> recovery_codes (api.body = "recovery_codes"),
+}
+
+struct TotpEnableResp {
+    1: required i32            code    (api.body = "code"),
+    2: required string         message (api.body = "message"),
+    3: required TotpEnableData data    (api.body = "data"),
+}
+
+// TotpDisableReq 关闭 2FA 必须**双因子**：口令 + 当前 TOTP 码
+// （防「令牌被盗后顺手把二验关掉」）。
+struct TotpDisableReq {
+    1: required string password (api.body = "password"),
+    2: required string code     (api.body = "code"),
+}
+
+struct TotpDisableResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
+// ---- 邮箱自助找回密码 ----
+//
+// ⚠️ forgot 恒返回成功（防账号枚举）；未配置 SMTP 时不发信，
+//   前端按 capabilities.email_password_reset 隐藏入口。
+struct PasswordForgotReq {
+    1: required string email (api.body = "email"),
+}
+
+struct PasswordForgotResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
+struct PasswordResetReq {
+    1: required string token        (api.body = "token"),
+    2: required string new_password (api.body = "new_password"),
+}
+
+struct PasswordResetResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
+// ---- 登录设备管理 ----
+
+struct UserSessionItem {
+    1: required i64    id           (api.body = "id"),
+    2: required string ip           (api.body = "ip"),
+    3: required string user_agent   (api.body = "user_agent"),
+    4: required string created_at   (api.body = "created_at"),
+    5: required string last_seen_at (api.body = "last_seen_at"),
+    // current = 本次请求所用的会话（前端据此禁掉「踢掉自己」的按钮）
+    6: required bool   current      (api.body = "current"),
+}
+
+struct UserSessionsData {
+    1: required list<UserSessionItem> sessions (api.body = "sessions"),
+}
+
+struct UserSessionsResp {
+    1: required i32             code    (api.body = "code"),
+    2: required string          message (api.body = "message"),
+    3: required UserSessionsData data   (api.body = "data"),
+}
+
+struct RevokeSessionReq {
+    1: required i64 id (api.path = "id"),
+}
+
+struct RevokeSessionResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
+struct RevokeAllSessionsResp {
+    1: required i32    code    (api.body = "code"),
+    2: required string message (api.body = "message"),
+}
+
 // ==================== 服务定义 ====================
 
 service UserService {
@@ -259,5 +372,31 @@ service UserService {
 
 
 
+
+    // ==================== 账号与信任（5.2.0） ====================
+
+    // TotpSetup 二次验证绑定第一步：生成密钥（尚未启用）
+    TotpSetupResp TotpSetup(1: EmptyReq req) (api.post = "/user/totp/setup")
+
+    // TotpEnable 二次验证绑定第二步：校验一次有效码后启用，并一次性返回恢复码
+    TotpEnableResp TotpEnable(1: TotpEnableReq req) (api.post = "/user/totp/enable")
+
+    // TotpDisable 关闭二次验证（口令 + 当前 TOTP 码双因子）
+    TotpDisableResp TotpDisable(1: TotpDisableReq req) (api.post = "/user/totp/disable")
+
+    // ForgotPassword 申请找回密码（恒成功，防账号枚举）
+    PasswordForgotResp ForgotPassword(1: PasswordForgotReq req) (api.post = "/user/password/forgot")
+
+    // ResetPassword 用一次性 token 重置密码
+    PasswordResetResp ResetPassword(1: PasswordResetReq req) (api.post = "/user/password/reset")
+
+    // UserSessions 当前账号的登录设备列表
+    UserSessionsResp UserSessions(1: EmptyReq req) (api.get = "/user/sessions")
+
+    // RevokeSession 踢掉指定设备
+    RevokeSessionResp RevokeSession(1: RevokeSessionReq req) (api.delete = "/user/sessions/:id")
+
+    // RevokeAllSessions 退出所有设备（API Key 不受影响）
+    RevokeAllSessionsResp RevokeAllSessions(1: EmptyReq req) (api.post = "/user/sessions/revoke-all")
 
 }

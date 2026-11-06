@@ -19,6 +19,8 @@ export interface UserData {
   created_at: string;
   /** role 仅 /user/info 返回(handler 补发,前端 admin 判定依赖),/user/login 载荷不含 */
   role?: string;
+  /** 9: 是否已开启二次验证（5.2.0）。前端据此显隐安全设置页的绑定/解绑入口。 */
+  totp_enabled?: boolean;
 }
 
 export interface RegisterResp {
@@ -31,6 +33,12 @@ export interface RegisterResp {
 export interface LoginReq {
   username: string;
   password: string;
+  /**
+ * 3: 二次验证码（5.2.0）。仅在账号已开启 TOTP 时必填：
+ * 缺省且账号已开启 ⇒ 返回 40012（前端据此弹第二个输入框，**不是**错误提示）；
+ * 填了但不对 ⇒ 40013（计入既有失败锁定桶）。
+ */
+  totp_code?: string;
 }
 
 export interface LoginData {
@@ -196,6 +204,117 @@ export interface DeleteAPIKeyReq {
 }
 
 export interface DeleteAPIKeyResp {
+  code: number;
+  message: string;
+}
+
+/**
+ * ==================== 会话与 API Key（2026-10-26 自 customHandler 收敛进 IDL） ====================
+ * ⚠️ 收敛前这些端点是 bootstrap/routes_custom.go 里的**内联闭包**（无契约）⇒
+ * wire 形状按现状镜像：logout 成功响应**没有 data 字段**（不声明 data）。
+ * ==================== 账号与信任（5.2.0） ====================
+ * 三组能力：二次验证（TOTP）· 邮箱自助找回密码 · 登录设备管理。
+ * 全部为**新增**端点 ⇒ 未开启/未使用时，既有登录流程与 wire 形状一字不改。
+ * ---- 二次验证（TOTP，RFC 6238）----
+ * TotpSetupData 绑定第一步的返回值：密钥与 otpauth:// URL。
+ * ⚠️ 此时**尚未启用**（totp_enabled 仍为 false）——必须再调 /user/totp/enable
+ * 送一次有效验证码才算绑定成功（防止「扫了码但没验过」把自己锁在门外）。
+ */
+export interface TotpSetupData {
+  secret: string;
+  otpauth_url: string;
+}
+
+export interface TotpSetupResp {
+  code: number;
+  message: string;
+  data: TotpSetupData;
+}
+
+export interface TotpEnableReq {
+  code: string;
+}
+
+/** TotpEnableData 恢复码**只在启用这一刻返回一次**（库内只存 bcrypt 哈希）。 */
+export interface TotpEnableData {
+  recovery_codes: string[];
+}
+
+export interface TotpEnableResp {
+  code: number;
+  message: string;
+  data: TotpEnableData;
+}
+
+/**
+ * TotpDisableReq 关闭 2FA 必须**双因子**：口令 + 当前 TOTP 码
+ * （防「令牌被盗后顺手把二验关掉」）。
+ */
+export interface TotpDisableReq {
+  password: string;
+  code: string;
+}
+
+export interface TotpDisableResp {
+  code: number;
+  message: string;
+}
+
+/**
+ * ---- 邮箱自助找回密码 ----
+ * ⚠️ forgot 恒返回成功（防账号枚举）；未配置 SMTP 时不发信，
+ * 前端按 capabilities.email_password_reset 隐藏入口。
+ */
+export interface PasswordForgotReq {
+  email: string;
+}
+
+export interface PasswordForgotResp {
+  code: number;
+  message: string;
+}
+
+export interface PasswordResetReq {
+  token: string;
+  new_password: string;
+}
+
+export interface PasswordResetResp {
+  code: number;
+  message: string;
+}
+
+/** ---- 登录设备管理 ---- */
+export interface UserSessionItem {
+  id: number;
+  ip: string;
+  user_agent: string;
+  created_at: string;
+  last_seen_at: string;
+  /** current = 本次请求所用的会话（前端据此禁掉「踢掉自己」的按钮） */
+  current: boolean;
+}
+
+export interface UserSessionsData {
+  sessions: UserSessionItem[];
+}
+
+export interface UserSessionsResp {
+  code: number;
+  message: string;
+  data: UserSessionsData;
+}
+
+export interface RevokeSessionReq {
+  id: number;
+}
+
+export interface RevokeSessionResp {
+  code: number;
+  message: string;
+}
+
+export interface RevokeAllSessionsResp {
   code: number;
   message: string;
 }
