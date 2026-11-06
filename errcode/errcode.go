@@ -87,6 +87,9 @@ const (
 	CodeRegClosed      = 40009 // 注册已关闭
 	CodeEmailInvalid   = 40010 // 邮箱格式错误
 	CodePasswordWeak   = 40011 // 密码强度不足
+	CodeTotpRequired   = 40012 // 需要二次验证（账号已开启 TOTP，本次登录未带验证码）
+	CodeTotpInvalid    = 40013 // 二次验证码/恢复码错误
+	CodeResetTokenBad  = 40014 // 重置链接无效或已过期
 )
 
 // 5xxxx 系统
@@ -172,6 +175,9 @@ var messages = map[int]string{
 	CodeRegClosed:      "registration closed",
 	CodeEmailInvalid:   "invalid email",
 	CodePasswordWeak:   "password too weak",
+	CodeTotpRequired:   "totp code required",
+	CodeTotpInvalid:    "totp code invalid",
+	CodeResetTokenBad:  "reset token invalid or expired",
 
 	// 5xxxx
 	CodeDBError:     "database error",

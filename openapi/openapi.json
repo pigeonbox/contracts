@@ -6446,6 +6446,9 @@
           "password": {
             "type": "string"
           },
+          "totp_code": {
+            "type": "string"
+          },
           "username": {
             "type": "string"
           }
@@ -6472,6 +6475,62 @@
           "code",
           "message",
           "data"
+        ],
+        "type": "object"
+      },
+      "user.PasswordForgotReq": {
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "user.PasswordForgotResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "user.PasswordResetReq": {
+        "properties": {
+          "new_password": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "type": "object"
+      },
+      "user.PasswordResetResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
         ],
         "type": "object"
       },
@@ -6505,6 +6564,156 @@
           },
           "data": {
             "$ref": "#/components/schemas/user.UserData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "user.RevokeAllSessionsResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "user.RevokeSessionReq": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "user.RevokeSessionResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "user.TotpDisableReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "code"
+        ],
+        "type": "object"
+      },
+      "user.TotpDisableResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "user.TotpEnableData": {
+        "properties": {
+          "recovery_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "recovery_codes"
+        ],
+        "type": "object"
+      },
+      "user.TotpEnableReq": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "user.TotpEnableResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.TotpEnableData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "user.TotpSetupData": {
+        "properties": {
+          "otpauth_url": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauth_url"
+        ],
+        "type": "object"
+      },
+      "user.TotpSetupResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.TotpSetupData"
           },
           "message": {
             "type": "string"
@@ -6574,6 +6783,9 @@
           },
           "status": {
             "type": "integer"
+          },
+          "totp_enabled": {
+            "type": "boolean"
           },
           "username": {
             "type": "string"
@@ -6734,6 +6946,71 @@
           },
           "data": {
             "$ref": "#/components/schemas/user.UserData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
+      "user.UserSessionItem": {
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "last_seen_at": {
+            "type": "string"
+          },
+          "user_agent": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ip",
+          "user_agent",
+          "created_at",
+          "last_seen_at",
+          "current"
+        ],
+        "type": "object"
+      },
+      "user.UserSessionsData": {
+        "properties": {
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/user.UserSessionItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "sessions"
+        ],
+        "type": "object"
+      },
+      "user.UserSessionsResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/user.UserSessionsData"
           },
           "message": {
             "type": "string"
@@ -11463,6 +11740,9 @@
                   "password": {
                     "type": "string"
                   },
+                  "totp_code": {
+                    "type": "string"
+                  },
                   "username": {
                     "type": "string"
                   }
@@ -11490,6 +11770,90 @@
           }
         },
         "summary": "POST /user/login",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/password/forgot": {
+      "post": {
+        "description": "ForgotPassword 申请找回密码（恒成功，防账号枚举）",
+        "operationId": "ForgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.PasswordForgotResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/password/forgot",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/password/reset": {
+      "post": {
+        "description": "ResetPassword 用一次性 token 重置密码",
+        "operationId": "ResetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "new_password": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "new_password"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.PasswordResetResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/password/reset",
         "tags": [
           "UserService"
         ]
@@ -11591,6 +11955,83 @@
         ]
       }
     },
+    "/user/sessions": {
+      "get": {
+        "description": "UserSessions 当前账号的登录设备列表",
+        "operationId": "UserSessions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.UserSessionsResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "GET /user/sessions",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/sessions/revoke-all": {
+      "post": {
+        "description": "RevokeAllSessions 退出所有设备（API Key 不受影响）",
+        "operationId": "RevokeAllSessions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.RevokeAllSessionsResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/sessions/revoke-all",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/sessions/{id}": {
+      "delete": {
+        "description": "RevokeSession 踢掉指定设备",
+        "operationId": "RevokeSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.RevokeSessionResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "DELETE /user/sessions/:id",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/user/stats": {
       "get": {
         "description": "UserStats 用户统计信息",
@@ -11608,6 +12049,112 @@
           }
         },
         "summary": "GET /user/stats",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/totp/disable": {
+      "post": {
+        "description": "TotpDisable 关闭二次验证（口令 + 当前 TOTP 码双因子）",
+        "operationId": "TotpDisable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "password",
+                  "code"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.TotpDisableResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/totp/disable",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/totp/enable": {
+      "post": {
+        "description": "TotpEnable 二次验证绑定第二步：校验一次有效码后启用，并一次性返回恢复码",
+        "operationId": "TotpEnable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.TotpEnableResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/totp/enable",
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/user/totp/setup": {
+      "post": {
+        "description": "==================== 自 customHandler 收敛进 IDL（2026-10-26） ====================\n==================== 账号与信任（5.2.0） ====================\nTotpSetup 二次验证绑定第一步：生成密钥（尚未启用）",
+        "operationId": "TotpSetup",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user.TotpSetupResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /user/totp/setup",
         "tags": [
           "UserService"
         ]
