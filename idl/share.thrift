@@ -101,6 +101,12 @@ struct ShareFileItem {
     1: required i64    id   (api.body = "id"),
     2: required string name (api.body = "name"),
     3: required i64    size (api.body = "size"),
+    // 分享内相对目录（5.3.0 目录上传）：值为 "a/b" 形态，空或缺失 = 位于根。
+    // 与 name 拼成完整展示路径（"a/b/name"）后取件页才能还原目录树、zip 才能保留结构。
+    // 之所以不把路径塞进 name：name 是「文件名」语义（下载按钮的推荐文件名、
+    // 列表排序都按它），混入目录会让这两处同时出问题。
+    // optional 而非 required：5.3.0 之前的存量分享与新后端的扁平上传都没有这个值。
+    4: optional string rel_dir (api.body = "rel_dir"),
 }
 
 struct GetShareResp {

@@ -2931,6 +2931,12 @@ type ShareFileItem struct {
 	ID   int64  `thrift:"id,1,required" form:"id,required" json:"id,required"`
 	Name string `thrift:"name,2,required" form:"name,required" json:"name,required"`
 	Size int64  `thrift:"size,3,required" form:"size,required" json:"size,required"`
+	// 分享内相对目录（5.3.0 目录上传）：值为 "a/b" 形态，空或缺失 = 位于根。
+	// 与 name 拼成完整展示路径（"a/b/name"）后取件页才能还原目录树、zip 才能保留结构。
+	// 之所以不把路径塞进 name：name 是「文件名」语义（下载按钮的推荐文件名、
+	// 列表排序都按它），混入目录会让这两处同时出问题。
+	// optional 而非 required：5.3.0 之前的存量分享与新后端的扁平上传都没有这个值。
+	RelDir *string `thrift:"rel_dir,4,optional" form:"rel_dir" json:"rel_dir,omitempty"`
 }
 
 func NewShareFileItem() *ShareFileItem {
@@ -2952,10 +2958,24 @@ func (p *ShareFileItem) GetSize() (v int64) {
 	return p.Size
 }
 
+var ShareFileItem_RelDir_DEFAULT string
+
+func (p *ShareFileItem) GetRelDir() (v string) {
+	if !p.IsSetRelDir() {
+		return ShareFileItem_RelDir_DEFAULT
+	}
+	return *p.RelDir
+}
+
 var fieldIDToName_ShareFileItem = map[int16]string{
 	1: "id",
 	2: "name",
 	3: "size",
+	4: "rel_dir",
+}
+
+func (p *ShareFileItem) IsSetRelDir() bool {
+	return p.RelDir != nil
 }
 
 func (p *ShareFileItem) Read(iprot thrift.TProtocol) (err error) {
@@ -3004,6 +3024,14 @@ func (p *ShareFileItem) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetSize = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -3085,6 +3113,17 @@ func (p *ShareFileItem) ReadField3(iprot thrift.TProtocol) error {
 	p.Size = _field
 	return nil
 }
+func (p *ShareFileItem) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.RelDir = _field
+	return nil
+}
 
 func (p *ShareFileItem) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3102,6 +3141,10 @@ func (p *ShareFileItem) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -3171,6 +3214,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *ShareFileItem) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRelDir() {
+		if err = oprot.WriteFieldBegin("rel_dir", thrift.STRING, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.RelDir); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *ShareFileItem) String() string {

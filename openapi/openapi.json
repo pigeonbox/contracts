@@ -5076,6 +5076,9 @@
           "name": {
             "type": "string"
           },
+          "rel_dir": {
+            "type": "string"
+          },
           "size": {
             "format": "int64",
             "type": "integer"
