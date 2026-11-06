@@ -350,7 +350,13 @@ func structSchema(t *parser.Thrift, ns map[string]string, s *parser.StructLike) 
 	for _, f := range s.Fields {
 		name := serializedFieldName(f)
 		props[name] = typeSchema(scope, f.Type)
-		if f.Requiredness == parser.FieldType_Required {
+		// 默认 requiredness 的字段一律计入 required（2026-11-06 修：两个生成器
+		// 对「未标注」的判定此前**相反**——本工具只在 == Required 时计入
+		// required（未标注 ⇒ 可选），而 cmd/gen-ts 只在 == Optional 时加 "?"
+		// （未标注 ⇒ 必填）⇒ 同一份 IDL 在 TS 与 OpenAPI 里给出相反的契约。
+		// 统一口径：**只有显式 optional 才可缺省**，其余（required 与默认）皆必填。
+		// 这样 TS 侧无需改动（现有类型已是该口径），OpenAPI 随之对齐。
+		if f.Requiredness != parser.FieldType_Optional {
 			required = append(required, name)
 		}
 	}

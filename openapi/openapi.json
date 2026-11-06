@@ -3280,6 +3280,9 @@
             "type": "array"
           }
         },
+        "required": [
+          "peers"
+        ],
         "type": "object"
       },
       "p2p.AdminP2pDirectoryReq": {
@@ -3300,7 +3303,8 @@
         },
         "required": [
           "code",
-          "message"
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -3310,6 +3314,9 @@
             "$ref": "#/components/schemas/p2p.InviteInfo"
           }
         },
+        "required": [
+          "invite"
+        ],
         "type": "object"
       },
       "p2p.AdminP2pInviteAcceptReq": {
@@ -3318,6 +3325,9 @@
             "type": "string"
           }
         },
+        "required": [
+          "invite_id"
+        ],
         "type": "object"
       },
       "p2p.AdminP2pInviteAcceptResp": {
@@ -3334,7 +3344,8 @@
         },
         "required": [
           "code",
-          "message"
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -3353,6 +3364,12 @@
             "type": "string"
           }
         },
+        "required": [
+          "code",
+          "target_url",
+          "from_name",
+          "note"
+        ],
         "type": "object"
       },
       "p2p.AdminP2pInvitePushResp": {
@@ -3379,6 +3396,9 @@
             "type": "array"
           }
         },
+        "required": [
+          "invites"
+        ],
         "type": "object"
       },
       "p2p.AdminP2pInvitesReq": {
@@ -3399,7 +3419,8 @@
         },
         "required": [
           "code",
-          "message"
+          "message",
+          "data"
         ],
         "type": "object"
       },
@@ -3425,6 +3446,14 @@
             "type": "string"
           }
         },
+        "required": [
+          "id",
+          "code",
+          "from_name",
+          "note",
+          "received_at",
+          "expires_in"
+        ],
         "type": "object"
       },
       "p2p.P2pDirectoryPeer": {
@@ -3446,6 +3475,13 @@
             "type": "string"
           }
         },
+        "required": [
+          "node_id",
+          "name",
+          "url",
+          "box_pub",
+          "online_since"
+        ],
         "type": "object"
       },
       "p2p.PostP2PInviteReq": {
@@ -3460,6 +3496,11 @@
             "type": "string"
           }
         },
+        "required": [
+          "code",
+          "from_name",
+          "note"
+        ],
         "type": "object"
       },
       "p2p.PostP2PInviteResp": {

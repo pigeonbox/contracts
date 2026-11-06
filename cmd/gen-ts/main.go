@@ -242,6 +242,9 @@ func emitStruct(df *domainFile, d string, scope map[string]typeDef, s *parser.St
 		if c := jsdoc(f.ReservedComments); c != "" {
 			fmt.Fprintf(&b, "  %s\n", c)
 		}
+		// 只有显式 optional 才加 "?"（2026-11-06 与 cmd/gen-openapi 对齐：
+		// 那边同口径把「未标注」计入 required；此前两边对默认 requiredness
+		// 的判定相反 ⇒ 同一字段在 TS 必填、在 OpenAPI 可选）。
 		opt := f.Requiredness == parser.FieldType_Optional
 		fmt.Fprintf(&b, "  %s%s %s;\n", serializedFieldName(f), ternary(opt, "?:", ":"), tt)
 	}
