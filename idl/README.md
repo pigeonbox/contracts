@@ -68,7 +68,7 @@ go run ./cmd/gen-ts               # --check 校验
 ## 安装工具
 
 ```bash
-./scripts/install-tools.sh           # 装 hz(v0.9.7) + thriftgo(v0.4.3)
+./scripts/install-tools.sh           # 装 hz(v0.9.8) + thriftgo(v0.4.3)
 ./scripts/install-tools.sh hz        # 只装 hz
 ./scripts/install-tools.sh thriftgo  # 只装 thriftgo
 ```
