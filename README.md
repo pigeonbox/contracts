@@ -29,7 +29,7 @@ PigeonBox 契约层:错误码 + Thrift 生成的 API 类型。纯类型、零业
 IDL 源(`idl/`)与生成产物(`gen/`)都在本仓内,自包含再生成:
 
 ```bash
-./scripts/install-tools.sh       # 首次:安装 hz v0.9.7 + thriftgo v0.4.3(与既有产物一致)
+./scripts/install-tools.sh       # 首次:安装 hz v0.9.8 + thriftgo v0.4.3(与既有产物一致)
 ./scripts/gen-model.sh           # 从 idl/*.thrift 全量再生成 gen/<domain>/
 CHECK=1 ./scripts/gen-model.sh   # 只校验 gen/ 与 idl/ 是否同步(CI 可用)
 ```

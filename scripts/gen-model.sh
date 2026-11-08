@@ -17,7 +17,7 @@ cd "$(dirname "$0")/.."
 MODULE="github.com/pigeonbox/contracts"
 IDL_DIR="idl"
 GEN_DIR="gen"
-HZ_VERSION="v0.9.7"
+HZ_VERSION="v0.9.8"
 
 fail() { echo -e "\033[1;31m[ERROR]\033[0m $1" >&2; exit 1; }
 

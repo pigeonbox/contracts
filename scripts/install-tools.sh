@@ -19,7 +19,7 @@ NC='\033[0m'
 log() { echo -e "${GREEN}[INFO]${NC}  $*"; }
 
 # 与 gen/ 现有产物匹配的版本
-HZ_VERSION="${HZ_VERSION:-v0.9.7}"
+HZ_VERSION="${HZ_VERSION:-v0.9.8}"
 THRIFTGO_VERSION="${THRIFTGO_VERSION:-v0.4.3}"
 
 install_hz() {
