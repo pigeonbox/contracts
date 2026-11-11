@@ -614,6 +614,33 @@ export interface AdminTestOIDCResp {
   message: string;
 }
 
+/**
+ * ---- 通知渠道测试发送（core#122，2026-11-11；webhook/telegram/bark「配完先试一条」） ----
+ * 用固定测试文案向指定推送渠道真实发一条并测耗时。
+ * 发送成功/失败都是 HTTP 200 + 全站信封（失败是测试的**结论**，不是 API 错误）；
+ * 仅请求本身非法（缺 channel / 未知渠道 / 非法 JSON）⇒ 400 + 10001（全站信封
+ * errcode.ErrorResp）。error_summary 已脱敏，不含 token / device key / 目标 URL。
+ */
+export interface AdminTestNotifyChannelReq {
+  /** webhook / telegram / bark */
+  channel: string;
+}
+
+export interface AdminTestNotifyChannelData {
+  /** 该渠道是否真实送达 */
+  ok: boolean;
+  /** 发送耗时毫秒（含网络往返） */
+  latency_ms: number;
+  /** 失败摘要（ok=false 时非空）；成功时为空串 */
+  error_summary: string;
+}
+
+export interface AdminTestNotifyChannelResp {
+  code: number;
+  message: string;
+  data: AdminTestNotifyChannelData;
+}
+
 /** ---- 管理操作审计日志（gorm.Model 内嵌键已契约化为小写 snake_case，增量无害） ---- */
 export interface AdminActivityItem {
   id: number;
