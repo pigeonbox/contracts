@@ -1213,6 +1213,56 @@
         ],
         "type": "object"
       },
+      "admin.AdminTestNotifyChannelData": {
+        "properties": {
+          "error_summary": {
+            "type": "string"
+          },
+          "latency_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "latency_ms",
+          "error_summary"
+        ],
+        "type": "object"
+      },
+      "admin.AdminTestNotifyChannelReq": {
+        "properties": {
+          "channel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel"
+        ],
+        "type": "object"
+      },
+      "admin.AdminTestNotifyChannelResp": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/admin.AdminTestNotifyChannelData"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "type": "object"
+      },
       "admin.AdminTestOIDCReq": {
         "properties": {},
         "type": "object"
@@ -8474,6 +8524,46 @@
         "summary": "PUT /admin/notifies/:id",
         "tags": [
           "NotifyService"
+        ]
+      }
+    },
+    "/admin/notify/channels/test": {
+      "post": {
+        "description": "AdminTestNotifyChannel 向指定推送渠道真实发送一条固定测试消息（core#122；\n发送失败仍 200 + ok=false，请求非法 400 + 10001）",
+        "operationId": "AdminTestNotifyChannel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "channel": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/admin.AdminTestNotifyChannelResp"
+                }
+              }
+            },
+            "description": "成功（响应体见 envelope，code=0 表示成功）"
+          }
+        },
+        "summary": "POST /admin/notify/channels/test",
+        "tags": [
+          "AdminService"
         ]
       }
     },

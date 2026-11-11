@@ -549,6 +549,25 @@ struct AdminTestOIDCResp {
     2: required string message (api.body = "message"),
 }
 
+// ---- 通知渠道测试发送（core#122，2026-11-11；webhook/telegram/bark「配完先试一条」） ----
+// 用固定测试文案向指定推送渠道真实发一条并测耗时。
+// 发送成功/失败都是 HTTP 200 + 全站信封（失败是测试的**结论**，不是 API 错误）；
+// 仅请求本身非法（缺 channel / 未知渠道 / 非法 JSON）⇒ 400 + 10001（全站信封
+// errcode.ErrorResp）。error_summary 已脱敏，不含 token / device key / 目标 URL。
+struct AdminTestNotifyChannelReq {
+    1: required string channel (api.body = "channel"),   // webhook / telegram / bark
+}
+struct AdminTestNotifyChannelData {
+    1: required bool   ok            (api.body = "ok"),             // 该渠道是否真实送达
+    2: required i64    latency_ms    (api.body = "latency_ms"),     // 发送耗时毫秒（含网络往返）
+    3: required string error_summary (api.body = "error_summary"),  // 失败摘要（ok=false 时非空）；成功时为空串
+}
+struct AdminTestNotifyChannelResp {
+    1: required i32                       code    (api.body = "code"),
+    2: required string                    message (api.body = "message"),
+    3: required AdminTestNotifyChannelData data   (api.body = "data"),
+}
+
 // ---- 管理操作审计日志（gorm.Model 内嵌键已契约化为小写 snake_case，增量无害） ----
 struct AdminActivityItem {
     1: required i64    id         (api.body = "id"),
@@ -667,6 +686,9 @@ service AdminService {
     AdminTestSMTPResp AdminTestSMTP(1: AdminTestSMTPReq req) (api.post = "/admin/notify/smtp/test")
     // AdminTestOIDC 验证当前生效 OIDC issuer discovery 可达
     AdminTestOIDCResp AdminTestOIDC(1: AdminTestOIDCReq req) (api.post = "/admin/oidc/test")
+    // AdminTestNotifyChannel 向指定推送渠道真实发送一条固定测试消息（core#122；
+    // 发送失败仍 200 + ok=false，请求非法 400 + 10001）
+    AdminTestNotifyChannelResp AdminTestNotifyChannel(1: AdminTestNotifyChannelReq req) (api.post = "/admin/notify/channels/test")
 
     // AdminActivities 管理操作审计日志分页
     AdminActivitiesResp AdminActivities(1: AdminActivitiesReq req) (api.get = "/admin/activities")
