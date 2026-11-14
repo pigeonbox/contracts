@@ -116,13 +116,25 @@ func BuildSpec(dir string) (map[string]any, error) {
 		t := parsed[fn]
 		p := ns[fn]
 		for _, s := range t.Structs {
-			schemas[p+"."+s.Name] = structSchema(t, ns, s)
+			sc, err := structSchema(t, ns, s)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", fn, err)
+			}
+			schemas[p+"."+s.Name] = sc
 		}
 		for _, u := range t.Unions {
-			schemas[p+"."+u.Name] = structSchema(t, ns, u)
+			sc, err := structSchema(t, ns, u)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", fn, err)
+			}
+			schemas[p+"."+u.Name] = sc
 		}
 		for _, e := range t.Exceptions {
-			schemas[p+"."+e.Name] = structSchema(t, ns, e)
+			sc, err := structSchema(t, ns, e)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", fn, err)
+			}
+			schemas[p+"."+e.Name] = sc
 		}
 		for _, e := range t.Enums {
 			schemas[p+"."+e.Name] = enumSchema(e)
@@ -275,64 +287,82 @@ func fieldAnnValue(f *parser.Field, key string) string {
 
 // ------------------------------------------------------------ schema 构造
 
-// typeDef 作用域条目：名字 → 定义处（namespace 前缀 + struct 定义指针）
+// typeDef 作用域条目：名字 → 定义处（namespace 前缀 + struct 定义指针 / typedef 别名）
 type typeDef struct {
 	ns string
-	// st struct 定义指针（enum 无此字段）
+	// st struct 定义指针（enum/typedef 无此字段）
 	st *parser.StructLike
+	// aliasType typedef 指向的原类型（仅 typedef 条目非 nil，与 gen-ts 同构）
+	aliasType *parser.Type
 }
 
 // typeSchema thrift 类型 → OpenAPI schema。
 // 注意：thriftgo parser 的原始 AST 不做类型语义解析（所有类型引用的 Category
 // 均为 Constant），因此本函数以 TypeName 为主判据（标量按名、容器按前缀），
-// 其余视为命名类型（struct/enum）经 scope 解析为 $ref。
-func typeSchema(scope map[string]typeDef, t *parser.Type) map[string]any {
+// 其余视为命名类型（struct/enum/typedef）经 scope 解析：typedef 展开原类型
+// （与 gen-ts 同口径），其余产出 $ref；解析失败**报错**而非静默空 schema
+// （issue #29：空 schema 会让 /openapi.json 与前端类型面对同一字段给出不一致契约）。
+func typeSchema(scope map[string]typeDef, t *parser.Type) (map[string]any, error) {
 	if t == nil {
-		return map[string]any{}
+		return map[string]any{}, nil
 	}
 	switch t.GetName() {
 	case "bool":
-		return map[string]any{"type": "boolean"}
+		return map[string]any{"type": "boolean"}, nil
 	case "byte", "i16", "i32":
-		return map[string]any{"type": "integer"}
+		return map[string]any{"type": "integer"}, nil
 	case "i64":
-		return map[string]any{"type": "integer", "format": "int64"}
+		return map[string]any{"type": "integer", "format": "int64"}, nil
 	case "double":
-		return map[string]any{"type": "number", "format": "double"}
+		return map[string]any{"type": "number", "format": "double"}, nil
 	case "string", "binary":
-		return map[string]any{"type": "string"}
+		return map[string]any{"type": "string"}, nil
 	}
 	name := t.GetName()
 	// 容器判据用结构化字段(KeyType/ValueType):原始 AST 的 Category 未分类
 	// (恒为 Constant),GetName 对容器只返回裸名("list"/"map",无泛型后缀),
 	// 按名字形态匹配会漏判并产出空 schema
 	if t.KeyType != nil { // map
-		return map[string]any{"type": "object", "additionalProperties": typeSchema(scope, t.ValueType)}
+		v, err := typeSchema(scope, t.ValueType)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"type": "object", "additionalProperties": v}, nil
 	}
 	if t.ValueType != nil { // list/set
-		return map[string]any{"type": "array", "items": typeSchema(scope, t.ValueType)}
+		v, err := typeSchema(scope, t.ValueType)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"type": "array", "items": v}, nil
 	}
-	// 命名类型（struct/enum 引用）：scope 查得到 → $ref；查不到 → 空 schema 容错
-	if _, ok := scope[name]; ok {
-		return map[string]any{"$ref": refName(scope, t)}
+	// 命名类型（struct/enum/typedef 引用）：scope 查得到 → typedef 展开或 $ref；
+	// 查不到 → 报错（issue #29，不再静默空 schema、不再拼可能悬空的 $ref）
+	def, key, ok := resolveNamed(scope, t)
+	if !ok {
+		return nil, fmt.Errorf("无法解析类型引用 %q（未登记于作用域：本地/include 的 struct/union/exception/enum/typedef）", name)
 	}
-	return map[string]any{}
+	if def.aliasType != nil {
+		// typedef 直接展开原类型（与 gen-ts 同口径，产物不引入中间名）
+		return typeSchema(scope, def.aliasType)
+	}
+	return map[string]any{"$ref": "#/components/schemas/" + def.ns + "." + lastSegment(key)}, nil
 }
 
-// refName 解析类型引用 → components 内注册名（"<ns>.<Name>"）。
-// scope 由调用方按"使用处文件"构造：本地名直查；"alias.Name" 查 include 侧。
-// 解析失败回退当前文件 namespace（容错不致命，components 注册侧同名兜底）。
-func refName(scope map[string]typeDef, t *parser.Type) string {
-	name := t.GetName()
+// resolveNamed 命名类型引用解析（与 gen-ts resolveNamed 同构）：include 引用按
+// "alias.Name" 查，本地名直查；返回定义条目与解析所用 key（拼 $ref 用）。
+func resolveNamed(scope map[string]typeDef, t *parser.Type) (typeDef, string, bool) {
 	if t.Reference != nil && t.Reference.Name != "" {
 		if d, ok := scope[t.Reference.Name]; ok {
-			return "#/components/schemas/" + d.ns + "." + lastSegment(t.Reference.Name)
+			return d, t.Reference.Name, true
 		}
 	}
-	if d, ok := scope[name]; ok {
-		return "#/components/schemas/" + d.ns + "." + lastSegment(name)
+	if name := t.GetName(); name != "" {
+		if d, ok := scope[name]; ok {
+			return d, name, true
+		}
 	}
-	return "#/components/schemas/" + lastSegment(name) + "." + lastSegment(name)
+	return typeDef{}, "", false
 }
 
 func lastSegment(s string) string {
@@ -343,13 +373,17 @@ func lastSegment(s string) string {
 }
 
 // structSchema struct/union/exception → OpenAPI object schema
-func structSchema(t *parser.Thrift, ns map[string]string, s *parser.StructLike) map[string]any {
+func structSchema(t *parser.Thrift, ns map[string]string, s *parser.StructLike) (map[string]any, error) {
 	scope := localScopeOf(t, ns)
 	props := map[string]any{}
 	required := []string{}
 	for _, f := range s.Fields {
 		name := serializedFieldName(f)
-		props[name] = typeSchema(scope, f.Type)
+		ps, err := typeSchema(scope, f.Type)
+		if err != nil {
+			return nil, fmt.Errorf("字段 %s.%s: %w", s.Name, name, err)
+		}
+		props[name] = ps
 		// 默认 requiredness 的字段一律计入 required（2026-11-06 修：两个生成器
 		// 对「未标注」的判定此前**相反**——本工具只在 == Required 时计入
 		// required（未标注 ⇒ 可选），而 cmd/gen-ts 只在 == Optional 时加 "?"
@@ -364,10 +398,10 @@ func structSchema(t *parser.Thrift, ns map[string]string, s *parser.StructLike) 
 	if len(required) > 0 {
 		out["required"] = required
 	}
-	return out
+	return out, nil
 }
 
-// localScopeOf 文件级名字作用域（本地定义 + include 引用）→ 定义处条目
+// localScopeOf 文件级名字作用域（本地定义 + include 引用，含 typedef）→ 定义处条目
 func localScopeOf(t *parser.Thrift, ns map[string]string) map[string]typeDef {
 	m := map[string]typeDef{}
 	p := ns[t.Filename]
@@ -386,6 +420,11 @@ func localScopeOf(t *parser.Thrift, ns map[string]string) map[string]typeDef {
 	for _, e := range t.Enums {
 		m[e.Name] = typeDef{ns: p}
 	}
+	for _, td := range t.Typedefs {
+		// typedef 登记别名条目（与 gen-ts localScopeOf 对称，issue #29）：
+		// typeSchema 命中 aliasType 时展开原类型，不产 $ref
+		m[td.Alias] = typeDef{ns: p, aliasType: td.Type}
+	}
 	for _, inc := range t.Includes {
 		if inc.Reference == nil {
 			continue
@@ -397,6 +436,9 @@ func localScopeOf(t *parser.Thrift, ns map[string]string) map[string]typeDef {
 		}
 		for _, e := range inc.Reference.Enums {
 			m[a+"."+e.Name] = typeDef{ns: ip}
+		}
+		for _, td := range inc.Reference.Typedefs {
+			m[a+"."+td.Alias] = typeDef{ns: ip, aliasType: td.Type}
 		}
 	}
 	return m
@@ -458,15 +500,19 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 		isNamedType(scope, m.Arguments[0].Type) {
 		if def := lookupStructDef(scope, m.Arguments[0].Type); def != nil {
 			for _, f := range def.Fields {
+				fs, err := typeSchema(scope, f.Type)
+				if err != nil {
+					return fmt.Errorf("%s.%s: %w", def.Name, f.Name, err)
+				}
 				if name := fieldAnnValue(f, "api.path"); name != "" {
 					params = append(params, map[string]any{
 						"name": name, "in": "path", "required": true,
-						"schema": typeSchema(scope, f.Type),
+						"schema": fs,
 					})
 					continue
 				}
 				if name := fieldAnnValue(f, "api.query"); name != "" {
-					pp := map[string]any{"name": name, "in": "query", "schema": typeSchema(scope, f.Type)}
+					pp := map[string]any{"name": name, "in": "query", "schema": fs}
 					if f.Requiredness == parser.FieldType_Required {
 						pp["required"] = true
 					}
@@ -477,7 +523,7 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 				// 否则规范会告诉集成方「把密码放 JSON body」，而服务端读的是头
 				// （取件密码走 X-Share-Password，见 idl/share.thrift GetShareReq）。
 				if name := fieldAnnValue(f, "api.header"); name != "" {
-					pp := map[string]any{"name": name, "in": "header", "schema": typeSchema(scope, f.Type)}
+					pp := map[string]any{"name": name, "in": "header", "schema": fs}
 					if f.Requiredness == parser.FieldType_Required {
 						pp["required"] = true
 					}
@@ -488,7 +534,7 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 					if formProps == nil {
 						formProps = map[string]any{}
 					}
-					formProps[name] = typeSchema(scope, f.Type)
+					formProps[name] = fs
 					if f.Requiredness == parser.FieldType_Required {
 						formRequired = append(formRequired, name)
 					}
@@ -502,7 +548,7 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 				if jn == "" {
 					jn = f.Name
 				}
-				jsonProps[jn] = typeSchema(scope, f.Type)
+				jsonProps[jn] = fs
 				if f.Requiredness == parser.FieldType_Required {
 					jsonRequired = append(jsonRequired, jn)
 				}
@@ -532,13 +578,17 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 		op["requestBody"] = map[string]any{"required": true, "content": content}
 	}
 
-	// 响应模型：方法返回 struct → $ref（本仓 Resp 结构即 envelope 本体）
+	// 响应模型：方法返回 struct → $ref（本仓 Resp 结构即 envelope 本体），
+	// typedef 返回则展开原类型；解析失败报错（issue #29，不再拼可能悬空的 $ref）
 	if m.FunctionType != nil && isNamedType(scope, m.FunctionType) {
-		ref := refName(scope, m.FunctionType)
+		resp, err := typeSchema(scope, m.FunctionType)
+		if err != nil {
+			return fmt.Errorf("返回类型: %w", err)
+		}
 		op["responses"] = map[string]any{
 			"200": map[string]any{
 				"description": "成功（响应体见 envelope，code=0 表示成功）",
-				"content":     map[string]any{"application/json": map[string]any{"schema": map[string]any{"$ref": ref}}},
+				"content":     map[string]any{"application/json": map[string]any{"schema": resp}},
 			},
 		}
 	}
@@ -555,7 +605,7 @@ func addOperation(paths map[string]any, scope map[string]typeDef, svcName string
 
 // lookupStructDef 按 scope 解析 struct 引用 → 定义（请求体字段枚举用）
 
-// isNamedType 命名类型（struct/enum 引用，含 thriftgo 原始 AST 未解析的 Constant 类别）
+// isNamedType 命名类型（struct/enum/typedef 引用，含 thriftgo 原始 AST 未解析的 Constant 类别）
 func isNamedType(scope map[string]typeDef, t *parser.Type) bool {
 	switch t.Category {
 	case parser.Category_Struct, parser.Category_Enum:
