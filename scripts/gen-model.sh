@@ -26,10 +26,13 @@ command -v thriftgo >/dev/null || fail "thriftgo 未安装: go install github.co
 
 # 与旧单体 gen.sh 相同的过滤:仅处理带 service 定义的 IDL,
 # 纯 struct/模板文件(api/error)不生成桩;其类型若被引用会随 include 自动带出。
+# 判据与 cmd/gen-ts、cmd/gen-openapi 的 hasService 前缀口径一致(issue #28):
+# 行首(去缩进)是 service + 空白 + 标识符首字母即算,不要求同行跟 "{"——
+# `service Foo extends Bar {`(thrift 合法继承)或大括号换行同样是带 service 的 IDL。
 IDLS=()
 for f in "$IDL_DIR"/*.thrift "$IDL_DIR"/http/*.thrift; do
   [ -f "$f" ] || continue
-  if grep -qE '^[[:space:]]*service[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\{' "$f"; then
+  if grep -qE '^[[:space:]]*service[[:space:]]+[A-Za-z_]' "$f"; then
     IDLS+=("$f")
   else
     echo "跳过无 service 定义的 IDL: $f (纯 struct/文档)"
@@ -56,13 +59,18 @@ if [ "${CHECK:-0}" = "1" ]; then
   # gitignore 忽略，CI 的 Linux 上不会生成）——目录级 diff 会把它报成
   # "Only in gen"，让**所有 macOS 贡献者**看到这个校验恒红且提示无效
   # （"请运行 gen-model.sh 更新后提交"并不能消掉它）。
-  if diff -r --exclude=ts --exclude=.DS_Store "$WORK/model" "$GEN_DIR" >/tmp/fcb-contracts-gen.diff 2>&1; then
+  # 完整差异直接进 stderr(issue #31):此前只留前 30 行 + /tmp 中转文件,
+  # 托管 runner 结束即销毁,漂移越大越没法诊断。
+  # diff 退出码:0=一致 1=有差异 2=故障。
+  rc=0
+  diff -r --exclude=ts --exclude=.DS_Store "$WORK/model" "$GEN_DIR" >&2 || rc=$?
+  if [ "$rc" -eq 0 ]; then
     echo "✓ 一致,gen/ 与 idl/ 定义同步"
-  else
-    echo "✗ gen/ 与 idl/ 不同步,差异已写入 /tmp/fcb-contracts-gen.diff:" >&2
-    head -30 /tmp/fcb-contracts-gen.diff >&2
-    echo "请运行 ./scripts/gen-model.sh 更新后提交" >&2
+  elif [ "$rc" -eq 1 ]; then
+    echo "✗ gen/ 与 idl/ 不同步(完整差异见上方输出),请运行 ./scripts/gen-model.sh 更新后提交" >&2
     exit 1
+  else
+    fail "diff 执行失败(rc=$rc)"
   fi
   OK=1
   exit 0

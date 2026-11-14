@@ -552,14 +552,38 @@ func checkSync(files map[string]string) error {
 			left = append(left, outputDir+"/"+name)
 		}
 		sort.Strings(left)
-		return fmt.Errorf("残留产物(IDL 已不含对应类型): %s,请运行 `go run ./cmd/gen-ts` 后删除", strings.Join(left, ", "))
+		return fmt.Errorf("残留产物(IDL 已不含对应类型): %s,请运行 `go run ./cmd/gen-ts` 清理后提交(生成器已先清后写,会自动删除残留)", strings.Join(left, ", "))
 	}
 	return nil
 }
 
 func writeAll(files map[string]string) error {
-	if err := os.MkdirAll(outputDir, 0o755); err != nil {
+	return writeAllTo(outputDir, files)
+}
+
+// writeAllTo 写出产物到 dir，**先清后写**：删除 dir 内不在本次清单的残留 .d.ts
+// （IDL 删除类型后的旧产物），与 scripts/gen-model.sh 的选择性清理同思路
+// （gen-model 曾因 rm -rf 整目录踩坑后改选择性删除，见其 :75 注释）。
+// 此前只写不删 ⇒ --check 报「残留产物」时的修复指引（重跑 gen-ts）永远无效，
+// 贡献者只能自行领悟要手删（issue #33 死循环）。
+func writeAllTo(dir string, files map[string]string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("创建输出目录: %w", err)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("读取 %s: %w", dir, err)
+	}
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".d.ts") {
+			continue
+		}
+		if _, keep := files[e.Name()]; keep {
+			continue
+		}
+		if err := os.Remove(filepath.Join(dir, e.Name())); err != nil {
+			return fmt.Errorf("清理残留产物 %s: %w", e.Name(), err)
+		}
 	}
 	names := make([]string, 0, len(files))
 	for rel := range files {
@@ -567,7 +591,7 @@ func writeAll(files map[string]string) error {
 	}
 	sort.Strings(names)
 	for _, rel := range names {
-		p := filepath.Join(outputDir, rel)
+		p := filepath.Join(dir, rel)
 		if err := os.WriteFile(p, []byte(files[rel]), 0o644); err != nil {
 			return fmt.Errorf("写出 %s: %w", p, err)
 		}
