@@ -5,6 +5,12 @@
 export interface AdminLoginReq {
   username: string;
   password: string;
+  /**
+ * 3: 二次验证码。与 /user/login 的 totp_code 同语义（user.thrift 同款注释）：
+ * 缺省且账号已开启 ⇒ 返回 40012（前端据此弹第二个输入框，**不是**错误提示）；
+ * 填了但不对 ⇒ 40013（计入既有失败锁定桶）。
+ */
+  totp_code?: string;
 }
 
 /**

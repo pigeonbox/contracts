@@ -11,6 +11,10 @@ namespace go admin
 struct AdminLoginReq {
     1: required string username (api.body = "username"),
     2: required string password (api.body = "password"),
+    // 3: 二次验证码。与 /user/login 的 totp_code 同语义（user.thrift 同款注释）：
+    //    缺省且账号已开启 ⇒ 返回 40012（前端据此弹第二个输入框，**不是**错误提示）；
+    //    填了但不对 ⇒ 40013（计入既有失败锁定桶）。
+    3: optional string totp_code (api.body = "totp_code"),
 }
 
 // 登录成功后的数据。

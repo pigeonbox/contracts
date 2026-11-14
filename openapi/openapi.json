@@ -931,6 +931,9 @@
           "password": {
             "type": "string"
           },
+          "totp_code": {
+            "type": "string"
+          },
           "username": {
             "type": "string"
           }
@@ -8040,6 +8043,9 @@
               "schema": {
                 "properties": {
                   "password": {
+                    "type": "string"
+                  },
+                  "totp_code": {
                     "type": "string"
                   },
                   "username": {

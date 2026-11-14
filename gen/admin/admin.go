@@ -12,6 +12,10 @@ import (
 type AdminLoginReq struct {
 	Username string `thrift:"username,1,required" form:"username,required" json:"username,required"`
 	Password string `thrift:"password,2,required" form:"password,required" json:"password,required"`
+	// 3: 二次验证码。与 /user/login 的 totp_code 同语义（user.thrift 同款注释）：
+	//    缺省且账号已开启 ⇒ 返回 40012（前端据此弹第二个输入框，**不是**错误提示）；
+	//    填了但不对 ⇒ 40013（计入既有失败锁定桶）。
+	TotpCode *string `thrift:"totp_code,3,optional" form:"totp_code" json:"totp_code,omitempty"`
 }
 
 func NewAdminLoginReq() *AdminLoginReq {
@@ -29,9 +33,23 @@ func (p *AdminLoginReq) GetPassword() (v string) {
 	return p.Password
 }
 
+var AdminLoginReq_TotpCode_DEFAULT string
+
+func (p *AdminLoginReq) GetTotpCode() (v string) {
+	if !p.IsSetTotpCode() {
+		return AdminLoginReq_TotpCode_DEFAULT
+	}
+	return *p.TotpCode
+}
+
 var fieldIDToName_AdminLoginReq = map[int16]string{
 	1: "username",
 	2: "password",
+	3: "totp_code",
+}
+
+func (p *AdminLoginReq) IsSetTotpCode() bool {
+	return p.TotpCode != nil
 }
 
 func (p *AdminLoginReq) Read(iprot thrift.TProtocol) (err error) {
@@ -70,6 +88,14 @@ func (p *AdminLoginReq) Read(iprot thrift.TProtocol) (err error) {
 					goto ReadFieldError
 				}
 				issetPassword = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -135,6 +161,17 @@ func (p *AdminLoginReq) ReadField2(iprot thrift.TProtocol) error {
 	p.Password = _field
 	return nil
 }
+func (p *AdminLoginReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.TotpCode = _field
+	return nil
+}
 
 func (p *AdminLoginReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -148,6 +185,10 @@ func (p *AdminLoginReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -200,6 +241,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *AdminLoginReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTotpCode() {
+		if err = oprot.WriteFieldBegin("totp_code", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.TotpCode); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *AdminLoginReq) String() string {
