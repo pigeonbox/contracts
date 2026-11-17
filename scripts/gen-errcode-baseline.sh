@@ -47,6 +47,7 @@ case "${1:-}" in
   "") ;;
   -h | --help)
     usage
+    OK=1
     exit 0
     ;;
   *)
@@ -59,8 +60,16 @@ esac
 [ -f "${SRC}" ] || fail "找不到 ${SRC}（请在仓库根目录运行本脚本）"
 
 WORK="$(mktemp -d)"
+# EXIT trap 必须**保留脚本退出码**（成功哨兵形态）。
+#   为什么：`trap 'rm -rf "$WORK"' EXIT` 的最后一条命令是 rm（成功）⇒ bash 用它的
+#   退出码覆盖脚本状态 ⇒ 脚本**报错却 exit 0**（macOS bash 3.2 上未定义变量失败
+#   尤其明显）⇒「本地 && 链假绿、CI 才红」。hub 的 check-shell-trap-exit-code.sh
+#   门禁（射程含 contracts/scripts）会因此判红。
+#   正确形态：跑完的位置置 OK=1；trap 里 rc≠0 ⇒ 原样保留；rc=0 且 OK≠1 ⇒
+#   没跑到结尾却没留失败码 ⇒ 判失败。
+OK=0
 # shellcheck disable=SC2154 # WORK 在 trap 体内使用，shellcheck 看不见跨行的赋值
-trap 'rm -rf "${WORK}"' EXIT
+trap 'rc=$?; rm -rf "${WORK}"; if [ "$rc" -ne 0 ]; then exit "$rc"; fi; if [ "${OK:-0}" != 1 ]; then exit 1; fi; exit 0' EXIT
 
 # 抽 const 表：只认 `CodeXxx = NNNNN` 这一形态（行首可有缩进，行尾可有注释）。
 # 用 grep -E（macOS 的 BSD grep 不支持 BRE 交替 |），匹配与抽取各用一条 ERE。
@@ -115,6 +124,7 @@ if [ "${MODE}" = "check" ]; then
   [ -f "${OUT}" ] || fail "${OUT} 不存在，请先运行: bash scripts/gen-errcode-baseline.sh"
   if diff -u "${OUT}" "${WORK}/baseline.json" >"${WORK}/diff" 2>&1; then
     echo "✓ ${OUT} 与 ${SRC} 的 const 表同步（${total_codes} 条 5 位错误码）"
+    OK=1
     exit 0
   fi
   echo "✗ ${OUT} 与 ${SRC} 的 const 表不同步，差异如下:" >&2
@@ -126,3 +136,4 @@ fi
 cp "${WORK}/baseline.json" "${OUT}"
 echo "✓ 已生成 ${OUT}（${total_codes} 条 5 位错误码，数字升序）"
 echo "  建议: git diff ${OUT} 检查后提交"
+OK=1
